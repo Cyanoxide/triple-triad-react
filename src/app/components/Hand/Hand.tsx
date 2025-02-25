@@ -5,16 +5,17 @@ import Card from '../Card/Card';
 
 interface HandProps {
     className?: string;
+    player: "red" | "blue";
 }
 
-const Hand: React.FC<HandProps> = ({ className }) => {
+const Hand: React.FC<HandProps> = ({ className, player }) => {
     return (
-        <div className={`${styles.hand} ${className || ''}`.trim()}>
-            <div className="item"><div className="content">1</div></div>
-            <div className="item"><div className="content">2</div></div>
-            <div className="item"><div className="content"><Card id={2} top={9} right={9} bottom={9} left={9} image="" /></div></div>
-            <div className="item"><div className="content">4</div></div>
-            <div className="item"><div className="content">5</div></div>
+        <div className={`${styles.hand} ${className || ''} player-${player}`.trim()}>
+            <div className="cell"></div>
+            <div className="cell"></div>
+            <div className="cell"><Card id={2} top={9} right={9} bottom={9} left={9} image="" player={player} /></div>
+            <div className="cell"></div>
+            <div className="cell"></div>
         </div>
     );
 };

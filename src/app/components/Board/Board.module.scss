@@ -3,8 +3,11 @@
 
     div {
         width: 100%;
-        background-color: #fff;
         width: 128px; //256px
         height: 163px; //326px
+    }
+
+    div:empty {
+        background: #fff;
     }
 }
