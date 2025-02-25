@@ -3,10 +3,10 @@ import Hand from './components/Hand/Hand';
 
 export default function Home() {
   return (
-    <div>
-      <Hand></Hand>
-      <Hand></Hand>
-      <Board></Board>
+    <div className="flex h-screen">
+      <Hand className="order-1 flex justify-center items-center"></Hand>
+      <Hand className="order-3 flex justify-center items-center"></Hand>
+      <Board className="order-2"></Board>
     </div>
   );
 }

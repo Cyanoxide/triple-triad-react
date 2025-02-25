@@ -1,9 +1,13 @@
 import React from 'react';
 import styles from './Board.module.scss';
 
-const Board: React.FC = () => {
+interface BoardProps {
+    className?: string;
+}
+
+const Board: React.FC<BoardProps> = ({ className }) => {
     return (
-        <div className={styles.board}>
+        <div className={`${styles.board} ${className || ''}`.trim()}>
             <div className="item"><div className="content">1</div></div>
             <div className="item"><div className="content">2</div></div>
             <div className="item"><div className="content">3</div></div>

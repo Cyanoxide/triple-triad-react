@@ -1,8 +1,7 @@
 .board {
     display: grid;
-    width: 100vw;
-    height: 100vh;
     padding: 3em;
+    width: 50%;
 
     grid-template-columns: repeat(3, 1fr);
     gap: 1em;
@@ -13,5 +12,7 @@
         position: relative;
         width: 100%;
         background-color: #fff;
+        width: 128px; //256px
+        height: 163px; //326px
     }
 }

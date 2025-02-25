@@ -1,0 +1,13 @@
+.hand {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 20%;
+
+    div {
+        width: 100%;
+        background-color: #fff;
+        width: 128px; //256px
+        height: 163px; //326px
+    }
+}

@@ -1,9 +1,13 @@
 import React from 'react';
 import styles from './Hand.module.scss';
 
-const Hand: React.FC = () => {
+interface HandProps {
+    className?: string;
+}
+
+const Hand: React.FC<HandProps> = ({ className }) => {
     return (
-        <div className={styles.hand}>
+        <div className={`${styles.hand} ${className || ''}`.trim()}>
             <div className="item"><div className="content">1</div></div>
             <div className="item"><div className="content">2</div></div>
             <div className="item"><div className="content">3</div></div>
