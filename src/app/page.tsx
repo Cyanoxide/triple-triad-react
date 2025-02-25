@@ -6,7 +6,7 @@ export default function Home() {
     <div className="flex h-screen">
       <Hand className="order-1 flex justify-center items-center"></Hand>
       <Hand className="order-3 flex justify-center items-center"></Hand>
-      <Board className="order-2"></Board>
+      <Board className="order-2 justify-center items-center"></Board>
     </div>
   );
 }
