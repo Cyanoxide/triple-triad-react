@@ -1,0 +1,17 @@
+.board {
+    display: grid;
+    width: 100vw;
+    height: 100vh;
+    padding: 3em;
+
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1em;
+    max-width: 90vh;
+    margin: auto;
+
+    div {
+        position: relative;
+        width: 100%;
+        background-color: #fff;
+    }
+}
