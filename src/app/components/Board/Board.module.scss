@@ -1,12 +1,5 @@
 .board {
-    display: grid;
-    padding: 3em;
-    width: 50%;
-
     grid-template-columns: repeat(3, 0fr);
-    gap: 1em;
-    max-width: 90vh;
-    margin: auto;
 
     div {
         position: relative;
