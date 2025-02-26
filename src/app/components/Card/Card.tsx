@@ -5,6 +5,7 @@ import cards from '../../../data/cards.json';
 interface CardProps {
     id: number;
     player: "red" | "blue";
+    onClick?: () => void;
 }
 
 const Card: React.FC<CardProps> = ({ id, player }) => {
