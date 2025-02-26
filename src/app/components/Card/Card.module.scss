@@ -7,9 +7,14 @@
         background-color: #00f;
     }
 
-    .values {
-        color: #000;
+    p {
+        top: 70%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        position: absolute;
+    }
 
+    .values {
         span {
             width: 20px;
         }
