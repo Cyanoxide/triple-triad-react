@@ -1,4 +1,6 @@
 .card {
+    border: 1px solid #000;
+    
     &[data-player=red] {
         background-color: #f00;
     }
@@ -21,26 +23,26 @@
         }
 
         .topValue {
-            top: 0;
-            left: 50%;
+            top: 4px;
+            left: 24px;
             transform: translateX(-50%);
         }
 
         .rightValue {
-            top: 50%;
-            right: 0;
+            top: 30px;
+            left: 24px;
             transform: translateY(-50%);
         }
 
         .bottomValue {
-            bottom: 0;
-            left: 50%;
+            top: 32px;
+            left: 24px;
             transform: translateX(-50%);
         }
 
         .leftValue {
-            top: 50%;
-            left: 0;
+            top: 30px;
+            left: 4px;
             transform: translateY(-50%);
         }
     }
