@@ -5,10 +5,6 @@ import cards from '../../../data/cards.json';
 interface CardProps {
     id: number;
     player: "red" | "blue";
-    top: number;
-    right: number;
-    bottom: number;
-    left: number;
     onClick?: () => void;
 }
 

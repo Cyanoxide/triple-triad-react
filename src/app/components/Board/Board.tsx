@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
 import styles from './Board.module.scss';
 import Card from '../Card/Card';
@@ -11,12 +11,37 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
+    const [winState, setWinState] = useState<"red" | "blue" | "draw" | null>(null);
+
+    const startingPlayer = Math.random() < 0.5 ? "red" : "blue";
+    const [turn, setTurn] = useState<"red" | "blue">(startingPlayer);
+    const [turnNumber, setTurnNumber] = useState(0);
+    const [redScore, setRedScore] = useState(0);
+    const [blueScore, setBlueScore] = useState(0);
+
+    const [lastPlacedCard, setLastPlacedCard] = useState<{ position: [number, number], player: "red" | "blue" } | null>(null);
     const [board, setBoard] = useState<([number, "red" | "blue"] | null)[][]>([
         [null, null, null],
         [null, null, null],
         [null, null, null]
     ]);
-    const [lastPlacedCard, setLastPlacedCard] = useState<{ position: [number, number], player: "red" | "blue" } | null>(null);
+
+    const determineWinState = () => {
+        if (turnNumber < 3) return;
+
+        if (redScore > blueScore) setWinState("red");
+        if (redScore < blueScore) setWinState("blue");
+        if (redScore === blueScore) setWinState("draw");
+        console.log(winState)
+    }
+
+    const swapTurn = () => {
+        setRedScore(board.flat().filter(entry => entry?.[1] === "red").length);
+        setBlueScore(board.flat().filter(entry => entry?.[1] === "blue").length);
+
+        setTurn(prevTurn => prevTurn === "red" ? "blue" : "red");
+        setTurnNumber(prevTurnNumber => prevTurnNumber + 1);
+    }
 
     const placeCard = (row: number, col: number, cardId: number, player: "red" | "blue") => {
         if (board[row][col]) return;
@@ -44,15 +69,16 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }
 
     const handleDebugPlaceCard = () => {
-        placeCard(1, 2, 14, "blue");
+        placeCard(1, 2, 14, turn);
     }
 
     const handleDebugPlaceSecondCard = () => {
-        placeCard(1, 1, 14, "red");
+        placeCard(1, 1, 14, turn);
+
     }
 
     const handleDebugPlaceThirdCard = () => {
-        placeCard(0, 1, 14, "blue");
+        placeCard(0, 1, 14, turn);
     }
 
     const determineCardFlips = (row: number, col: number, player: "red" | "blue") => {
@@ -90,6 +116,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 flipCard(row, col, player);
             }
         }
+        swapTurn();
     };
 
     useEffect(() => {
@@ -97,6 +124,15 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             determineCardFlips(lastPlacedCard.position[0], lastPlacedCard.position[1], lastPlacedCard.player);
         }
     }, [lastPlacedCard]);
+
+    useEffect(() => {
+        setRedScore(board.flat().filter(entry => entry?.[1] === "red").length);
+        setBlueScore(board.flat().filter(entry => entry?.[1] === "blue").length);
+
+        if (turnNumber >= 9) {
+            determineWinState();
+        }
+    }, [swapTurn]);
 
     return (
         <>
