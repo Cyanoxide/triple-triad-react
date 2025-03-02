@@ -5,6 +5,7 @@ import React from 'react';
 import styles from './Board.module.scss';
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
+import { useGameContext } from "../../context/GameContext";
 
 interface BoardProps {
     className?: string;
@@ -32,7 +33,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         if (redScore > blueScore) setWinState("red");
         if (redScore < blueScore) setWinState("blue");
         if (redScore === blueScore) setWinState("draw");
-        console.log(winState)
+
+        if (winState) {
+            console.log(`${winState} Wins!`);
+        }
     }
 
     const swapTurn = () => {
@@ -79,6 +83,15 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     const handleDebugPlaceThirdCard = () => {
         placeCard(0, 1, 14, turn);
+    }
+
+    const { playerCards, dispatch } = useGameContext();
+
+    const handleDebugRemovePlayerCard = () => {
+        const newPlayerCards = [...playerCards];
+        newPlayerCards.splice(0, 1);
+
+        dispatch({ type: "SET_PLAYER_CARDS", payload: newPlayerCards });
     }
 
     const determineCardFlips = (row: number, col: number, player: "red" | "blue") => {
@@ -129,7 +142,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         setRedScore(board.flat().filter(entry => entry?.[1] === "red").length);
         setBlueScore(board.flat().filter(entry => entry?.[1] === "blue").length);
 
-        if (turnNumber >= 9) {
+        if (turnNumber >= 3) {
             determineWinState();
         }
     }, [swapTurn]);
@@ -153,6 +166,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugPlaceCard}>Place Card</button>
                 <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugPlaceSecondCard}>Place Second Card</button>
                 <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugPlaceThirdCard}>Place Third Card</button>
+                <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugRemovePlayerCard}>Remove Player Card</button>
                 {/* <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugFlipCard}>Flip Card</button> */}
             </div>
         </>
