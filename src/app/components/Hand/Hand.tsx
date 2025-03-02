@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect } from 'react';
 import styles from './Hand.module.scss';
 import Card from '../Card/Card';
 import { useGameContext } from "../../context/GameContext";
@@ -22,9 +23,9 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
     };
 
     return (
-        <div className={`${styles.hand} ${className || ''}`.trim()} data-player={player}>
+        <div className={`${styles.hand} ${className || ''}`.trim()} data-player={player} data-selectable={player === turn}>
             {cards.map((card, index) => (
-                <div key={index} className="cell" onClick={() => handleSelectCard(card, player, index)} data-selected={(selectedCard && selectedCard[0] === card && selectedCard[1] === player)}>
+                <div key={index} className="cell" onClick={() => handleSelectCard(card, player, index)} data-selected={(selectedCard && selectedCard[0] === card && selectedCard[1] === turn)}>
                     <Card id={card} player={player} />
                 </div>
             ))}

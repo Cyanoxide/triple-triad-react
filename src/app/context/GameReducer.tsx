@@ -33,7 +33,7 @@ export const initialState: GameState = {
     winState: null,
     // turn: Math.random() < 0.5 ? "red" : "blue",
     turn: "blue",
-    turnNumber: 0,
+    turnNumber: 1,
     redScore: 0,
     blueScore: 0,
     lastPlacedCard: null,

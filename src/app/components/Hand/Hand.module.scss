@@ -2,7 +2,6 @@
     div {
         width: 128px; //256px
         height: 163px; //326px
-        cursor: pointer;
     }
 
     div:empty {
@@ -19,5 +18,9 @@
         [data-selected=true] {
             transform: translateX(-50%);
         }
+    }
+
+    &[data-selectable=true] {
+        cursor: pointer;
     }
 }
