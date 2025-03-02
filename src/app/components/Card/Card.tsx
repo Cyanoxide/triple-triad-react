@@ -14,16 +14,16 @@ const Card: React.FC<CardProps> = ({ id, player }) => {
     if (!card) return;
 
     return (
-        <div className={`${styles.card} relative`} data-player={player} draggable="true">
+        <div className={`${styles.card} relative`} data-player={player} draggable="true" >
             {/* <img src={image} alt={`Card ${id}`} /> */}
-            <p>{card.name}</p>
+            < p > {card.name}</p>
             <div className={`${styles.values} relative`}>
                 <span className={`${styles.topValue} absolute text-center`}>{card.top}</span>
                 <span className={`${styles.rightValue} rightValue absolute text-center`}>{card.right}</span>
                 <span className={`${styles.bottomValue} bottomValue absolute text-center`}>{card.bottom}</span>
                 <span className={`${styles.leftValue} leftValue absolute text-center`}>{card.left}</span>
             </div>
-        </div>
+        </div >
     );
 };
 

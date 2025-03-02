@@ -20,6 +20,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, lastPlacedCard: action.payload };
         case "SET_BOARD":
             return { ...state, board: action.payload };
+        case "SET_SELECTED_CARD":
+            return { ...state, selectedCard: action.payload };
         default:
             return state;
     }
@@ -29,10 +31,12 @@ export const initialState: GameState = {
     playerCards: [1, 2, 3, 4, 5],
     enemyCards: [7, 8, 9, 10, 11],
     winState: null,
-    turn: Math.random() < 0.5 ? "red" : "blue",
+    // turn: Math.random() < 0.5 ? "red" : "blue",
+    turn: "blue",
     turnNumber: 0,
     redScore: 0,
     blueScore: 0,
     lastPlacedCard: null,
     board: Array(3).fill(null).map(() => Array(3).fill(null)),
+    selectedCard: null,
 };

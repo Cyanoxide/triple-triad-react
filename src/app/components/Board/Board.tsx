@@ -15,7 +15,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     const [winState, setWinState] = useState<"red" | "blue" | "draw" | null>(null);
 
     const startingPlayer = Math.random() < 0.5 ? "red" : "blue";
-    const [turn, setTurn] = useState<"red" | "blue">(startingPlayer);
+    // const [turn, setTurn] = useState<"red" | "blue">(startingPlayer);
+    const [turn, setTurn] = useState<"red" | "blue">("blue");
     const [turnNumber, setTurnNumber] = useState(0);
     const [redScore, setRedScore] = useState(0);
     const [blueScore, setBlueScore] = useState(0);
@@ -27,10 +28,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         [null, null, null]
     ]);
 
-    const { playerCards, enemyCards, dispatch } = useGameContext();
+    const { playerCards, enemyCards, selectedCard, dispatch } = useGameContext();
 
     const determineWinState = () => {
-        if (turnNumber < 3) return;
+        if (turnNumber < 9) return;
 
         if (redScore > blueScore) setWinState("red");
         if (redScore < blueScore) setWinState("blue");
@@ -50,20 +51,19 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }
 
     const grabCardFromHand = (position: number, player: "red" | "blue") => {
-        if (player === "red") {
-            const newPlayerCards = [...playerCards];
-            const selectedCardId = newPlayerCards.splice(position, 1);
-            dispatch({ type: "SET_PLAYER_CARDS", payload: newPlayerCards });
-            return selectedCardId;
-        }
+        const isPlayer = player === "blue";
+        const cards = isPlayer ? [...playerCards] : [...enemyCards];
+        const selectedCardId = cards.splice(position, 1);
 
-        if (player === "blue") {
-            const newEnemyCards = [...enemyCards];
-            const selectedCardId = newEnemyCards.splice(position, 1);
-            dispatch({ type: "SET_ENEMY_CARDS", payload: newEnemyCards });
-            return selectedCardId;
-        }
-    }
+        if (selectedCardId == undefined) return;
+
+        dispatch({
+            type: isPlayer ? "SET_PLAYER_CARDS" : "SET_ENEMY_CARDS",
+            payload: cards
+        });
+
+        return selectedCardId;
+    };
 
     const placeCard = (row: number, col: number, cardId: number, player: "red" | "blue") => {
         if (board[row][col]) return;
@@ -112,7 +112,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     const handleDebugGrabReplaceEnemyCard = () => {
         const position = 3;
-        const player = "blue";
+        const player = "red";
         const cardId = grabCardFromHand(position - 1, player);
 
         if (cardId == undefined) return;
@@ -154,8 +154,19 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 flipCard(row, col, player);
             }
         }
-        swapTurn();
     };
+
+    const handleBoardSelection = (rowIndex: number, colIndex: number) => {
+        if (board[rowIndex][colIndex]) return;
+
+        if (!selectedCard) return;
+        const [cardId, cardPlayer, position] = selectedCard;
+
+        if (cardPlayer !== turn) return;
+        grabCardFromHand(position, turn);
+        placeCard(rowIndex, colIndex, cardId, turn);
+        swapTurn();
+    }
 
     useEffect(() => {
         if (lastPlacedCard) {
@@ -167,7 +178,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         setRedScore(board.flat().filter(entry => entry?.[1] === "red").length);
         setBlueScore(board.flat().filter(entry => entry?.[1] === "blue").length);
 
-        if (turnNumber >= 3) {
+        if (turnNumber >= 9) {
             determineWinState();
         }
     }, [swapTurn]);
@@ -177,7 +188,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             <div className={`${styles.board} ${className || ''}`.trim()}>
                 {board.map((row, rowIndex) => (
                     row.map((col, colIndex) => (
-                        <div key={`${rowIndex}-${colIndex}`} className="cell" data-position={[rowIndex, colIndex]}>
+                        <div key={`${rowIndex}-${colIndex}`} className="cell" data-position={[rowIndex, colIndex]} onClick={() => handleBoardSelection(rowIndex, colIndex)}>
                             {col && (() => {
                                 const cardData = cards.find(card => card.id === col[0]);
                                 return cardData && <Card {...cardData} player={col[1]} onClick={() => flipCard(rowIndex, colIndex)} />;

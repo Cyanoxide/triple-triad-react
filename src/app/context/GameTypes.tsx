@@ -1,4 +1,5 @@
 export type Player = "red" | "blue";
+export type Position = [number, number];
 
 export interface GameState {
     playerCards: number[];
@@ -10,6 +11,7 @@ export interface GameState {
     blueScore: number;
     lastPlacedCard: { position: [number, number]; player: Player } | null;
     board: ([number, Player] | null)[][];
+    selectedCard: [number, Player, number] | null;
 }
 
 export type GameAction =
@@ -21,7 +23,8 @@ export type GameAction =
     | { type: "SET_RED_SCORE"; payload: number }
     | { type: "SET_BLUE_SCORE"; payload: number }
     | { type: "SET_LAST_PLACED_CARD"; payload: { position: [number, number]; player: Player } | null }
-    | { type: "SET_BOARD"; payload: ([number, Player] | null)[][] };
+    | { type: "SET_BOARD"; payload: ([number, Player] | null)[][] }
+    | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null };
 
 export interface GameContextType extends GameState {
     dispatch: React.Dispatch<GameAction>;
