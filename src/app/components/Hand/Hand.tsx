@@ -35,9 +35,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
                 ))}
             </div>
 
-            <div className={styles.score}>
-                <h3>{getPlayerScore(player)}</h3>
-            </div>
+            <div className={styles.score}>{getPlayerScore(player)}</div>
         </div>
     );
 };
