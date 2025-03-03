@@ -12,7 +12,7 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { playerCards, enemyCards, selectedCard, turn, redScore, blueScore, turnNumber, lastPlacedCard, dispatch } = useGameContext();
+    const { playerCards, enemyCards, selectedCard, turn, turnNumber, lastPlacedCard, winState, redScore, blueScore, dispatch } = useGameContext();
     const [board, setBoard] = useState<([number, "red" | "blue"] | null)[][]>([
         [null, null, null],
         [null, null, null],
@@ -20,16 +20,26 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     ]);
 
 
-    const determineWinState = () => {
-        if (turnNumber < 9) return;
+    const setWinState = () => {
+        if (turnNumber <= 9) return;
+
         if (redScore > blueScore) dispatch({ type: "SET_WIN_STATE", payload: "red" });
         if (redScore < blueScore) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
         if (redScore === blueScore) dispatch({ type: "SET_WIN_STATE", payload: "draw" });
     }
 
+    const endGame = () => {
+        if (!winState) return;
+
+        if (winState === "draw") {
+            console.log("It's a draw!");
+            return;
+        }
+
+        console.log(`${winState} wins!`);
+    }
+
     const swapTurn = () => {
-        dispatch({ type: "SET_RED_SCORE", payload: board.flat().filter(entry => entry?.[1] === "red").length });
-        dispatch({ type: "SET_BLUE_SCORE", payload: board.flat().filter(entry => entry?.[1] === "blue").length });
         dispatch({ type: "SET_TURN", payload: (turn === "red") ? "blue" : "red" });
         dispatch({ type: "INCREMENT_TURN" });
     };
@@ -73,35 +83,6 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             newBoard[row][col] = [card[0], activePlayer];
             return newBoard;
         });
-    }
-
-    const handleDebugPlaceCard = () => {
-        placeCard(1, 2, 14, turn);
-    }
-
-    const handleDebugPlaceSecondCard = () => {
-        placeCard(1, 1, 14, turn);
-
-    }
-
-    const handleDebugPlaceThirdCard = () => {
-        placeCard(0, 1, 14, turn);
-    }
-
-    const handleDebugRemovePlayerCard = () => {
-        const newPlayerCards = [...playerCards];
-        newPlayerCards.splice(0, 1);
-
-        dispatch({ type: "SET_PLAYER_CARDS", payload: newPlayerCards });
-    }
-
-    const handleDebugGrabReplaceEnemyCard = () => {
-        const position = 3;
-        const player = "red";
-        const cardId = grabCardFromHand(position - 1, player);
-
-        if (cardId == undefined) return;
-        placeCard(2, 2, cardId[0], player);
     }
 
     const determineCardFlips = (row: number, col: number, player: "red" | "blue") => {
@@ -160,10 +141,20 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }, [lastPlacedCard]);
 
     useEffect(() => {
-        if (turnNumber > 9) {
-            determineWinState();
-        }
+        setWinState();
     }, [turnNumber]);
+
+    useEffect(() => {
+        endGame();
+    }, [winState]);
+
+    useEffect(() => {
+        const redCardsInHand = enemyCards.length;
+        const blueCardsInHand = playerCards.length;
+
+        dispatch({ type: "SET_RED_SCORE", payload: board.flat().filter(entry => entry?.[1] === "red").length + redCardsInHand });
+        dispatch({ type: "SET_BLUE_SCORE", payload: board.flat().filter(entry => entry?.[1] === "blue").length + blueCardsInHand });
+    }, [board]);
 
     return (
         <>
@@ -179,15 +170,6 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                     ))
                 ))}
             </div >
-
-            <div className="absolute bottom-0 left-[50%] transform -translate-x-1/2">
-                {/* <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugPlaceCard}>Place Card</button> */}
-                {/* <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugPlaceSecondCard}>Place Second Card</button> */}
-                {/* <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugPlaceThirdCard}>Place Third Card</button> */}
-                {/* <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugRemovePlayerCard}>Remove Player Card</button> */}
-                {/* <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugGrabReplaceEnemyCard}>Grab & Place Enemy Card</button> */}
-                {/* <button className="bg-gray-50 text-black p-1 m-1" onClick={handleDebugFlipCard}>Flip Card</button> */}
-            </div>
         </>
     );
 };

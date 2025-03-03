@@ -4,6 +4,7 @@ import Board from "./components/Board/Board";
 import Hand from "./components/Hand/Hand";
 import { GameProvider } from "./context/GameContext";
 
+
 export default function Home() {
   return (
     <GameProvider>

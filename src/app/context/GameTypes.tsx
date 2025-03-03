@@ -5,7 +5,7 @@ export interface GameState {
     playerCards: number[];
     enemyCards: number[];
     winState: Player | "draw" | null;
-    turn: Player;
+    turn: Player | null;
     turnNumber: number;
     redScore: number;
     blueScore: number;

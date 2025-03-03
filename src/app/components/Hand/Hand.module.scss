@@ -22,5 +22,38 @@
 
     &[data-selectable=true] {
         cursor: pointer;
+
+        [data-player] {
+            border: 1px solid #fff;
+
+            &:hover {
+                &::after {
+                    position: absolute;
+                    top: 1.2rem;
+                }
+            }
+
+            &[data-player=red] {
+                &:hover {
+                    &::after {
+                        content: ">";
+                        left: -1.5rem;
+                    }
+                }
+            }
+
+            &[data-player=blue] {
+                &:hover {
+                    &::after {
+                        content: "<";
+                        right: -1.5rem;
+                    }
+                }
+            }
+        }
+    }
+
+    .score {
+        font-size: 3rem;
     }
 }
