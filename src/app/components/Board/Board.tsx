@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import React from 'react';
 import styles from './Board.module.scss';
 import Card from '../Card/Card';
@@ -12,13 +12,7 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { playerCards, enemyCards, selectedCard, turn, turnNumber, lastPlacedCard, winState, redScore, blueScore, dispatch } = useGameContext();
-    const [board, setBoard] = useState<([number, "red" | "blue"] | null)[][]>([
-        [null, null, null],
-        [null, null, null],
-        [null, null, null]
-    ]);
-
+    const { playerCards, enemyCards, selectedCard, turn, turnNumber, lastPlacedCard, redScore, blueScore, winState, board, dispatch } = useGameContext();
 
     const setWinState = () => {
         if (turnNumber <= 9) return;
@@ -26,17 +20,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         if (redScore > blueScore) dispatch({ type: "SET_WIN_STATE", payload: "red" });
         if (redScore < blueScore) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
         if (redScore === blueScore) dispatch({ type: "SET_WIN_STATE", payload: "draw" });
-    }
 
-    const endGame = () => {
-        if (!winState) return;
-
-        if (winState === "draw") {
-            console.log("It's a draw!");
-            return;
-        }
-
-        console.log(`${winState} wins!`);
+        console.log(redScore, blueScore, winState);
     }
 
     const swapTurn = () => {
@@ -62,12 +47,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     const placeCard = (row: number, col: number, cardId: number, player: "red" | "blue") => {
         if (board[row][col]) return;
 
-        setBoard(prevBoard => {
-            const newBoard = prevBoard.map(row => [...row]);
-            newBoard[row][col] = [cardId, player];
-            return newBoard;
-        });
+        const newBoard = board.map(row => [...row]);
+        newBoard[row][col] = [cardId, player];
 
+        dispatch({ type: "SET_BOARD", payload: newBoard });
         dispatch({ type: "SET_LAST_PLACED_CARD", payload: { position: [row, col], player } });
         dispatch({ type: "SET_SELECTED_CARD", payload: null });
     };
@@ -78,11 +61,9 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
         const activePlayer = player || ((card[1] === "red") ? "blue" : "red");
 
-        setBoard(prevBoard => {
-            const newBoard = prevBoard.map(row => [...row]);
-            newBoard[row][col] = [card[0], activePlayer];
-            return newBoard;
-        });
+        const newBoard = board.map(row => [...row]);
+        newBoard[row][col] = [card[0], activePlayer];
+        dispatch({ type: "SET_BOARD", payload: newBoard });
     }
 
     const determineCardFlips = (row: number, col: number, player: "red" | "blue") => {
@@ -106,8 +87,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         const activeCard = cards.find(card => card.id === cardId);
         if (!activeCard) return;
 
-        for (const [direction, { row: row, col: col }] of Object.entries(potentialFlips) as [keyof typeof competingCardMap, { row: number, col: number }][]) {
-            const competingCardData = board[row]?.[col];
+        const flips: { row: number; col: number; player: "red" | "blue" }[] = [];
+
+        for (const [direction, { row: r, col: c }] of Object.entries(potentialFlips) as [keyof typeof competingCardMap, { row: number, col: number }][]) {
+            const competingCardData = board[r]?.[c];
             if (!competingCardData) continue;
 
             const [competingCardId, competingCardOwner] = competingCardData;
@@ -117,8 +100,19 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             if (!competingCard) continue;
 
             if (activeCard[direction] > competingCard[competingCardMap[direction]]) {
-                flipCard(row, col, player);
+                flips.push({ row: r, col: c, player });
             }
+        }
+
+        if (flips.length > 0) {
+            const newBoard = board.map(row => [...row]);
+            flips.forEach(({ row, col, player }) => {
+                if (board[row][col]) {
+                    newBoard[row][col] = [board[row][col]![0], player];
+                }
+            });
+
+            dispatch({ type: "SET_BOARD", payload: newBoard });
         }
     };
 
@@ -143,10 +137,6 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     useEffect(() => {
         setWinState();
     }, [turnNumber]);
-
-    useEffect(() => {
-        endGame();
-    }, [winState]);
 
     useEffect(() => {
         const redCardsInHand = enemyCards.length;

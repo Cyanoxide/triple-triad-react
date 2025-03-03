@@ -24,6 +24,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, selectedCard: action.payload };
         case "SET_MENU_OPEN":
             return { ...state, isMenuOpen: action.payload };
+        case "RESET_GAME":
+            return initialState;
         default:
             return state;
     }

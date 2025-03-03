@@ -26,7 +26,8 @@ export type GameAction =
     | { type: "SET_LAST_PLACED_CARD"; payload: { position: [number, number]; player: Player } | null }
     | { type: "SET_BOARD"; payload: ([number, Player] | null)[][] }
     | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null }
-    | { type: "SET_MENU_OPEN"; payload: boolean };
+    | { type: "SET_MENU_OPEN"; payload: boolean }
+    | { type: "RESET_GAME" };
 
 export interface GameContextType extends GameState {
     dispatch: React.Dispatch<GameAction>;

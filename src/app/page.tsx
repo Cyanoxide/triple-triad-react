@@ -3,7 +3,9 @@
 import Board from "./components/Board/Board";
 import Hand from "./components/Hand/Hand";
 import MenuDialog from "./components/MenuDialog/MenuDialog";
+import WinDialog from "./components/WinDialog/WinDialog";
 import { GameProvider } from "./context/GameContext";
+
 
 
 export default function Home() {
@@ -17,6 +19,7 @@ export default function Home() {
         <Hand className="order-3 flex justify-center items-center gap-4 flex-col w-[20%]" player="blue" />
         <Board className="order-2 grid justify-center items-center gap-4 w-[60%] m-auto" />
       </div>
+      <WinDialog />
     </GameProvider>
   );
 }
