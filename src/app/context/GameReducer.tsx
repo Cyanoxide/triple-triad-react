@@ -22,6 +22,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, board: action.payload };
         case "SET_SELECTED_CARD":
             return { ...state, selectedCard: action.payload };
+        case "SET_MENU_OPEN":
+            return { ...state, isMenuOpen: action.payload };
         default:
             return state;
     }
@@ -38,4 +40,5 @@ export const initialState: GameState = {
     lastPlacedCard: null,
     board: Array(3).fill(null).map(() => Array(3).fill(null)),
     selectedCard: null,
+    isMenuOpen: true,
 };

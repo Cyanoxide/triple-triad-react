@@ -12,6 +12,7 @@ export interface GameState {
     lastPlacedCard: { position: [number, number]; player: Player } | null;
     board: ([number, Player] | null)[][];
     selectedCard: [number, Player, number] | null;
+    isMenuOpen: boolean;
 }
 
 export type GameAction =
@@ -24,7 +25,8 @@ export type GameAction =
     | { type: "SET_BLUE_SCORE"; payload: number }
     | { type: "SET_LAST_PLACED_CARD"; payload: { position: [number, number]; player: Player } | null }
     | { type: "SET_BOARD"; payload: ([number, Player] | null)[][] }
-    | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null };
+    | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null }
+    | { type: "SET_MENU_OPEN"; payload: boolean };
 
 export interface GameContextType extends GameState {
     dispatch: React.Dispatch<GameAction>;
