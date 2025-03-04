@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect } from 'react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from './Board.module.scss';
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import { useGameContext } from "../../context/GameContext";
+import { getAIMove } from '../../utils/ai';
 
 interface BoardProps {
     className?: string;
@@ -105,7 +105,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         }
 
         if (flips.length > 0) {
-            const newBoard = board.map(row => [...row]);
+            const newBoard = [...board.map(row => [...row])];
             flips.forEach(({ row, col, player }) => {
                 if (board[row][col]) {
                     newBoard[row][col] = [board[row][col]![0], player];
@@ -137,6 +137,28 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     useEffect(() => {
         setWinState();
     }, [turnNumber]);
+
+    useEffect(() => {
+        if (turn === "red") {
+            const aiMove = getAIMove(board, enemyCards, "random");
+            if (aiMove) {
+                const { enemyCardIndex, enemyCard, enemyPosition } = aiMove;
+
+                setTimeout(() => {
+                    dispatch({
+                        type: "SET_SELECTED_CARD",
+                        payload: [enemyCard, turn, enemyCardIndex],
+                    });
+                }, 1500);
+
+                setTimeout(() => {
+                    grabCardFromHand(enemyCardIndex, "red");
+                    placeCard(enemyPosition.row, enemyPosition.col, enemyCard, "red");
+                    swapTurn();
+                }, 2500);
+            }
+        }
+    }, [turn]);
 
     useEffect(() => {
         const redCardsInHand = enemyCards.length;

@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect, ReactNode } from "react";
+import { createContext, use, useReducer, useEffect, ReactNode } from "react";
 import { gameReducer, initialState } from "./GameReducer";
 import { GameContextType } from "./GameTypes";
 
@@ -9,20 +9,22 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
     // Ensure the starting turn is only set after hydration
     useEffect(() => {
+        if (state.isMenuOpen) return;
+
         if (state.turn === null) {
             dispatch({ type: "SET_TURN", payload: Math.random() < 0.5 ? "red" : "blue" });
         }
-    }, [state.turn]);
+    }, [state.turn, state.isMenuOpen]);
 
     return (
-        <GameContext.Provider value={{ ...state, dispatch }}>
+        <GameContext value={{ ...state, dispatch }}>
             {children}
-        </GameContext.Provider>
+        </GameContext>
     );
 };
 
 export const useGameContext = () => {
-    const context = useContext(GameContext);
+    const context = use(GameContext);
     if (!context) {
         throw new Error("useGameContext must be used within a GameProvider");
     }
