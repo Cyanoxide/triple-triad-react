@@ -13,7 +13,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
     const cards = (player === "red") ? enemyCards : playerCards;
 
     const handleSelectCard = (cardId: number, player: "red" | "blue", position: number) => {
-        // if (player !== turn) return;
+        if (player === "red") return;
 
         dispatch({
             type: "SET_SELECTED_CARD",
@@ -27,7 +27,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
 
     return (
         <div className={`${styles.handContainer} ${className || ''} ${(isMenuOpen) ? "hidden" : ""}`.trim()}>
-            <div className={styles.hand} data-player={player} data-selectable={player === turn}>
+            <div className={styles.hand} data-player={player} data-selectable={player === turn && turn === "blue"}>
                 {cards.map((card, index) => (
                     <div key={index} className="cell" onClick={() => handleSelectCard(card, player, index)} data-selected={(selectedCard && selectedCard[0] === card && selectedCard[1] === turn)}>
                         <Card id={card} player={player} />

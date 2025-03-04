@@ -151,7 +151,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             <div className={`${styles.board} ${className || ''}`.trim()}>
                 {board.map((row, rowIndex) => (
                     row.map((col, colIndex) => (
-                        <div key={`${rowIndex}-${colIndex}`} className="cell" data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard} onClick={() => handleBoardSelection(rowIndex, colIndex)}>
+                        <div key={`${rowIndex}-${colIndex}`} className="cell" data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onClick={() => handleBoardSelection(rowIndex, colIndex)}>
                             {col && (() => {
                                 const cardData = cards.find(card => card.id === col[0]);
                                 return cardData && <Card {...cardData} player={col[1]} onClick={() => flipCard(rowIndex, colIndex)} />;
