@@ -21,10 +21,6 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
         });
     };
 
-    const getPlayerScore = (player: "red" | "blue") => {
-        return (player === "red") ? redScore : blueScore;
-    }
-
     return (
         <div className={`${styles.handContainer} ${className || ''} ${(isMenuOpen) ? "hidden" : ""}`.trim()}>
             <div className={styles.hand} data-player={player} data-selectable={player === turn && turn === "blue"}>
@@ -35,7 +31,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
                 ))}
             </div>
 
-            <div className={styles.score}>{getPlayerScore(player)}</div>
+            <div className={styles.score}>{(player === "red") ? redScore : blueScore}</div>
         </div>
     );
 };
