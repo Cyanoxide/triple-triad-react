@@ -50,11 +50,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         const newBoard = currentBoard.map(row => [...row]);
         newBoard[row][col] = [cardId, player];
 
-        // dispatch({ type: "SET_BOARD", payload: newBoard });
         dispatch({ type: "SET_LAST_PLACED_CARD", payload: { position: [row, col], player } });
         dispatch({ type: "SET_SELECTED_CARD", payload: null });
 
-        console.log(determineCardFlips(row, col, player, newBoard));
+        determineCardFlips(row, col, player, newBoard);
     };
 
 
