@@ -9,7 +9,7 @@ interface HandProps {
 }
 
 const Hand: React.FC<HandProps> = ({ className, player }) => {
-    const { playerCards, enemyCards, selectedCard, turn, redScore, blueScore, isMenuOpen, dispatch } = useGameContext();
+    const { playerCards, enemyCards, selectedCard, turn, score, isMenuOpen, dispatch } = useGameContext();
     const cards = (player === "red") ? enemyCards : playerCards;
 
     const handleSelectCard = (cardId: number, player: "red" | "blue", position: number) => {
@@ -21,10 +21,6 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
         });
     };
 
-    const getPlayerScore = (player: "red" | "blue") => {
-        return (player === "red") ? redScore : blueScore;
-    }
-
     return (
         <div className={`${styles.handContainer} ${className || ''} ${(isMenuOpen) ? "hidden" : ""}`.trim()}>
             <div className={styles.hand} data-player={player} data-selectable={player === turn && turn === "blue"}>
@@ -35,7 +31,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
                 ))}
             </div>
 
-            <div className={styles.score}>{getPlayerScore(player)}</div>
+            <div className={styles.score}>{(player === "red") ? score[0] : score[1]}</div>
         </div>
     );
 };

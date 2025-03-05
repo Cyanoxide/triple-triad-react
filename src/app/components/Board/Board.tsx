@@ -12,24 +12,25 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { playerCards, enemyCards, selectedCard, turn, turnNumber, lastPlacedCard, redScore, blueScore, winState, board, dispatch } = useGameContext();
+    const { playerCards, enemyCards, selectedCard, turn, turnNumber, turnState, score, winState, board, dispatch } = useGameContext();
 
-    const setWinState = () => {
-        if (turnNumber <= 9) return;
+    const setWinState = (currentScore: [number, number] = score) => {
+        if (turnNumber <= 9 || turnState !== "TURN_END") return;
+        const [redScore, blueScore] = currentScore;
 
         if (redScore > blueScore) dispatch({ type: "SET_WIN_STATE", payload: "red" });
         if (redScore < blueScore) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
         if (redScore === blueScore) dispatch({ type: "SET_WIN_STATE", payload: "draw" });
-
-        console.log(redScore, blueScore, winState);
     }
 
     const swapTurn = () => {
+        dispatch({ type: "SET_TURN_STATE", payload: "TURN_END" });
         dispatch({ type: "SET_TURN", payload: (turn === "red") ? "blue" : "red" });
         dispatch({ type: "INCREMENT_TURN" });
     };
 
     const grabCardFromHand = (position: number, player: "red" | "blue") => {
+        dispatch({ type: "SET_TURN_STATE", payload: "SELECTING_CARD" });
         const isPlayer = player === "blue";
         const cards = isPlayer ? [...playerCards] : [...enemyCards];
         const selectedCardId = cards.splice(position, 1);
@@ -44,30 +45,22 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         return selectedCardId;
     };
 
-    const placeCard = (row: number, col: number, cardId: number, player: "red" | "blue") => {
-        if (board[row][col]) return;
+    const placeCard = (row: number, col: number, cardId: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue"] | null)[][] = board) => {
+        dispatch({ type: "SET_TURN_STATE", payload: "PLACING_CARD" });
+        if (currentBoard[row][col]) return;
 
-        const newBoard = board.map(row => [...row]);
+        const newBoard = currentBoard.map(row => [...row]);
         newBoard[row][col] = [cardId, player];
 
-        dispatch({ type: "SET_BOARD", payload: newBoard });
-        dispatch({ type: "SET_LAST_PLACED_CARD", payload: { position: [row, col], player } });
         dispatch({ type: "SET_SELECTED_CARD", payload: null });
+
+        determineCardFlips(row, col, player, newBoard);
     };
 
-    const flipCard = (row: number, col: number, player?: "red" | "blue") => {
-        const card = board[row][col];
-        if (!card) return;
 
-        const activePlayer = player || ((card[1] === "red") ? "blue" : "red");
-
-        const newBoard = board.map(row => [...row]);
-        newBoard[row][col] = [card[0], activePlayer];
-        dispatch({ type: "SET_BOARD", payload: newBoard });
-    }
-
-    const determineCardFlips = (row: number, col: number, player: "red" | "blue") => {
-        if (!board[row][col]) return;
+    const determineCardFlips = (row: number, col: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue"] | null)[][] = board) => {
+        dispatch({ type: "SET_TURN_STATE", payload: "PROCESSING_FLIPS" });
+        if (!currentBoard[row][col]) return;
 
         const competingCardMap = {
             top: "bottom",
@@ -83,14 +76,14 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             left: { row, col: col - 1 },
         };
 
-        const [cardId] = board[row][col];
+        const [cardId] = currentBoard[row][col];
         const activeCard = cards.find(card => card.id === cardId);
         if (!activeCard) return;
 
         const flips: { row: number; col: number; player: "red" | "blue" }[] = [];
 
         for (const [direction, { row: r, col: c }] of Object.entries(potentialFlips) as [keyof typeof competingCardMap, { row: number, col: number }][]) {
-            const competingCardData = board[r]?.[c];
+            const competingCardData = currentBoard[r]?.[c];
             if (!competingCardData) continue;
 
             const [competingCardId, competingCardOwner] = competingCardData;
@@ -105,18 +98,21 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         }
 
         if (flips.length > 0) {
-            const newBoard = [...board.map(row => [...row])];
+            const newBoard = [...currentBoard.map(row => [...row])];
             flips.forEach(({ row, col, player }) => {
-                if (board[row][col]) {
-                    newBoard[row][col] = [board[row][col]![0], player];
+                if (currentBoard[row][col]) {
+                    newBoard[row][col] = [currentBoard[row][col]![0], player];
                 }
             });
 
             dispatch({ type: "SET_BOARD", payload: newBoard });
+            return;
         }
+
+        dispatch({ type: "SET_BOARD", payload: currentBoard });
     };
 
-    const handleBoardSelection = (rowIndex: number, colIndex: number) => {
+    const handlePlayerBoardSelection = (rowIndex: number, colIndex: number) => {
         if (board[rowIndex][colIndex]) return;
 
         if (!selectedCard) return;
@@ -126,28 +122,18 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         grabCardFromHand(position, turn);
         placeCard(rowIndex, colIndex, cardId, turn);
         swapTurn();
-    }
+    };
 
-    useEffect(() => {
-        if (lastPlacedCard) {
-            determineCardFlips(lastPlacedCard.position[0], lastPlacedCard.position[1], lastPlacedCard.player);
-        }
-    }, [lastPlacedCard]);
-
-    useEffect(() => {
-        setWinState();
-    }, [turnNumber]);
-
-    useEffect(() => {
+    const handleEnemyBoardSelection = () => {
         if (turn === "red") {
-            const aiMove = getAIMove(board, enemyCards, "random");
-            if (aiMove) {
-                const { enemyCardIndex, enemyCard, enemyPosition } = aiMove;
+            const enemyMove = getAIMove(board, enemyCards, "random");
+            if (enemyMove) {
+                const { enemyCardIndex, enemyCard, enemyPosition } = enemyMove;
 
                 setTimeout(() => {
                     dispatch({
                         type: "SET_SELECTED_CARD",
-                        payload: [enemyCard, turn, enemyCardIndex],
+                        payload: [enemyCard, "red", enemyCardIndex],
                     });
                 }, 1500);
 
@@ -158,14 +144,23 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 }, 2500);
             }
         }
+    }
+
+    const updateScore = () => {
+        const redScore = board.flat().filter(entry => entry?.[1] === "red").length + enemyCards.length
+        const blueScore = board.flat().filter(entry => entry?.[1] === "blue").length + playerCards.length
+
+        dispatch({ type: "SET_SCORE", payload: [redScore, blueScore] });
+        setWinState([redScore, blueScore]);
+    }
+
+    useEffect(() => {
+        handleEnemyBoardSelection();
     }, [turn]);
 
     useEffect(() => {
-        const redCardsInHand = enemyCards.length;
-        const blueCardsInHand = playerCards.length;
+        updateScore()
 
-        dispatch({ type: "SET_RED_SCORE", payload: board.flat().filter(entry => entry?.[1] === "red").length + redCardsInHand });
-        dispatch({ type: "SET_BLUE_SCORE", payload: board.flat().filter(entry => entry?.[1] === "blue").length + blueCardsInHand });
     }, [board]);
 
     return (
@@ -173,10 +168,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             <div className={`${styles.board} ${className || ''}`.trim()}>
                 {board.map((row, rowIndex) => (
                     row.map((col, colIndex) => (
-                        <div key={`${rowIndex}-${colIndex}`} className="cell" data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onClick={() => handleBoardSelection(rowIndex, colIndex)}>
+                        <div key={`${rowIndex}-${colIndex}`} className="cell" data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}>
                             {col && (() => {
                                 const cardData = cards.find(card => card.id === col[0]);
-                                return cardData && <Card {...cardData} player={col[1]} onClick={() => flipCard(rowIndex, colIndex)} />;
+                                return cardData && <Card {...cardData} player={col[1]} />;
                             })()}
                         </div>
                     ))
