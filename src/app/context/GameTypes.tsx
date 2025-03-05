@@ -9,7 +9,6 @@ export interface GameState {
     turnNumber: number;
     redScore: number;
     blueScore: number;
-    lastPlacedCard: { position: [number, number]; player: Player } | null;
     board: ([number, Player] | null)[][];
     selectedCard: [number, Player, number] | null;
     isMenuOpen: boolean;
@@ -23,7 +22,6 @@ export type GameAction =
     | { type: "INCREMENT_TURN" }
     | { type: "SET_RED_SCORE"; payload: number }
     | { type: "SET_BLUE_SCORE"; payload: number }
-    | { type: "SET_LAST_PLACED_CARD"; payload: { position: [number, number]; player: Player } | null }
     | { type: "SET_BOARD"; payload: ([number, Player] | null)[][] }
     | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null }
     | { type: "SET_MENU_OPEN"; payload: boolean }

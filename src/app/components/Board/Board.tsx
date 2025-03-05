@@ -12,7 +12,7 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { playerCards, enemyCards, selectedCard, turn, turnNumber, lastPlacedCard, redScore, blueScore, winState, board, dispatch } = useGameContext();
+    const { playerCards, enemyCards, selectedCard, turn, turnNumber, redScore, blueScore, winState, board, dispatch } = useGameContext();
 
     const setWinState = () => {
         if (turnNumber <= 9) return;
@@ -50,7 +50,6 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         const newBoard = currentBoard.map(row => [...row]);
         newBoard[row][col] = [cardId, player];
 
-        dispatch({ type: "SET_LAST_PLACED_CARD", payload: { position: [row, col], player } });
         dispatch({ type: "SET_SELECTED_CARD", payload: null });
 
         determineCardFlips(row, col, player, newBoard);

@@ -16,8 +16,6 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, redScore: action.payload };
         case "SET_BLUE_SCORE":
             return { ...state, blueScore: action.payload };
-        case "SET_LAST_PLACED_CARD":
-            return { ...state, lastPlacedCard: action.payload };
         case "SET_BOARD":
             return { ...state, board: action.payload };
         case "SET_SELECTED_CARD":
@@ -39,7 +37,6 @@ export const initialState: GameState = {
     turnNumber: 1,
     redScore: 5,
     blueScore: 5,
-    lastPlacedCard: null,
     board: Array(3).fill(null).map(() => Array(3).fill(null)),
     selectedCard: null,
     isMenuOpen: true,
