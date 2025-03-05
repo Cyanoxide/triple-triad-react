@@ -7,8 +7,8 @@ export interface GameState {
     winState: Player | "draw" | null;
     turn: Player | null;
     turnNumber: number;
-    redScore: number;
-    blueScore: number;
+    turnState: string | null;
+    score: [number, number];
     board: ([number, Player] | null)[][];
     selectedCard: [number, Player, number] | null;
     isMenuOpen: boolean;
@@ -20,8 +20,8 @@ export type GameAction =
     | { type: "SET_WIN_STATE"; payload: Player | "draw" | null }
     | { type: "SET_TURN"; payload: Player }
     | { type: "INCREMENT_TURN" }
-    | { type: "SET_RED_SCORE"; payload: number }
-    | { type: "SET_BLUE_SCORE"; payload: number }
+    | { type: "SET_TURN_STATE"; payload: string }
+    | { type: "SET_SCORE"; payload: [number, number] }
     | { type: "SET_BOARD"; payload: ([number, Player] | null)[][] }
     | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null }
     | { type: "SET_MENU_OPEN"; payload: boolean }
