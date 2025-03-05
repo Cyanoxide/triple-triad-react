@@ -5,14 +5,14 @@ import styles from './Board.module.scss';
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import { useGameContext } from "../../context/GameContext";
-import { getAIMove } from '../../utils/ai';
+import { getEnemyMove } from '../../utils/ai';
 
 interface BoardProps {
     className?: string;
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { playerCards, enemyCards, selectedCard, turn, turnNumber, turnState, score, winState, board, dispatch } = useGameContext();
+    const { playerCards, enemyCards, selectedCard, turn, turnNumber, turnState, score, board, dispatch } = useGameContext();
 
     const setWinState = (currentScore: [number, number] = score) => {
         if (turnNumber <= 9 || turnState !== "TURN_END") return;
@@ -126,7 +126,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     const handleEnemyBoardSelection = () => {
         if (turn === "red") {
-            const enemyMove = getAIMove(board, enemyCards, "random");
+            const enemyMove = getEnemyMove(board, enemyCards, "intermediate");
             if (enemyMove) {
                 const { enemyCardIndex, enemyCard, enemyPosition } = enemyMove;
 
