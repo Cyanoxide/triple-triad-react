@@ -12,7 +12,7 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { playerCards, enemyCards, selectedCard, turn, turnNumber, turnState, score, board, dispatch } = useGameContext();
+    const { playerHand, enemyHand, selectedCard, turn, turnNumber, turnState, score, board, dispatch } = useGameContext();
 
     const setWinState = (currentScore: [number, number] = score) => {
         if (turnNumber <= 9 || turnState !== "TURN_END") return;
@@ -32,13 +32,13 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     const grabCardFromHand = (position: number, player: "red" | "blue") => {
         dispatch({ type: "SET_TURN_STATE", payload: "SELECTING_CARD" });
         const isPlayer = player === "blue";
-        const cards = isPlayer ? [...playerCards] : [...enemyCards];
+        const cards = isPlayer ? [...playerHand] : [...enemyHand];
         const selectedCardId = cards.splice(position, 1);
 
         if (selectedCardId == undefined) return;
 
         dispatch({
-            type: isPlayer ? "SET_PLAYER_CARDS" : "SET_ENEMY_CARDS",
+            type: isPlayer ? "SET_PLAYER_HAND" : "SET_ENEMY_HAND",
             payload: cards
         });
 
@@ -126,7 +126,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     const handleEnemyBoardSelection = () => {
         if (turn === "red") {
-            const enemyMove = getEnemyMove(board, enemyCards, "intermediate");
+            const enemyMove = getEnemyMove(board, enemyHand, "intermediate");
             if (enemyMove) {
                 const { enemyCardIndex, enemyCard, enemyPosition } = enemyMove;
 
@@ -147,8 +147,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }
 
     const updateScore = () => {
-        const redScore = board.flat().filter(entry => entry?.[1] === "red").length + enemyCards.length
-        const blueScore = board.flat().filter(entry => entry?.[1] === "blue").length + playerCards.length
+        const redScore = board.flat().filter(entry => entry?.[1] === "red").length + enemyHand.length
+        const blueScore = board.flat().filter(entry => entry?.[1] === "blue").length + playerHand.length
 
         dispatch({ type: "SET_SCORE", payload: [redScore, blueScore] });
         setWinState([redScore, blueScore]);

@@ -11,7 +11,8 @@ const MenuDialog: React.FC<MenuProps> = ({ rules }) => {
     const { isMenuOpen, dispatch } = useGameContext();
 
     const handlePlayClick = () => {
-        dispatch({ type: "SET_MENU_OPEN", payload: false });
+        dispatch({ type: "SET_IS_MENU_OPEN", payload: false });
+        dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: true });
     }
 
     return (
