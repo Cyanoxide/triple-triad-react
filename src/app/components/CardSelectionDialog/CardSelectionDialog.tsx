@@ -26,41 +26,66 @@ const CardSelectionDialog = () => {
     }
 
     const handleDenial = () => {
-        hand.pop()
+        hand.length = 0;
+        score[1] = 0;
+
         dispatch({ type: "SET_PLAYER_HAND", payload: hand });
+        dispatch({ type: "SET_PLAYER_CARDS_SELECTION", payload: playerCards });
     }
 
+    const itemsPerPage = 10;
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const cardEntries = Object.entries(cards);
+    const totalPages = Math.ceil(cardEntries.length / itemsPerPage);
+
+    const paginatedCards = cardEntries.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     return (
-        <>
-            <div className={`${(isCardSelectionOpen) ? "" : "hidden"}`}>
-                <table>
-                    <thead>
-                        <tr>
-                            <td>Cards</td>
-                            <td>Num.</td>
+        <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen) ? "" : "hidden"}`} data-dialog="cardSelection">
+            <table>
+                <thead>
+                    <tr>
+                        <td>Cards <span className={(totalPages > 1) ? "" : "hidden"}>P. {currentPage}</span></td>
+                        <td>Num.</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {paginatedCards.map(([cardId, quantity]) => (
+                        <tr
+                            key={cardId}
+                            onClick={() => handleCardSelection(Number(cardId))}
+                            className={quantity ? "cursor-pointer" : "text-gray-400"}
+                        >
+                            <td>{cardList.find(card => card.id === Number(cardId))?.name}</td>
+                            <td>{quantity}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {cards.map((cardId, index) => (
-                            <tr key={index} onClick={() => handleCardSelection(cardId)}>
-                                <td>{cardList.find(card => card.id === cardId)?.name}</td>
-                                <td>{cardList.filter(card => card.id === cardId).length}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                <div className={`${(playerHand.length === 5) ? "" : "hidden"}`}>
-                    <h4>Choice.</h4>
-                    <h3>Are you sure?</h3>
-                    <div className="flex flex-col items-center">
-                        <button className="relative" onClick={handleConfirmation}>Yes</button>
-                        <button className="relative" onClick={handleDenial}>No</button>
-                    </div>
+                    ))}
+                </tbody>
+            </table>
+
+            <div className={(totalPages > 1) ? "" : "hidden"}>
+                <button onClick={() => setCurrentPage(prev => (prev === 1 ? totalPages : prev - 1))} className="disabled:opacity-50">
+                    Left
+                </button>
+                <button onClick={() => setCurrentPage(prev => (prev === totalPages ? 1 : prev + 1))} className="disabled:opacity-50">
+                    Right
+                </button>
+            </div>
+
+            <div className={`${styles.cardSelectionDialog} ${(playerHand.length === 5) ? "" : "hidden"} absolute`} data-dialog="confirmation">
+                <h4>Choice.</h4>
+                <h3>Are you sure?</h3>
+                <div className="flex flex-col items-center">
+                    <button className="relative" onClick={handleConfirmation}>Yes</button>
+                    <button className="relative" onClick={handleDenial}>No</button>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 
 export default CardSelectionDialog;
-// cards num.icon name quantity choice Are you sure ? Yes No
