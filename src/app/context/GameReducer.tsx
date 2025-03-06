@@ -59,5 +59,6 @@ export const initialState: GameState = {
     selectedCard: null,
     isMenuOpen: true,
     isCardSelectionOpen: false,
+    isRewardSelectionOpen: false,
     isGameActive: false,
 };

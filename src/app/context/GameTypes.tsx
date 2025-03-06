@@ -37,6 +37,7 @@ export type GameAction =
     | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null }
     | { type: "SET_IS_MENU_OPEN"; payload: boolean }
     | { type: "SET_IS_CARD_SELECTION_OPEN"; payload: boolean }
+    | { type: "SET_IS_REWARD_SELECTION_OPEN"; payload: boolean }
     | { type: "SET_IS_GAME_ACTIVE"; payload: boolean }
     | { type: "RESET_GAME" };
 
