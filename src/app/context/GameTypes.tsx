@@ -2,8 +2,10 @@ export type Player = "red" | "blue";
 export type Position = [number, number];
 
 export interface GameState {
-    playerCards: number[];
-    enemyCards: number[];
+    playerCards: Record<number, number>;
+    playerCardsSelection: Record<number, number>;
+    playerHand: number[];
+    enemyHand: number[];
     winState: Player | "draw" | null;
     turn: Player | null;
     turnNumber: number;
@@ -12,11 +14,15 @@ export interface GameState {
     board: ([number, Player] | null)[][];
     selectedCard: [number, Player, number] | null;
     isMenuOpen: boolean;
+    isCardSelectionOpen: boolean;
+    isGameActive: boolean;
 }
 
 export type GameAction =
-    | { type: "SET_PLAYER_CARDS"; payload: number[] }
-    | { type: "SET_ENEMY_CARDS"; payload: number[] }
+    | { type: "SET_PLAYER_CARDS"; payload: Record<number, number> }
+    | { type: "SET_PLAYER_CARDS_SELECTION"; payload: Record<number, number> }
+    | { type: "SET_PLAYER_HAND"; payload: number[] }
+    | { type: "SET_ENEMY_HAND"; payload: number[] }
     | { type: "SET_WIN_STATE"; payload: Player | "draw" | null }
     | { type: "SET_TURN"; payload: Player }
     | { type: "INCREMENT_TURN" }
@@ -24,7 +30,9 @@ export type GameAction =
     | { type: "SET_SCORE"; payload: [number, number] }
     | { type: "SET_BOARD"; payload: ([number, Player] | null)[][] }
     | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null }
-    | { type: "SET_MENU_OPEN"; payload: boolean }
+    | { type: "SET_IS_MENU_OPEN"; payload: boolean }
+    | { type: "SET_IS_CARD_SELECTION_OPEN"; payload: boolean }
+    | { type: "SET_IS_GAME_ACTIVE"; payload: boolean }
     | { type: "RESET_GAME" };
 
 export interface GameContextType extends GameState {

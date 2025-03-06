@@ -9,12 +9,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
     // Ensure the starting turn is only set after hydration
     useEffect(() => {
-        if (state.isMenuOpen) return;
+        if (!state.isGameActive) return;
 
         if (state.turn === null) {
             dispatch({ type: "SET_TURN", payload: Math.random() < 0.5 ? "red" : "blue" });
         }
-    }, [state.turn, state.isMenuOpen]);
+    }, [state.turn, state.isGameActive]);
+
+    useEffect(() => {
+        dispatch({ type: "SET_PLAYER_CARDS_SELECTION", payload: state.playerCards });
+    }, [state.isCardSelectionOpen])
 
     return (
         <GameContext value={{ ...state, dispatch }}>

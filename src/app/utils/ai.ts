@@ -90,8 +90,6 @@ export function getEnemyMove(boardState: ([number, "red" | "blue"] | null)[][], 
         return b.openStrength - a.openStrength;
     });
 
-    console.log(sortedMoves)
-
     const topChoices = sortedMoves.slice(0, difficultySettings[method]);
     const chosenMove = topChoices[Math.floor(Math.random() * topChoices.length)];
 

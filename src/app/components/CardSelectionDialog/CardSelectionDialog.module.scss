@@ -1,4 +1,4 @@
-.menuDialog {
+.cardSelectionDialog {
     background: grey;
     border: 1px solid #000;
     position: absolute;
@@ -9,9 +9,17 @@
     padding: 1rem;
     min-width: 10rem;
 
-    li {
-        list-style: disc;
-        margin-left: 1rem;
+    &[data-dialog=cardSelection] {
+        width: 22rem;
+        height: 52vh;
+        left: 19rem;
+        z-index: 1;
+    }
+
+    &[data-dialog=confirmation] {
+        width: 13rem;
+        height: 14vh;
+        margin-left: 13rem;
     }
 
     button {
