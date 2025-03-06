@@ -17,7 +17,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }, [state.turn, state.isGameActive]);
 
     useEffect(() => {
-        dispatch({ type: "SET_PLAYER_CARDS_SELECTION", payload: state.playerCards });
+        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: state.playerCards });
     }, [state.isCardSelectionOpen])
 
     return (

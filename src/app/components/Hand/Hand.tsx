@@ -9,8 +9,8 @@ interface HandProps {
 }
 
 const Hand: React.FC<HandProps> = ({ className, player }) => {
-    const { playerHand, enemyHand, selectedCard, turn, score, isMenuOpen, dispatch } = useGameContext();
-    const cards = (player === "red") ? enemyHand : playerHand;
+    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, score, isMenuOpen, dispatch } = useGameContext();
+    const cards = (player === "red") ? currentEnemyHand : currentPlayerHand;
 
     const handleSelectCard = (cardId: number, player: "red" | "blue", position: number) => {
         if (player === "red") return;
