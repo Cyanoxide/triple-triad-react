@@ -2,7 +2,8 @@ export type Player = "red" | "blue";
 export type Position = [number, number];
 
 export interface GameState {
-    playerCards: number[];
+    playerCards: Record<number, number>;
+    playerCardsSelection: Record<number, number>;
     playerHand: number[];
     enemyHand: number[];
     winState: Player | "draw" | null;
@@ -18,7 +19,8 @@ export interface GameState {
 }
 
 export type GameAction =
-    | { type: "SET_PLAYER_CARDS"; payload: number[] }
+    | { type: "SET_PLAYER_CARDS"; payload: Record<number, number> }
+    | { type: "SET_PLAYER_CARDS_SELECTION"; payload: Record<number, number> }
     | { type: "SET_PLAYER_HAND"; payload: number[] }
     | { type: "SET_ENEMY_HAND"; payload: number[] }
     | { type: "SET_WIN_STATE"; payload: Player | "draw" | null }

@@ -1,29 +1,23 @@
-import React from 'react';
-// import styles from './MenuDialog.module.scss';
+import React, { useState } from 'react';
+import styles from './CardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import cardList from '../../../data/cards.json';
 
-
-interface CardSelectionProps {
-    rules: string[];
-}
-
-const CardSelectionDialog: React.FC<CardSelectionProps> = () => {
-    const { playerCards, playerHand, isCardSelectionOpen, dispatch } = useGameContext();
+const CardSelectionDialog = () => {
+    const { playerCards, playerCardsSelection, playerHand, score, isCardSelectionOpen, dispatch } = useGameContext();
 
     const hand: number[] = [...playerHand];
-    const cards: number[] = [...playerCards];
+    const cards: Record<number, number> = { ...playerCardsSelection };
 
     const handleCardSelection = (cardId: number) => {
-        hand.push(cardId);
-
-        const cardIndex = cards.indexOf(cardId);
-        if (cardIndex !== -1) {
-            cards.splice(cardIndex, 1);
+        if (cards[cardId] > 0 && hand.length < 5) {
+            hand.push(cardId);
+            score[1] += 1;
+            cards[cardId] -= 1;
         }
 
         dispatch({ type: "SET_PLAYER_HAND", payload: hand });
-        dispatch({ type: "SET_PLAYER_CARDS", payload: cards });
+        dispatch({ type: "SET_PLAYER_CARDS_SELECTION", payload: cards });
     }
 
     const handleConfirmation = () => {

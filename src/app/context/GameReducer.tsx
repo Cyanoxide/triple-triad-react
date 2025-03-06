@@ -4,6 +4,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
     switch (action.type) {
         case "SET_PLAYER_CARDS":
             return { ...state, playerCards: action.payload };
+        case "SET_PLAYER_CARDS_SELECTION":
+            return { ...state, playerCardsSelection: action.payload };
         case "SET_PLAYER_HAND":
             return { ...state, playerHand: action.payload };
         case "SET_ENEMY_HAND":
@@ -36,7 +38,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 };
 
 export const initialState: GameState = {
-    playerCards: [1, 2, 3, 4, 5, 6, 7],
+    playerCards: { "1": 1, "2": 1, "3": 3, "4": 1, "5": 1, "6": 1, "7": 2 },
+    playerCardsSelection: {},
     playerHand: [],
     enemyHand: [7, 8, 9, 10, 11],
     winState: null,

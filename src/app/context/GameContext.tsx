@@ -16,6 +16,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [state.turn, state.isGameActive]);
 
+    useEffect(() => {
+        dispatch({ type: "SET_PLAYER_CARDS_SELECTION", payload: state.playerCards });
+    }, [state.isCardSelectionOpen])
+
     return (
         <GameContext value={{ ...state, dispatch }}>
             {children}
