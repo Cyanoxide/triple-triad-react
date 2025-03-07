@@ -1,5 +1,7 @@
 .card {
     border: 1px solid #000;
+    width: 128px; //256px
+    height: 163px; //326px
 
     &[data-player=red] {
         background-color: #f00;
