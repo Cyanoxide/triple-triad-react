@@ -25,7 +25,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
         <div className={`${styles.handContainer} ${className || ''} ${(isMenuOpen) ? "hidden" : ""}`.trim()}>
             <div className={styles.hand} data-player={player} data-selectable={player === turn && turn === "blue"}>
                 {cards.map((card, index) => (
-                    <div key={index} className="cell" onClick={() => handleSelectCard(card, player, index)} data-selected={(selectedCard && selectedCard[0] === card && selectedCard[1] === turn)}>
+                    <div key={index} className="cell" onClick={() => handleSelectCard(card, player, index)} data-selected={(selectedCard && selectedCard[0] === card && selectedCard[1] === player)}>
                         <Card id={card} player={player} />
                     </div>
                 ))}
