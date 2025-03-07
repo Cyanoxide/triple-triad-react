@@ -12,7 +12,7 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, dispatch } = useGameContext();
+    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, dispatch } = useGameContext();
 
     const setWinState = (currentScore: [number, number] = score) => {
         if (turnNumber <= 9 || turnState !== "TURN_END") return;
@@ -135,13 +135,13 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                         type: "SET_SELECTED_CARD",
                         payload: [enemyCard, "red", enemyCardIndex],
                     });
-                }, 1500);
+                }, 1000);
 
                 setTimeout(() => {
                     grabCardFromHand(enemyCardIndex, "red");
                     placeCard(enemyPosition.row, enemyPosition.col, enemyCard, "red");
                     swapTurn();
-                }, 2500);
+                }, 2000);
             }
         }
     }
