@@ -28,6 +28,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, board: action.payload };
         case "SET_SELECTED_CARD":
             return { ...state, selectedCard: action.payload };
+        case "SET_SELECTED_REWARD":
+            return { ...state, selectedReward: action.payload };
         case "SET_IS_MENU_OPEN":
             return { ...state, isMenuOpen: action.payload };
         case "SET_IS_CARD_SELECTION_OPEN":
@@ -57,6 +59,7 @@ export const initialState: GameState = {
     score: [5, 5],
     board: Array(3).fill(null).map(() => Array(3).fill(null)),
     selectedCard: null,
+    selectedReward: null,
     isMenuOpen: true,
     isCardSelectionOpen: false,
     isRewardSelectionOpen: false,

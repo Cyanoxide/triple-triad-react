@@ -15,6 +15,7 @@ export interface GameState {
     score: [number, number];
     board: ([number, Player] | null)[][];
     selectedCard: [number, Player, number] | null;
+    selectedReward: number | null;
     isMenuOpen: boolean;
     isCardSelectionOpen: boolean;
     isRewardSelectionOpen: boolean;
@@ -35,6 +36,7 @@ export type GameAction =
     | { type: "SET_SCORE"; payload: [number, number] }
     | { type: "SET_BOARD"; payload: ([number, Player] | null)[][] }
     | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null }
+    | { type: "SET_SELECTED_REWARD"; payload: number | null }
     | { type: "SET_IS_MENU_OPEN"; payload: boolean }
     | { type: "SET_IS_CARD_SELECTION_OPEN"; payload: boolean }
     | { type: "SET_IS_REWARD_SELECTION_OPEN"; payload: boolean }
