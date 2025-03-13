@@ -7,7 +7,20 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const GameProvider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(gameReducer, initialState);
 
-    // Ensure the starting turn is only set after hydration
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const storedCardsJSON = localStorage.getItem("playerCards");
+        if (storedCardsJSON) {
+            try {
+                const storedCards = JSON.parse(storedCardsJSON);
+                dispatch({ type: "SET_PLAYER_CARDS", payload: storedCards });
+            } catch (error) {
+                console.error("Failed to parse playerCards from localStorage", error);
+            }
+        }
+    }, []);
+
     useEffect(() => {
         if (!state.isGameActive) return;
 
@@ -17,8 +30,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }, [state.turn, state.isGameActive]);
 
     useEffect(() => {
-        dispatch({ type: "SET_PLAYER_CARDS_SELECTION", payload: state.playerCards });
-    }, [state.isCardSelectionOpen])
+        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: state.playerCards });
+    }, [state.isCardSelectionOpen, state.playerCards])
 
     return (
         <GameContext value={{ ...state, dispatch }}>

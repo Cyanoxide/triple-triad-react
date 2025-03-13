@@ -2,35 +2,38 @@ import React, { useState } from 'react';
 import styles from './CardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import cardList from '../../../data/cards.json';
+import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
 
 const CardSelectionDialog = () => {
-    const { playerCards, playerCardsSelection, playerHand, score, isCardSelectionOpen, dispatch } = useGameContext();
+    const { playerCards, currentPlayerCards, currentPlayerHand, score, isCardSelectionOpen, dispatch } = useGameContext();
 
-    const hand: number[] = [...playerHand];
-    const cards: Record<number, number> = { ...playerCardsSelection };
+    const hand: number[] = [...currentPlayerHand];
+    const cards: Record<number, number> = { ...currentPlayerCards };
 
     const handleCardSelection = (cardId: number) => {
         if (cards[cardId] > 0 && hand.length < 5) {
+
             hand.push(cardId);
             score[1] += 1;
             cards[cardId] -= 1;
         }
 
-        dispatch({ type: "SET_PLAYER_HAND", payload: hand });
-        dispatch({ type: "SET_PLAYER_CARDS_SELECTION", payload: cards });
+        dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: hand });
+        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
     }
 
     const handleConfirmation = () => {
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
         dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
+        dispatch({ type: "SET_PLAYER_HAND", payload: hand });
     }
 
     const handleDenial = () => {
         hand.length = 0;
         score[1] = 0;
 
-        dispatch({ type: "SET_PLAYER_HAND", payload: hand });
-        dispatch({ type: "SET_PLAYER_CARDS_SELECTION", payload: playerCards });
+        dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: hand });
+        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: playerCards });
     }
 
     const itemsPerPage = 10;
@@ -76,14 +79,7 @@ const CardSelectionDialog = () => {
                 </button>
             </div>
 
-            <div className={`${styles.cardSelectionDialog} ${(playerHand.length === 5) ? "" : "hidden"} absolute`} data-dialog="confirmation">
-                <h4>Choice.</h4>
-                <h3>Are you sure?</h3>
-                <div className="flex flex-col items-center">
-                    <button className="relative" onClick={handleConfirmation}>Yes</button>
-                    <button className="relative" onClick={handleDenial}>No</button>
-                </div>
-            </div>
+            {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
         </div>
     );
 };

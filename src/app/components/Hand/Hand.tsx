@@ -9,8 +9,8 @@ interface HandProps {
 }
 
 const Hand: React.FC<HandProps> = ({ className, player }) => {
-    const { playerHand, enemyHand, selectedCard, turn, score, isMenuOpen, dispatch } = useGameContext();
-    const cards = (player === "red") ? enemyHand : playerHand;
+    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, score, isMenuOpen, dispatch } = useGameContext();
+    const cards = (player === "red") ? currentEnemyHand : currentPlayerHand;
 
     const handleSelectCard = (cardId: number, player: "red" | "blue", position: number) => {
         if (player === "red") return;
@@ -25,7 +25,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
         <div className={`${styles.handContainer} ${className || ''} ${(isMenuOpen) ? "hidden" : ""}`.trim()}>
             <div className={styles.hand} data-player={player} data-selectable={player === turn && turn === "blue"}>
                 {cards.map((card, index) => (
-                    <div key={index} className="cell" onClick={() => handleSelectCard(card, player, index)} data-selected={(selectedCard && selectedCard[0] === card && selectedCard[1] === turn)}>
+                    <div key={index} className="cell" onClick={() => handleSelectCard(card, player, index)} data-selected={(selectedCard && selectedCard[0] === card && selectedCard[1] === player && index === selectedCard[2])}>
                         <Card id={card} player={player} />
                     </div>
                 ))}

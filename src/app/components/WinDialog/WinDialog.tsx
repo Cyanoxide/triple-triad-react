@@ -1,17 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGameContext } from "../../context/GameContext";
 
 const WinDialog = () => {
     const { winState, dispatch } = useGameContext();
-    const winMessage = (winState === "draw") ? "It's a draw!" : `${winState} wins!`;
+    const winMessage = (winState === "draw") ? "Draw!" : `${winState} wins!`;
 
-    if (!winState) return;
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!winState) return;
 
-    setTimeout(() => {
-        dispatch({ type: "RESET_GAME" });
-    }, 8000);
+            if (winState !== "draw") {
+                dispatch({ type: "SET_IS_REWARD_SELECTION_OPEN", payload: true });
+            } else {
+                dispatch({ type: "RESET_GAME" });
+            }
+        }, 3000);
 
-    return <h1 className={`${(winState) ? "" : "hidden"} absolute top-1/2 left-1/2 text-5xl z-1 -translate-x-1/2`}>{winMessage}</h1>;
+        return () => clearTimeout(timer);
+    }, []);
+
+
+    return (
+        <h1 className="absolute top-1/2 left-1/2 text-5xl z-1 -translate-x-1/2">{winMessage}</h1>
+    );
 };
 
-export default WinDialog;
+export default WinDialog

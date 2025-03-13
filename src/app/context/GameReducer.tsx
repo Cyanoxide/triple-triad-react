@@ -4,12 +4,16 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
     switch (action.type) {
         case "SET_PLAYER_CARDS":
             return { ...state, playerCards: action.payload };
-        case "SET_PLAYER_CARDS_SELECTION":
-            return { ...state, playerCardsSelection: action.payload };
+        case "SET_CURRENT_PLAYER_CARDS":
+            return { ...state, currentPlayerCards: action.payload };
         case "SET_PLAYER_HAND":
             return { ...state, playerHand: action.payload };
+        case "SET_CURRENT_PLAYER_HAND":
+            return { ...state, currentPlayerHand: action.payload };
         case "SET_ENEMY_HAND":
             return { ...state, enemyHand: action.payload };
+        case "SET_CURRENT_ENEMY_HAND":
+            return { ...state, currentEnemyHand: action.payload };
         case "SET_WIN_STATE":
             return { ...state, winState: action.payload };
         case "SET_TURN":
@@ -24,10 +28,14 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, board: action.payload };
         case "SET_SELECTED_CARD":
             return { ...state, selectedCard: action.payload };
+        case "SET_SELECTED_REWARD":
+            return { ...state, selectedReward: action.payload };
         case "SET_IS_MENU_OPEN":
             return { ...state, isMenuOpen: action.payload };
         case "SET_IS_CARD_SELECTION_OPEN":
             return { ...state, isCardSelectionOpen: action.payload };
+        case "SET_IS_REWARD_SELECTION_OPEN":
+            return { ...state, isRewardSelectionOpen: action.payload };
         case "SET_IS_GAME_ACTIVE":
             return { ...state, isGameActive: action.payload };
         case "RESET_GAME":
@@ -38,10 +46,12 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 };
 
 export const initialState: GameState = {
-    playerCards: { "1": 1, "2": 1, "3": 3, "4": 1, "5": 1, "6": 1, "7": 2 },
-    playerCardsSelection: {},
+    playerCards: { "1": 1, "2": 1, "3": 1, "4": 1, "5": 1, "6": 1, "7": 1 },
+    currentPlayerCards: [],
     playerHand: [],
+    currentPlayerHand: [],
     enemyHand: [7, 8, 9, 10, 11],
+    currentEnemyHand: [7, 8, 9, 10, 11],
     winState: null,
     turn: null,
     turnNumber: 1,
@@ -49,7 +59,9 @@ export const initialState: GameState = {
     score: [5, 5],
     board: Array(3).fill(null).map(() => Array(3).fill(null)),
     selectedCard: null,
+    selectedReward: null,
     isMenuOpen: true,
     isCardSelectionOpen: false,
+    isRewardSelectionOpen: false,
     isGameActive: false,
 };
