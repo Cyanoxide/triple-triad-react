@@ -4,6 +4,7 @@ import { useGameContext } from "../../context/GameContext";
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
+import SimpleDialog from "../SimpleDialog/SimpleDialog";
 
 const RewardSelectionDialog = () => {
     const { playerCards, playerHand, enemyHand, selectedReward, winState, dispatch } = useGameContext();
@@ -24,7 +25,7 @@ const RewardSelectionDialog = () => {
             const updatedPlayerCardsCopy = { ...updatedPlayerCards };
 
             setEnemyRewardCards((prevCards) => {
-                if (prevCards.length === 0) return prevCards;
+                if (prevCards.length === 0 || Object.keys(playerCards).length <= 5) return prevCards;
 
                 const maxLevel = Math.max(...prevCards.map((card) => card.level));
                 const highestLevelCards = prevCards.filter((card) => card.level === maxLevel);
@@ -63,7 +64,7 @@ const RewardSelectionDialog = () => {
 
 
     const handleSelectReward = (id: number) => {
-        if (winAmount > 0 && winState !== "blue" && selectedReward === null) {
+        if (winAmount > 0 && winState === "blue" && selectedReward === null) {
             setRewardCards((prevCards) =>
                 prevCards.map((card) =>
                     (card.id === Number(id)) ? { ...card, player: "blue" } : { ...card, player: "red" }
@@ -127,6 +128,7 @@ const RewardSelectionDialog = () => {
             </div>
 
             {selectedReward && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+            {winState === "red" && Object.keys(playerCards).length <= 5 && <SimpleDialog>Your opponent took pity on you and decided not to take any of your remaining cards.</SimpleDialog>}
         </div>
     );
 };

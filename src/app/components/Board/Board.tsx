@@ -133,7 +133,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
 
     useEffect(() => {
-        if (turn === "red" && turnNumber <= 1) {
+        if (turn === "red" && turnNumber <= 9) {
             const enemyMove = getEnemyMove(board, currentEnemyHand, "intermediate");
             if (enemyMove) {
                 const { enemyCardIndex, enemyCard, enemyPosition } = enemyMove;
