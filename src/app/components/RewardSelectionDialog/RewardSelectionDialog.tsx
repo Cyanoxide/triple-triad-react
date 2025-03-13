@@ -15,42 +15,55 @@ const RewardSelectionDialog = () => {
     const [enemyRewardCards, setEnemyRewardCards] = useState<{ id: number; level: number, player: "red" | "blue" }[]>(playerHand.map((card) => ({ id: card, level: cards.find(card => card.id === selectedReward)?.level ?? 0, player: "blue" })));
 
     const updatedPlayerCards = { ...playerCards };
+    const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
     useEffect(() => {
-        if (winState === "red") {
+        if (winAmount > 0 && winState === "red" && selectedReward === null) {
+            dispatch({ type: "SET_IS_GAME_ACTIVE", payload: false });
+
+            const updatedPlayerCardsCopy = { ...updatedPlayerCards };
+
             setEnemyRewardCards((prevCards) => {
+                if (prevCards.length === 0) return prevCards;
+
                 const maxLevel = Math.max(...prevCards.map((card) => card.level));
                 const highestLevelCards = prevCards.filter((card) => card.level === maxLevel);
-
                 const selectedCard = highestLevelCards[Math.floor(Math.random() * highestLevelCards.length)];
 
-                if (updatedPlayerCards[selectedCard.id] > 1) {
-                    updatedPlayerCards[selectedCard.id]--;
+                if (updatedPlayerCardsCopy[selectedCard.id] > 1) {
+                    updatedPlayerCardsCopy[selectedCard.id]--;
                 } else {
-                    delete updatedPlayerCards[selectedCard.id];
+                    delete updatedPlayerCardsCopy[selectedCard.id];
                 }
 
-                return prevCards.map((card) =>
-                    card.id === selectedCard.id ? { ...card, player: "blue" } : { ...card, player: "red" }
-                );
+                setSelectedCardId(selectedCard.id);
+
+                return prevCards.map((card) => ({
+                    ...card,
+                    player: card.id === selectedCard.id ? "red" : "blue",
+                }));
             });
 
-            const timer = setTimeout(() => {
+            setTimeout(() => {
                 dispatch({ type: "RESET_GAME" });
-                dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
+                dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCardsCopy });
 
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
-                    console.log()
+                if (typeof window !== "undefined") {
+                    localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCardsCopy));
                 }
             }, 3000);
-            return () => clearTimeout(timer);
         }
-    }, [winState])
+    }, []);
+
+    useEffect(() => {
+        if (selectedCardId !== null) {
+            dispatch({ type: "SET_SELECTED_REWARD", payload: selectedCardId });
+        }
+    }, [selectedCardId]);
 
 
     const handleSelectReward = (id: number) => {
-        if (winAmount > 0 && winState == "blue" && selectedReward === null) {
+        if (winAmount > 0 && winState !== "blue" && selectedReward === null) {
             setRewardCards((prevCards) =>
                 prevCards.map((card) =>
                     (card.id === Number(id)) ? { ...card, player: "blue" } : { ...card, player: "red" }
@@ -104,7 +117,7 @@ const RewardSelectionDialog = () => {
 
             <div className="flex justify-center">
                 {enemyRewardCards.map((card, index) => (
-                    <Card key={index} id={card.id} player="blue" />
+                    <Card key={index} id={card.id} player={card.player} />
                 ))}
             </div>
 
@@ -113,7 +126,7 @@ const RewardSelectionDialog = () => {
                 <h3>{selectedRewardName}</h3>
             </div>
 
-            {selectedReward && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+            {selectedReward && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
         </div>
     );
 };

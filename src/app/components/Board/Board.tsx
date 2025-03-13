@@ -16,13 +16,16 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
 
     const setWinState = useCallback((currentScore: [number, number] = score) => {
+        // if (isGameActive) dispatch({ type: "SET_WIN_STATE", payload: "red" });
+        // return;
+
         if (turnNumber <= 9 || turnState !== "TURN_END") return;
         const [redScore, blueScore] = currentScore;
 
         if (redScore > blueScore) dispatch({ type: "SET_WIN_STATE", payload: "red" });
         if (redScore < blueScore) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
         if (redScore === blueScore) dispatch({ type: "SET_WIN_STATE", payload: "draw" });
-    }, [score, turnNumber, turnState, dispatch])
+    }, [score, turnNumber, turnState, isGameActive, dispatch])
 
     const swapTurn = useCallback(() => {
         dispatch({ type: "SET_TURN_STATE", payload: "TURN_END" });
@@ -130,7 +133,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
 
     useEffect(() => {
-        if (turn === "red") {
+        if (turn === "red" && turnNumber <= 1) {
             const enemyMove = getEnemyMove(board, currentEnemyHand, "intermediate");
             if (enemyMove) {
                 const { enemyCardIndex, enemyCard, enemyPosition } = enemyMove;
