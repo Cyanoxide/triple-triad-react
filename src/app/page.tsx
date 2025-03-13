@@ -14,7 +14,7 @@ function GameContent() {
   return (
     <>
       <div>
-        {isMenuOpen && <MenuDialog rules={["Open"]} />}
+        {isMenuOpen && <MenuDialog rules={["Open", "Trade Rule: One"]} />}
         {isCardSelectionOpen && <CardSelectionDialog />}
       </div>
       <div className="flex h-screen">
