@@ -75,14 +75,7 @@ const RewardSelectionDialog = () => {
                 <h3>{selectedRewardName}</h3>
             </div>
 
-            <div className={`${styles.rewardSelectionDialog} ${(selectedReward !== null) ? "" : "hidden"} absolute`} data-dialog="confirmation">
-                <h4>Choice. {selectedReward}</h4>
-                <h3>Are you sure?</h3>
-                <div className="flex flex-col items-center">
-                    <button className="relative" onClick={handleConfirmation}>Yes</button>
-                    <button className="relative" onClick={handleDenial}>No</button>
-                </div>
-            </div>
+            {selectedReward && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
         </div>
     );
 };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styles from './CardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import cardList from '../../../data/cards.json';
+import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
 
 const CardSelectionDialog = () => {
     const { playerCards, currentPlayerCards, currentPlayerHand, score, isCardSelectionOpen, dispatch } = useGameContext();
@@ -78,14 +79,7 @@ const CardSelectionDialog = () => {
                 </button>
             </div>
 
-            <div className={`${styles.cardSelectionDialog} ${(currentPlayerHand.length === 5) ? "" : "hidden"} absolute`} data-dialog="confirmation">
-                <h4>Choice.</h4>
-                <h3>Are you sure?</h3>
-                <div className="flex flex-col items-center">
-                    <button className="relative" onClick={handleConfirmation}>Yes</button>
-                    <button className="relative" onClick={handleDenial}>No</button>
-                </div>
-            </div>
+            {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
         </div>
     );
 };
