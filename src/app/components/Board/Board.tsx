@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import styles from './Board.module.scss';
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
@@ -14,22 +14,24 @@ interface BoardProps {
 const Board: React.FC<BoardProps> = ({ className }) => {
     const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, dispatch } = useGameContext();
 
-    const setWinState = (currentScore: [number, number] = score) => {
+
+    const setWinState = useCallback((currentScore: [number, number] = score) => {
         if (turnNumber <= 9 || turnState !== "TURN_END") return;
         const [redScore, blueScore] = currentScore;
 
         if (redScore > blueScore) dispatch({ type: "SET_WIN_STATE", payload: "red" });
         if (redScore < blueScore) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
         if (redScore === blueScore) dispatch({ type: "SET_WIN_STATE", payload: "draw" });
-    }
+    }, [score, turnNumber, turnState, dispatch])
 
-    const swapTurn = () => {
+    const swapTurn = useCallback(() => {
         dispatch({ type: "SET_TURN_STATE", payload: "TURN_END" });
         dispatch({ type: "SET_TURN", payload: (turn === "red") ? "blue" : "red" });
         dispatch({ type: "INCREMENT_TURN" });
-    };
+    }, [turn, dispatch]);
 
-    const grabCardFromHand = (position: number, player: "red" | "blue") => {
+
+    const grabCardFromHand = useCallback((position: number, player: "red" | "blue") => {
         dispatch({ type: "SET_TURN_STATE", payload: "SELECTING_CARD" });
         const isPlayer = player === "blue";
         const cards = isPlayer ? [...currentPlayerHand] : [...currentEnemyHand];
@@ -43,22 +45,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         });
 
         return selectedCardId;
-    };
-
-    const placeCard = (row: number, col: number, cardId: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue"] | null)[][] = board) => {
-        dispatch({ type: "SET_TURN_STATE", payload: "PLACING_CARD" });
-        if (currentBoard[row][col]) return;
-
-        const newBoard = currentBoard.map(row => [...row]);
-        newBoard[row][col] = [cardId, player];
-
-        dispatch({ type: "SET_SELECTED_CARD", payload: null });
-
-        determineCardFlips(row, col, player, newBoard);
-    };
+    }, [currentEnemyHand, currentPlayerHand, dispatch]);
 
 
-    const determineCardFlips = (row: number, col: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue"] | null)[][] = board) => {
+    const determineCardFlips = useCallback((row: number, col: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue"] | null)[][] = board) => {
         dispatch({ type: "SET_TURN_STATE", payload: "PROCESSING_FLIPS" });
         if (!currentBoard[row][col]) return;
 
@@ -110,9 +100,23 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         }
 
         dispatch({ type: "SET_BOARD", payload: currentBoard });
-    };
+    }, [board, dispatch]);
 
-    const handlePlayerBoardSelection = (rowIndex: number, colIndex: number) => {
+
+    const placeCard = useCallback((row: number, col: number, cardId: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue"] | null)[][] = board) => {
+        dispatch({ type: "SET_TURN_STATE", payload: "PLACING_CARD" });
+        if (currentBoard[row][col]) return;
+
+        const newBoard = currentBoard.map(row => [...row]);
+        newBoard[row][col] = [cardId, player];
+
+        dispatch({ type: "SET_SELECTED_CARD", payload: null });
+
+        determineCardFlips(row, col, player, newBoard);
+    }, [board, determineCardFlips, dispatch]);
+
+
+    const handlePlayerBoardSelection = useCallback((rowIndex: number, colIndex: number) => {
         if (board[rowIndex][colIndex]) return;
 
         if (!selectedCard) return;
@@ -122,9 +126,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         grabCardFromHand(position, turn);
         placeCard(rowIndex, colIndex, cardId, turn);
         swapTurn();
-    };
+    }, [board, selectedCard, turn, grabCardFromHand, placeCard, swapTurn]);
 
-    const handleEnemyBoardSelection = () => {
+
+    useEffect(() => {
         if (turn === "red") {
             const enemyMove = getEnemyMove(board, currentEnemyHand, "intermediate");
             if (enemyMove) {
@@ -144,24 +149,18 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 }, 2000);
             }
         }
-    }
-
-    const updateScore = () => {
-        const redScore = board.flat().filter(entry => entry?.[1] === "red").length + currentEnemyHand.length
-        const blueScore = board.flat().filter(entry => entry?.[1] === "blue").length + currentPlayerHand.length
-
-        dispatch({ type: "SET_SCORE", payload: [redScore, blueScore] });
-        setWinState([redScore, blueScore]);
-    }
-
-    useEffect(() => {
-        handleEnemyBoardSelection();
     }, [turn]);
 
-    useEffect(() => {
-        updateScore()
 
+    useEffect(() => {
+        const redScore = board.flat().filter(entry => entry?.[1] === "red").length + currentEnemyHand.length;
+        const blueScore = board.flat().filter(entry => entry?.[1] === "blue").length + currentPlayerHand.length;
+
+        dispatch({ type: "SET_SCORE", payload: [redScore, blueScore] });
+
+        setWinState([redScore, blueScore])
     }, [board]);
+
 
     return (
         <>

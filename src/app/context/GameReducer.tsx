@@ -46,7 +46,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 };
 
 export const initialState: GameState = {
-    playerCards: JSON.parse(localStorage.getItem("playerCards") || '{ "1": 1, "2": 1, "3": 1, "4": 1, "5": 1, "6": 1, "7": 1 }'),
+    playerCards: { "1": 1, "2": 1, "3": 1, "4": 1, "5": 1, "6": 1, "7": 1 },
     currentPlayerCards: [],
     playerHand: [],
     currentPlayerHand: [],
