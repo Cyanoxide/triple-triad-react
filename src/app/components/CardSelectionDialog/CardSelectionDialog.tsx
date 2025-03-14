@@ -3,9 +3,11 @@ import styles from './CardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import cardList from '../../../data/cards.json';
 import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
+import Card from '../Card/Card';
 
 const CardSelectionDialog = () => {
     const { playerCards, currentPlayerCards, currentPlayerHand, score, isCardSelectionOpen, dispatch } = useGameContext();
+    const [previewCardId, setPreviewCardId] = useState<number>(0);
 
     const hand: number[] = [...currentPlayerHand];
     const cards: Record<number, number> = { ...currentPlayerCards };
@@ -21,6 +23,11 @@ const CardSelectionDialog = () => {
         dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: hand });
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
     }
+
+    const handleCardHover = (cardId: number) => {
+        setPreviewCardId(cardId);
+    };
+
 
     const handleConfirmation = () => {
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
@@ -61,6 +68,7 @@ const CardSelectionDialog = () => {
                         <tr
                             key={cardId}
                             onClick={() => handleCardSelection(Number(cardId))}
+                            onMouseEnter={() => handleCardHover(Number(cardId))}
                             className={quantity ? "cursor-pointer" : "text-gray-400"}
                         >
                             <td>{cardList.find(card => card.id === Number(cardId))?.name}</td>
@@ -80,7 +88,10 @@ const CardSelectionDialog = () => {
             </div>
 
             {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
-        </div>
+            <div className="absolute right-10">
+                <Card id={previewCardId} player="blue" />
+            </div>
+        </div >
     );
 };
 
