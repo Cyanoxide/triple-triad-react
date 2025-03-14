@@ -4,10 +4,6 @@
         height: 163px; //326px
     }
 
-    div:empty {
-        background: #fff;
-    }
-
     &[data-player=red] {
         [data-selected=true] {
             transform: translateX(50%);

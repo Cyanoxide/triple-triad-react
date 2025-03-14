@@ -2,6 +2,8 @@
     border: 1px solid #000;
     width: 128px; //256px
     height: 163px; //326px
+    transform-style: preserve-3d;
+    transition: transform 0.2s;
 
     &[data-player=red] {
         background-color: #f00;
@@ -9,6 +11,30 @@
 
     &[data-player=blue] {
         background-color: #00f;
+    }
+
+    &__front,
+    &__back {
+        backface-visibility: hidden;
+    }
+
+    &__back {
+        transform: rotateY(180deg);
+
+        &::after {
+            content: "";
+            position: absolute;
+            background: red;
+            width: 100%;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+    }
+
+    &--hidden {
+        transform: rotateY(180deg);
     }
 
     p {
