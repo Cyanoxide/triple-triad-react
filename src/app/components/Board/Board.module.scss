@@ -1,18 +1,140 @@
 .board {
     grid-template-columns: repeat(3, 0fr);
 
-    div {
+    &::before {
+        content: "";
+        background-image: url("/assets/balamb.png");
         width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+        background-position: center;
+        background-size: 37rem;
+        background-repeat: no-repeat;
+    }
+
+    .cell {
         width: 128px; //256px
         height: 163px; //326px
     }
 
-    div:empty {
-        background: #fff;
+    div[data-position] {
+        position: relative;
+
+        &::before,
+        &::after {
+            content: "";
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+
+        &[data-position="1,1"]::before {
+            background-image: url("/assets/slot-center.png");
+            transform: scale(2.7);
+        }
+
+        &[data-position="0,0"]::before {
+            background-image: url("/assets/slot-corner.png");
+            transform: translate(22%, 16%)scaleX(1.47)scaleY(1.54);
+        }
+
+        &[data-position="0,2"]::before {
+            background-image: url("/assets/slot-corner.png");
+            transform: translate(-22%, 16%)scaleX(-1.47)scaleY(1.54);
+        }
+
+        &[data-position="2,0"]::before {
+            background-image: url("/assets/slot-corner.png");
+            transform: translate(22%, -16%)scaleX(1.47)scaleY(-1.54);
+        }
+
+        &[data-position="2,2"]::before {
+            background-image: url("/assets/slot-corner.png");
+            transform: translate(-22%, -16%)scaleX(-1.47)scaleY(-1.54);
+        }
+
+        // &[data-position="0,0"]::before {
+        //     background-image: url("/assets/slot-inner-edge.png");
+        //     transform: scaleX(-1);
+        // }
+
+        // &[data-position="0,0"]::after {
+        //     background-image: url("/assets/slot-outer-edge.png");
+        //     transform: scaleX(-1.5) scaleY(1.5);
+
+        // }
+
+        // &[data-position="0,2"]::before {
+        //     background-image: url("/assets/slot-inner-edge.png");
+        // }
+
+        // &[data-position="0,2"]::after {
+        //     background-image: url("/assets/slot-outer-edge.png");
+        //     transform: scale(1.5);
+        // }
+
+        // &[data-position="2,0"]::before {
+        //     background-image: url("/assets/slot-inner-edge.png");
+        //     transform: scaleY(-1) scaleX(-1);
+        // }
+
+        // &[data-position="2,0"]::after {
+        //     background-image: url("/assets/slot-outer-edge.png");
+        //     transform: scaleY(-1.5) scaleX(-1.5);
+
+        // }
+
+        // &[data-position="2,2"]::before {
+        //     background-image: url("/assets/slot-inner-edge.png");
+        //     transform: scaleY(-1);
+        // }
+
+        // &[data-position="2,2"]::after {
+        //     background-image: url("/assets/slot-outer-edge.png");
+        //     transform: scaleY(-1.5) scaleX(1.5);
+
+        // }
+
+        >div {
+            z-index: 2;
+        }
     }
 
     [data-selectable=true] {
-        cursor: pointer;
-        box-shadow: inset 0 0 0 3px lawngreen;
+        cursor: none;
+        // box-shadow: inset 0 0 0 3px lawngreen;
+
+        &:hover::after {
+            content: "";
+            position: absolute;
+            margin-left: 1.5rem;
+            background-image: url("/assets/cursor.png");
+            background-size: cover;
+            width: 38px;
+            height: 25px;
+            margin-top: 4.4rem;
+            z-index: 4;
+        }
+    }
+}
+
+.selectedCardLabel {
+    bottom: calc(50% - 20rem);
+    position: absolute;
+    left: 50%;
+
+    p {
+        text-align: center;
     }
 }

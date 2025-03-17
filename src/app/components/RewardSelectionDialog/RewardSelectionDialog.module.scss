@@ -1,10 +1,15 @@
+@import "../../styles/dialog.module.scss";
+
 .rewardSelectionContainer {
-    background: #000;
+    background: #000d;
+    top: 0;
+    left: 0;
+    position: fixed;
+    bottom: 0;
+    overflow: hidden;
 }
 
 .rewardSelectionDialog {
-    background: grey;
-    border: 1px solid #000;
-    color: #fff;
+    @extend .dialog;
     padding: 1rem;
 }

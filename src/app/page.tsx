@@ -12,19 +12,19 @@ function GameContent() {
   const { isMenuOpen, isCardSelectionOpen, isRewardSelectionOpen, winState } = useGameContext();
 
   return (
-    <>
+    <div className="max-w-4xl m-auto relative">
       <div>
         {isMenuOpen && <MenuDialog rules={["Open", "Trade Rule: One"]} />}
         {isCardSelectionOpen && <CardSelectionDialog />}
       </div>
       <div className="flex h-screen">
-        <Hand className="order-1 flex justify-center items-center gap-4 flex-col w-[20%]" player="red" />
-        <Hand className="order-3 flex justify-center items-center gap-4 flex-col w-[20%]" player="blue" />
-        <Board className="order-2 grid justify-center items-center gap-4 w-[60%] m-auto" />
+        <Hand className="order-1 flex justify-end items-center gap-4 flex-col pb-[9rem] w-[20%]" player="red" />
+        <Hand className="order-3 flex justify-end items-center gap-4 flex-col pb-[9rem] w-[20%]" player="blue" />
+        <Board className="order-2 grid justify-center items-center gap-1 w-[60%] m-auto" />
       </div>
       {winState && <WinDialog />}
       {isRewardSelectionOpen && <RewardSelectionDialog />}
-    </>
+    </div>
   );
 }
 

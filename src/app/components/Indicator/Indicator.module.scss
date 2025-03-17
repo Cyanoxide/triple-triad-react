@@ -1,0 +1,120 @@
+$rotate: -17.5deg;
+$z-offset: 6px;
+
+.indicatorContainer {
+    &[data-type="starting-player-indicator"] {
+        position: absolute;
+        top: calc(50% - 20px);
+        left: 50%;
+        z-index: 4;
+        transform: rotate(90deg)translate(-50%, -50%);
+
+        &[data-starting-player="red"] {
+            animation: rotate-red 1.5s ease-in-out forwards, fade 0.1s linear 2s forwards;
+        }
+
+        &[data-starting-player="blue"] {
+            animation: rotate-blue 1.5s ease-in-out forwards, fade 0.1s linear 2s forwards;
+        }
+    }
+
+    &[data-type="turn-indicator"] {
+        position: absolute;
+        left: calc(50% - 20px);
+        top: 9rem;
+        transform: translate(-50%, -50%);
+        z-index: 4;
+        animation: fade-in 0.1s linear forwards;
+        opacity: 0;
+
+        &[data-turn-number="1"] {
+            animation-delay: 2s;
+        }
+    }
+}
+
+.indicator {
+    position: absolute;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+    animation: spin 3s linear infinite;
+    width: 42px;
+}
+
+.indicatorFace {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 40px 20px 0 20px;
+    border-color: #ffff54 transparent transparent transparent;
+    opacity: 0.9;
+    perspective: 900;
+}
+
+.indicatorFace:nth-child(1) {
+    transform: rotateY(0deg) translateZ($z-offset) rotateX($rotate);
+    border-color: #6e6d1f transparent transparent transparent;
+}
+
+.indicatorFace:nth-child(2) {
+    transform: rotateY(120deg) translateZ($z-offset) rotateX($rotate);
+    border-color: #ffff54 transparent transparent transparent;
+}
+
+.indicatorFace:nth-child(3) {
+    transform: rotateY(240deg) translateZ($z-offset) rotateX($rotate);
+    border-color: #b7b73a transparent transparent transparent;
+}
+
+
+@keyframes spin {
+    from {
+        transform: rotateY(0deg);
+    }
+
+    to {
+        transform: rotateY(360deg);
+    }
+}
+
+@keyframes rotate-red {
+    from {
+        transform: rotate(90deg) rotateX(0deg) translate(-50%, -50%);
+    }
+
+    to {
+        transform: rotate(90deg) rotateX(1440deg) translate(-50%, -50%);
+    }
+}
+
+@keyframes rotate-blue {
+    from {
+        transform: rotate(90deg) rotateX(0deg) translate(-50%, -50%);
+    }
+
+    to {
+        transform: rotate(90deg) rotateX(1260deg) translate(-50%, -50%);
+    }
+}
+
+@keyframes fade {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

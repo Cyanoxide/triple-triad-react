@@ -1,8 +1,7 @@
 .hand {
-    div {
-        width: 128px; //256px
-        height: 163px; //326px
-    }
+    padding-top: 1rem;
+    padding-bottom: 4rem;
+    z-index: 1;
 
     &[data-player=red] {
         [data-selected=true] {
@@ -16,8 +15,13 @@
         }
     }
 
+    >div {
+        margin-top: -50%;
+    }
+
     &[data-selectable=true] {
-        cursor: pointer;
+        cursor: none;
+        z-index: initial;
 
         [data-player] {
             box-shadow: inset 0 0 0 1px #fff;
@@ -32,8 +36,15 @@
             &[data-player=blue] {
                 &:hover {
                     &::after {
-                        content: "<";
-                        right: -1.5rem;
+                        content: "";
+                        position: absolute;
+                        left: -1rem;
+                        background-image: url("/assets/cursor.png");
+                        background-size: cover;
+                        width: 38px;
+                        height: 25px;
+                        margin-top: 3.4rem;
+                        z-index: 4;
                     }
                 }
             }
@@ -43,4 +54,10 @@
 
 .score {
     font-size: 3rem;
+    font-family: serif;
+    font-style: italic;
+    font-weight: bold;
+    position: absolute;
+    bottom: 11rem;
+    z-index: 4;
 }

@@ -6,6 +6,8 @@ import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import { useGameContext } from "../../context/GameContext";
 import { getEnemyMove } from '../../utils/ai';
+import SimpleDialog from '../SimpleDialog/SimpleDialog';
+import Indicator from '../Indicator/Indicator';
 
 interface BoardProps {
     className?: string;
@@ -134,7 +136,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     useEffect(() => {
         if (turn === "red" && turnNumber <= 9) {
-            const enemyMove = getEnemyMove(board, currentEnemyHand, "intermediate");
+            const enemyMove = getEnemyMove(board, currentEnemyHand, "advanced");
             if (enemyMove) {
                 const { enemyCardIndex, enemyCard, enemyPosition } = enemyMove;
 
@@ -143,13 +145,13 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                         type: "SET_SELECTED_CARD",
                         payload: [enemyCard, "red", enemyCardIndex],
                     });
-                }, 1000);
+                }, 3000);
 
                 setTimeout(() => {
                     grabCardFromHand(enemyCardIndex, "red");
                     placeCard(enemyPosition.row, enemyPosition.col, enemyCard, "red");
                     swapTurn();
-                }, 2000);
+                }, 4500);
             }
         }
     }, [turn]);
@@ -167,10 +169,11 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     return (
         <>
+            {isGameActive && turnNumber < 3 && <Indicator type="STARTING_PLAYER_INDICATOR" />}
             <div className={`${styles.board} ${(isGameActive) ? "" : "invisible"} ${className || ''}`.trim()}>
                 {board.map((row, rowIndex) => (
                     row.map((col, colIndex) => (
-                        <div key={`${rowIndex}-${colIndex}`} className="cell" data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}>
+                        <div key={`${rowIndex}-${colIndex}`} className={styles.cell} data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}>
                             {col && (() => {
                                 const cardData = cards.find(card => card.id === col[0]);
                                 return cardData && <Card {...cardData} player={col[1]} />;
@@ -179,6 +182,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                     ))
                 ))}
             </div >
+            {turn === "blue" && selectedCard && <div className={styles.selectedCardLabel}><SimpleDialog>{cards.find(card => card.id === selectedCard[0])?.name}</SimpleDialog></div>}
         </>
     );
 };

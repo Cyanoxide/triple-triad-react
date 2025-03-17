@@ -16,10 +16,10 @@
         "image": "",
         "rarity": "Common",
         "level": 1,
-        "top": 3,
+        "top": 5,
         "bottom": 1,
         "left": 1,
-        "right": 5
+        "right": 3
     },
     {
         "id": 3,

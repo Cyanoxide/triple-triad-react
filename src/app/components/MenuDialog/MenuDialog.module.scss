@@ -1,28 +1,10 @@
+@import "../../styles/dialog.module.scss";
+
 .menuDialog {
-    background: grey;
-    border: 1px solid #000;
+    @extend .dialog;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #fff;
-    padding: 1rem;
     min-width: 10rem;
-
-    li {
-        list-style: disc;
-        margin-left: 1rem;
-    }
-
-    button {
-        text-align: center;
-
-        &:hover {
-            &::after {
-                content: ">";
-                position: absolute;
-                left: -1rem;
-            }
-        }
-    }
 }

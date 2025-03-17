@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import { useGameContext } from "../../context/GameContext";
+import Image from "next/image";
+import styles from "./WinDialog.module.scss"
 
 const WinDialog = () => {
-    const { winState, dispatch } = useGameContext();
-    const winMessage = (winState === "draw") ? "Draw!" : `${winState} wins!`;
+    const { winState, playerCards, dispatch } = useGameContext();
+    const playerCardsCopy = { ...playerCards };
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -13,6 +15,7 @@ const WinDialog = () => {
                 dispatch({ type: "SET_IS_REWARD_SELECTION_OPEN", payload: true });
             } else {
                 dispatch({ type: "RESET_GAME" });
+                dispatch({ type: "SET_PLAYER_CARDS", payload: playerCardsCopy });
             }
         }, 3000);
 
@@ -21,7 +24,7 @@ const WinDialog = () => {
 
 
     return (
-        <h1 className="absolute top-1/2 left-1/2 text-5xl z-1 -translate-x-1/2">{winMessage}</h1>
+        <Image src="/assets/finishmsg.png" alt="Finish Message" width="500" height="84" className={`${styles.finishMsg}`} data-win-state={winState} />
     );
 };
 

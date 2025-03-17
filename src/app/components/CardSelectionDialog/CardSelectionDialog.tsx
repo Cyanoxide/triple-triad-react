@@ -4,6 +4,7 @@ import { useGameContext } from "../../context/GameContext";
 import cardList from '../../../data/cards.json';
 import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
 import Card from '../Card/Card';
+import Image from 'next/image';
 
 const CardSelectionDialog = () => {
     const { playerCards, currentPlayerCards, currentPlayerHand, score, isCardSelectionOpen, dispatch } = useGameContext();
@@ -56,7 +57,7 @@ const CardSelectionDialog = () => {
 
     return (
         <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen) ? "" : "hidden"}`} data-dialog="cardSelection">
-            <table>
+            <table className="w-full">
                 <thead>
                     <tr>
                         <td>Cards <span className={(totalPages > 1) ? "" : "hidden"}>P. {currentPage}</span></td>
@@ -71,7 +72,11 @@ const CardSelectionDialog = () => {
                             onMouseEnter={() => handleCardHover(Number(cardId))}
                             className={quantity ? "cursor-pointer" : "text-gray-400"}
                         >
-                            <td>{cardList.find(card => card.id === Number(cardId))?.name}</td>
+                            <td className="flex">
+                                <Image src="/assets/cardIcon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
+                                <span>{cardList.find(card => card.id === Number(cardId))?.name}</span>
+
+                            </td>
                             <td>{quantity}</td>
                         </tr>
                     ))}
@@ -88,7 +93,7 @@ const CardSelectionDialog = () => {
             </div>
 
             {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
-            <div className="absolute right-10">
+            <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
                 <Card id={previewCardId} player="blue" />
             </div>
         </div >
