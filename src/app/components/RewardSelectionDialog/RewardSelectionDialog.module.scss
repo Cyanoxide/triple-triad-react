@@ -7,9 +7,130 @@
     position: fixed;
     bottom: 0;
     overflow: hidden;
+
+    [data-selected][data-confirmed] {
+        &[data-selected=true][data-player="blue"] {
+            animation: card-flip-blue 0.5s ease-in-out forwards;
+        }
+
+        &[data-selected=true][data-confirmed=true] {
+            z-index: 4;
+            animation: card-preview 5s ease-in-out forwards;
+            offset-rotate: 0deg;
+
+            &[data-index="0"] {
+                offset-path: path('M70,80 C70,-300 200,-200 320,180');
+            }
+
+            &[data-index="1"] {
+                offset-path: path('M70,80 C70,-300 200,-200 190,180');
+            }
+
+            &[data-index="2"] {
+                offset-path: path('M70,80 C70,-300 65,-100 65,180');
+            }
+
+            &[data-index="3"] {
+                offset-path: path('M65,80 C0,-200 -50,-100 -65,180');
+            }
+
+            &[data-index="4"] {
+                offset-path: path('M65,80 C0,-200 -50,-100 -190,180');
+            }
+        }
+    }
+
+    [data-enemy-selected] {
+        &[data-enemy-selected=true][data-player="red"] {
+            z-index: 4;
+            animation: card-flip-red 0.5s ease-in-out forwards, card-preview 5s ease-in-out 0.5s forwards;
+            offset-rotate: 0deg;
+
+            &[data-index="0"] {
+                offset-path: path('M70,80 C70,-300 200,-200 320,-10');
+            }
+
+            &[data-index="1"] {
+                offset-path: path('M70,80 C70,-300 200,-200 190,-10');
+            }
+
+            &[data-index="2"] {
+                offset-path: path('M70,80 C70,-300 65,-100 65,-10');
+            }
+
+            &[data-index="3"] {
+                offset-path: path('M65,80 C0,-200 -50,-100 -65,-10');
+            }
+
+            &[data-index="4"] {
+                offset-path: path('M65,80 C0,-200 -50,-100 -190,-10');
+            }
+        }
+    }
 }
 
 .rewardSelectionDialog {
     @extend .dialog;
     padding: 1rem;
+}
+
+.dialogContainer {
+    min-height: 3.5rem;
+}
+
+@keyframes card-preview {
+    10% {
+        offset-distance: 0%;
+    }
+
+    30% {
+        transform: scale(1.75);
+        offset-distance: 100%;
+    }
+
+    90% {
+        transform: scale(1.75);
+        offset-distance: 100%;
+    }
+
+    100% {
+        transform: scale(1.75) translateY(40rem);
+        offset-distance: 100%;
+    }
+}
+
+@keyframes card-flip-blue {
+    0% {}
+
+    49% {
+        transform: rotate3d(0, 1, 0, 0.25turn);
+        background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
+    }
+
+    50% {
+        transform: rotate3d(0, 1, 0, 0.75turn);
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+    }
+
+    100% {
+        transform: rotate3d(0, 1, 0, 1turn);
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+    }
+}
+
+@keyframes card-flip-red {
+    49% {
+        transform: rotate3d(0, 1, 0, 0.25turn);
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+    }
+
+    50% {
+        transform: rotate3d(0, 1, 0, 0.75turn);
+        background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
+    }
+
+    100% {
+        transform: rotate3d(0, 1, 0, 1turn);
+        background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
+    }
 }

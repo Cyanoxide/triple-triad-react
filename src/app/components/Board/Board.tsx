@@ -29,11 +29,21 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         if (redScore === blueScore) dispatch({ type: "SET_WIN_STATE", payload: "draw" });
     }, [score, turnNumber, turnState, isGameActive, dispatch])
 
+    const resetBoardValuesOnSwap = (board: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][]): ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][] => {
+        board.map((row) =>
+            row.map((cell) =>
+                cell && cell[2] === "flipped" ? [cell[0], cell[1], "placed"] as [number, "red" | "blue", "placed"] : cell
+            )
+        );
+        return board;
+    };
+
     const swapTurn = useCallback(() => {
         dispatch({ type: "SET_TURN_STATE", payload: "TURN_END" });
         dispatch({ type: "SET_TURN", payload: (turn === "red") ? "blue" : "red" });
+
         dispatch({ type: "INCREMENT_TURN" });
-    }, [turn, dispatch]);
+    }, [turn, dispatch, board]);
 
 
     const grabCardFromHand = useCallback((position: number, player: "red" | "blue") => {
@@ -53,7 +63,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }, [currentEnemyHand, currentPlayerHand, dispatch]);
 
 
-    const determineCardFlips = useCallback((row: number, col: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue"] | null)[][] = board) => {
+    const determineCardFlips = useCallback((row: number, col: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][] = board) => {
         dispatch({ type: "SET_TURN_STATE", payload: "PROCESSING_FLIPS" });
         if (!currentBoard[row][col]) return;
 
@@ -96,7 +106,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             const newBoard = [...currentBoard.map(row => [...row])];
             flips.forEach(({ row, col, player }) => {
                 if (currentBoard[row][col]) {
-                    newBoard[row][col] = [currentBoard[row][col]![0], player];
+                    newBoard[row][col] = [currentBoard[row][col]![0], player, "flipped"];
                 }
             });
 
@@ -108,12 +118,12 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }, [board, dispatch]);
 
 
-    const placeCard = useCallback((row: number, col: number, cardId: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue"] | null)[][] = board) => {
+    const placeCard = useCallback((row: number, col: number, cardId: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][] = board) => {
         dispatch({ type: "SET_TURN_STATE", payload: "PLACING_CARD" });
         if (currentBoard[row][col]) return;
 
         const newBoard = currentBoard.map(row => [...row]);
-        newBoard[row][col] = [cardId, player];
+        newBoard[row][col] = [cardId, player, "placed"];
 
         dispatch({ type: "SET_SELECTED_CARD", payload: null });
 
@@ -154,6 +164,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 }, 4500);
             }
         }
+
+        dispatch({ type: "SET_BOARD", payload: resetBoardValuesOnSwap(board) });
     }, [turn]);
 
 
@@ -169,14 +181,14 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     return (
         <>
-            {isGameActive && turnNumber < 3 && <Indicator type="STARTING_PLAYER_INDICATOR" />}
+            {isGameActive && turnNumber === 1 && <Indicator type="STARTING_PLAYER_INDICATOR" />}
             <div className={`${styles.board} ${(isGameActive) ? "" : "invisible"} ${className || ''}`.trim()}>
                 {board.map((row, rowIndex) => (
                     row.map((col, colIndex) => (
                         <div key={`${rowIndex}-${colIndex}`} className={styles.cell} data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}>
                             {col && (() => {
                                 const cardData = cards.find(card => card.id === col[0]);
-                                return cardData && <Card {...cardData} player={col[1]} />;
+                                return cardData && <Card {...cardData} player={col[1]} data-state={col[2]} />;
                             })()}
                         </div>
                     ))

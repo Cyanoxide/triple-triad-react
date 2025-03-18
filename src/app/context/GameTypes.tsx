@@ -1,4 +1,5 @@
 export type Player = "red" | "blue";
+export type CardState = "placed" | "flipped" | undefined;
 export type Position = [number, number];
 
 export interface GameState {
@@ -13,7 +14,7 @@ export interface GameState {
     turnNumber: number;
     turnState: string | null;
     score: [number, number];
-    board: ([number, Player] | null)[][];
+    board: ([number, Player, CardState] | null)[][];
     selectedCard: [number, Player, number] | null;
     selectedReward: number | null;
     isMenuOpen: boolean;
@@ -34,7 +35,7 @@ export type GameAction =
     | { type: "INCREMENT_TURN" }
     | { type: "SET_TURN_STATE"; payload: string }
     | { type: "SET_SCORE"; payload: [number, number] }
-    | { type: "SET_BOARD"; payload: ([number, Player] | null)[][] }
+    | { type: "SET_BOARD"; payload: ([number, Player, CardState] | null)[][] }
     | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null }
     | { type: "SET_SELECTED_REWARD"; payload: number | null }
     | { type: "SET_IS_MENU_OPEN"; payload: boolean }
