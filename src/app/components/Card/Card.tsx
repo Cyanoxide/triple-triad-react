@@ -9,6 +9,7 @@ interface CardProps {
     player: "red" | "blue";
     onClick?: () => void;
     onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
 }
 
 const Card: React.FC<CardProps> = ({ id, player, ...props }) => {
