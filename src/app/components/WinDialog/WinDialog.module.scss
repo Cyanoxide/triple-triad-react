@@ -1,0 +1,26 @@
+.finishMsg {
+    height: 84px;
+    width: stretch;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    overflow: hidden;
+    z-index: 4;
+
+    &[data-win-state="blue"] {
+        object-position: 0 0;
+    }
+
+    &[data-win-state="red"] {
+        object-position: 0 -85px;
+    }
+
+    &[data-win-state="draw"] {
+        object-position: 0 -339px;
+    }
+}
+
+
+// yw00 yl-85 rw-169 bw-254 d-339

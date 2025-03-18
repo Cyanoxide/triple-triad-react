@@ -10,7 +10,6 @@ const RewardSelectionDialog = () => {
     const { playerCards, playerHand, enemyHand, selectedReward, winState, dispatch } = useGameContext();
 
     const winAmount = 1;
-    const selectedRewardName = cards.find(card => card.id === selectedReward)?.name;
 
     const [rewardCards, setRewardCards] = useState<{ id: number; level: number, player: "red" | "blue" }[]>(enemyHand.map((card) => ({ id: card, level: cards.find(card => card.id === selectedReward)?.level ?? 0, player: "red" })));
     const [enemyRewardCards, setEnemyRewardCards] = useState<{ id: number; level: number, player: "red" | "blue" }[]>(playerHand.map((card) => ({ id: card, level: cards.find(card => card.id === selectedReward)?.level ?? 0, player: "blue" })));
@@ -20,7 +19,7 @@ const RewardSelectionDialog = () => {
 
     useEffect(() => {
         if (winAmount > 0 && winState === "red" && selectedReward === null) {
-            dispatch({ type: "SET_IS_GAME_ACTIVE", payload: false });
+            // dispatch({ type: "SET_IS_GAME_ACTIVE", payload: false });
 
             const updatedPlayerCardsCopy = { ...updatedPlayerCards };
 
@@ -52,7 +51,7 @@ const RewardSelectionDialog = () => {
                 if (typeof window !== "undefined") {
                     localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCardsCopy));
                 }
-            }, 3000);
+            }, 7000);
         }
     }, []);
 
@@ -75,6 +74,8 @@ const RewardSelectionDialog = () => {
         }
     };
 
+    const [isRewardConfirmed, setIsRewardConfirmed] = useState(false);
+
     const handleConfirmation = () => {
         if (!selectedReward) return;
 
@@ -83,11 +84,15 @@ const RewardSelectionDialog = () => {
         if (selectedReward in updatedPlayerCards) updatedPlayerCards[selectedReward]++
         else updatedPlayerCards[selectedReward] = 1;
 
-        dispatch({ type: "RESET_GAME" });
-        dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
-        if (typeof window !== 'undefined') {
-            localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
-        }
+        setIsRewardConfirmed(true);
+
+        setTimeout(() => {
+            dispatch({ type: "RESET_GAME" });
+            dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
+            }
+        }, 5000);
     }
 
     const handleDenial = () => {
@@ -101,33 +106,51 @@ const RewardSelectionDialog = () => {
         dispatch({ type: "SET_SELECTED_REWARD", payload: null })
     }
 
+    const [hoveredReward, setHoveredReward] = useState<number | undefined>(undefined);
+
+    const handleMouseEnter = (cardId: number) => {
+        setHoveredReward(cardId);
+    }
+
+    const handleMouseLeave = () => {
+        setHoveredReward(undefined);
+    }
+
+    const recentCard = selectedReward || hoveredReward;
+    const recentCardName = cards.find(card => card.id === recentCard)?.name;
+    const selectedRewardName = cards.find(card => card.id === selectedReward)?.name;
+
+    const infoMessage = (winState === "red") ? "lost" : "acquired";
+
     return (
-        <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center absolute top-0 z-10 w-screen h-screen`}>
+        <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
             <div className={styles.rewardSelectionDialog} data-dialog="rewardSelectionInfo">
                 <h4>Info.</h4>
-                <h3>Select 1 card(s) you want</h3>
+                <h3>{(isRewardConfirmed || (winState === "red" && selectedReward)) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`}</h3>
             </div>
 
             <div className="flex justify-center mb-7">
                 {rewardCards.map((card, index) => (
                     <div key={index} onClick={() => handleSelectReward(card.id)}>
-                        <Card id={card.id} player={card.player} />
+                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id)} onMouseLeave={handleMouseLeave} data-selected={card.id === selectedReward} data-confirmed={isRewardConfirmed} data-index={index} />
                     </div>
                 ))}
             </div>
 
             <div className="flex justify-center">
                 {enemyRewardCards.map((card, index) => (
-                    <Card key={index} id={card.id} player={card.player} />
+                    <Card key={index} id={card.id} player={card.player} data-enemy-selected={card.id === selectedReward} data-index={index} />
                 ))}
             </div>
 
-            <div className={styles.rewardSelectionDialog} data-dialog="rewardCardNameInfo">
-                <h4>Info.</h4>
-                <h3>{selectedRewardName}</h3>
+            <div className={styles.dialogContainer}>
+                {!isRewardConfirmed && winState === "blue" && <div className={styles.rewardSelectionDialog} data-dialog="rewardCardNameInfo">
+                    <h4>Info.</h4>
+                    <h3 className={recentCard && !(recentCard in playerCards) ? "text-blue-300" : ""}>{recentCardName}</h3>
+                </div>}
             </div>
 
-            {selectedReward && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+            {selectedReward && !isRewardConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
             {winState === "red" && Object.keys(playerCards).length <= 5 && <SimpleDialog>Your opponent took pity on you and decided not to take any of your remaining cards.</SimpleDialog>}
         </div>
     );

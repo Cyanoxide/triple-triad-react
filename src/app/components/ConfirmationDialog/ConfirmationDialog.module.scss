@@ -1,11 +1,11 @@
+@import "../../styles/dialog.module.scss";
+
 .confirmationDialog {
-    background: grey;
-    border: 1px solid #000;
+    @extend .dialog;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #fff;
-    padding: 1rem;
     min-width: 10rem;
+    z-index: 10;
 }

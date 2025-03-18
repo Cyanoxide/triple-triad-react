@@ -1,19 +1,17 @@
+@import "../../styles/dialog.module.scss";
+
 .cardSelectionDialog {
-    background: grey;
-    border: 1px solid #000;
+    @extend .dialog;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #fff;
-    padding: 1rem;
     min-width: 10rem;
 
     &[data-dialog=cardSelection] {
         width: 22rem;
         height: 52vh;
         left: 19rem;
-        z-index: 1;
     }
 
     &[data-dialog=confirmation] {
@@ -22,15 +20,39 @@
         margin-left: 13rem;
     }
 
-    button {
-        text-align: center;
+    .cardSelectionPreview {
+        left: calc(100% + 2rem);
+        bottom: 2rem;
+        transform-origin: center;
+        animation: spinCard 4s ease-in-out 2s forwards, infiniteSpin 4s linear 2s infinite;
+    }
+}
 
-        &:hover {
-            &::after {
-                content: ">";
-                position: absolute;
-                left: -1rem;
-            }
-        }
+
+@keyframes spinCard {
+    0% {
+        transform: rotateY(0deg);
+    }
+
+    20% {
+        transform: rotateX(-20deg);
+        /* Slight backward tilt */
+    }
+
+    100% {
+        transform: rotateY(359deg) rotateX(-20deg);
+        /* Full spin */
+    }
+}
+
+@keyframes infiniteSpin {
+    0% {
+        transform: rotateY(1deg) rotateX(-20deg);
+        /* Slight backward tilt */
+    }
+
+    100% {
+        transform: rotateY(359deg) rotateX(-20deg);
+        /* Full spin */
     }
 }

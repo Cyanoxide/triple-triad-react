@@ -2,13 +2,118 @@
     border: 1px solid #000;
     width: 128px; //256px
     height: 163px; //326px
+    transform-style: preserve-3d;
+    transition: transform 0.2s;
+    // overflow: hidden;
 
     &[data-player=red] {
-        background-color: #f00;
+        background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
     }
 
     &[data-player=blue] {
-        background-color: #00f;
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+    }
+
+    &__front,
+    &__back {
+        backface-visibility: hidden;
+    }
+
+    &__front {
+        background-image: url("/assets/sprites.png");
+        image-rendering: pixelated;
+        height: 100%;
+        background-size: 3250px 608px;
+
+        &[data-card-id="1"] {
+            background-position: 5px 5px;
+        }
+
+        &[data-card-id="2"] {
+            background-position: -111px 5px;
+        }
+
+        &[data-card-id="3"] {
+            background-position: 5px -147px;
+        }
+
+        &[data-card-id="4"] {
+            background-position: -111px -147px;
+        }
+
+        &[data-card-id="5"] {
+            background-position: 5px -299px;
+        }
+
+        &[data-card-id="6"] {
+            background-position: -111px -299px;
+        }
+
+        &[data-card-id="7"] {
+            background-position: 5px -451px;
+        }
+
+        &[data-card-id="8"] {
+            background-position: -111px -451px;
+        }
+
+        &[data-card-id="9"] {
+            background-position: -227px 5px;
+        }
+
+        &[data-card-id="10"] {
+            background-position: -343px 5px;
+        }
+
+        &[data-card-id="11"] {
+            background-position: -227px -147px;
+        }
+
+        &::after {
+            content: "";
+            background-image: url("/assets/frames.png");
+            image-rendering: pixelated;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-size: 506px 161px;
+        }
+
+        &[data-level="6"],
+        &[data-level="7"] {
+            &::after {
+                background-position-x: -124px;
+            }
+        }
+
+        &[data-level="8"],
+        &[data-level="9"] {
+            &::after {
+                background-position-x: -248px;
+            }
+        }
+
+        &[data-level="10"] {
+            &::after {
+                background-position-x: -373px;
+            }
+        }
+    }
+
+    &__back {
+        transform: rotateY(180deg);
+        width: 100%;
+        height: 100%;
+
+        img {
+            image-rendering: pixelated;
+        }
+    }
+
+    &--hidden {
+        transform: rotateY(180deg);
     }
 
     p {
@@ -20,31 +125,36 @@
     }
 
     .values {
+        text-shadow: 2px 2px 2px #000, -2px -2px 2px #000, 2px -2px #000, -2px 2px 2px #000;
+        font-family: serif;
+        font-weight: bold;
+        font-size: 1.4rem;
+
         span {
             width: 20px;
         }
 
         .topValue {
-            top: 4px;
-            left: 24px;
+            top: 0px;
+            left: 22px;
             transform: translateX(-50%);
         }
 
         .rightValue {
-            top: 30px;
-            left: 24px;
+            top: 36px;
+            left: 22px;
             transform: translateY(-50%);
         }
 
         .bottomValue {
-            top: 32px;
-            left: 24px;
+            top: 36px;
+            left: 22px;
             transform: translateX(-50%);
         }
 
         .leftValue {
-            top: 30px;
-            left: 4px;
+            top: 36px;
+            left: 2px;
             transform: translateY(-50%);
         }
     }
