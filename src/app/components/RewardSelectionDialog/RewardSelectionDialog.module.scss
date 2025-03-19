@@ -15,7 +15,7 @@
 
         &[data-selected=true][data-confirmed=true] {
             z-index: 4;
-            animation: card-preview 5s ease-in-out forwards;
+            animation: card-preview-blue 5s ease-in-out forwards;
             offset-rotate: 0deg;
 
             &[data-index="0"] {
@@ -43,7 +43,7 @@
     [data-enemy-selected] {
         &[data-enemy-selected=true][data-player="red"] {
             z-index: 4;
-            animation: card-flip-red 0.5s ease-in-out forwards, card-preview 5s ease-in-out 0.5s forwards;
+            animation: card-flip-red 0.5s ease-in-out forwards, card-preview-red 5s ease-in-out 0.5s forwards;
             offset-rotate: 0deg;
 
             &[data-index="0"] {
@@ -78,7 +78,7 @@
     min-height: 3.5rem;
 }
 
-@keyframes card-preview {
+@keyframes card-preview-blue {
     10% {
         offset-distance: 0%;
     }
@@ -95,6 +95,27 @@
 
     100% {
         transform: scale(1.75) translateY(40rem);
+        offset-distance: 100%;
+    }
+}
+
+@keyframes card-preview-red {
+    10% {
+        offset-distance: 0%;
+    }
+
+    30% {
+        transform: scale(1.75);
+        offset-distance: 100%;
+    }
+
+    90% {
+        transform: scale(1.75);
+        offset-distance: 100%;
+    }
+
+    100% {
+        transform: scale(1.75) translateY(-40rem);
         offset-distance: 100%;
     }
 }

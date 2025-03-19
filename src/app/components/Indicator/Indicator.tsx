@@ -11,7 +11,7 @@ const Indicator: React.FC<IndicatorProps> = ({ type, className }) => {
 
     if (type === "TURN_INDICATOR") {
         return (
-            <div className={`${styles.indicatorContainer} ${className?.trim() || ''}`} data-type="turn-indicator" data-turn-number={turnNumber}>
+            <div className={`${styles.indicatorContainer} ${className || ""}`.trim()} data-type="turn-indicator" data-turn-number={turnNumber}>
                 <div className={styles.indicator}>
                     <div className={styles.indicatorFace}></div>
                     <div className={styles.indicatorFace}></div>
@@ -23,7 +23,7 @@ const Indicator: React.FC<IndicatorProps> = ({ type, className }) => {
 
     if (type === "STARTING_PLAYER_INDICATOR") {
         return (
-            <div className={`${styles.indicatorContainer} ${className?.trim() || ''}`} data-type="starting-player-indicator" data-starting-player={turn}>
+            <div className={`${styles.indicatorContainer} ${className || ""}`.trim()} data-type="starting-player-indicator" data-starting-player={turn}>
                 <div className={styles.indicator}>
                     <div className={styles.indicatorFace}></div>
                     <div className={styles.indicatorFace}></div>

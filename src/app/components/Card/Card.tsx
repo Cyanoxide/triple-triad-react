@@ -21,7 +21,7 @@ const Card: React.FC<CardProps> = ({ id, player, ...props }) => {
     if (!card) return;
 
     return (
-        <div className={`${styles.card} card relative ${(!isGameActive && player === "red") ? styles["card--hidden"] : ""}`} data-player={player} {...props} >
+        <div className={`${styles.card} ${(!isGameActive && player === "red") ? styles["card--hidden"] : ""} card relative`} data-player={player} {...props} >
             <div className={styles.card__front} data-card-id={card.id} data-level={card.level}>
                 <div className={`${styles.values} relative`}>
                     <span className={`${styles.topValue} absolute text-center`}>{renderCardValue(card.top)}</span>

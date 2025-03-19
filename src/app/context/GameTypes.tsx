@@ -21,6 +21,7 @@ export interface GameState {
     isCardSelectionOpen: boolean;
     isRewardSelectionOpen: boolean;
     isGameActive: boolean;
+    isSoundEnabled: boolean;
 }
 
 export type GameAction =
@@ -42,6 +43,7 @@ export type GameAction =
     | { type: "SET_IS_CARD_SELECTION_OPEN"; payload: boolean }
     | { type: "SET_IS_REWARD_SELECTION_OPEN"; payload: boolean }
     | { type: "SET_IS_GAME_ACTIVE"; payload: boolean }
+    | { type: "SET_IS_SOUND_ENABLED"; payload: boolean }
     | { type: "RESET_GAME" };
 
 export interface GameContextType extends GameState {
