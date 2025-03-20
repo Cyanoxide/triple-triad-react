@@ -21,7 +21,7 @@ const ConfirmationDialog: React.FC<MenuProps> = ({ handleConfirmation, handleDen
     if (!modalElement) return null;
 
     return createPortal(
-        <div className="w-screen h-screen absolute left-0 top-0 z-10">
+        <div className="w-full h-screen absolute left-0 top-0 z-10">
             <div className={`${styles.confirmationDialog} absolute`} data-dialog="confirmation">
                 <h4>Choice.</h4>
                 <h3>Are you sure?</h3>
