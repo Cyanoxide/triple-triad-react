@@ -3,6 +3,7 @@ import styles from './Hand.module.scss';
 import Card from '../Card/Card';
 import Indicator from '../Indicator/Indicator';
 import { useGameContext } from "../../context/GameContext";
+import playSound from "../../utils/sounds";
 
 interface HandProps {
     className?: string;
@@ -10,10 +11,11 @@ interface HandProps {
 }
 
 const Hand: React.FC<HandProps> = ({ className, player }) => {
-    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, score, isMenuOpen, dispatch } = useGameContext();
+    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, score, isMenuOpen, isSoundEnabled, dispatch } = useGameContext();
     const cards = (player === "red") ? currentEnemyHand : currentPlayerHand;
 
     const handleSelectCard = (cardId: number, player: "red" | "blue", position: number) => {
+        playSound("select", isSoundEnabled);
         if (player === "red") return;
 
         const activeSelection: [number, "red" | "blue", number] | null = (selectedCard && cardId === selectedCard[0]) ? null : [cardId, player, position];
@@ -24,13 +26,19 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
         });
     };
 
+    const handleMouseEnter = () => {
+        if (player === "blue" && turn === "blue") {
+            playSound("select", isSoundEnabled);
+        }
+    }
+
     return (
 
-        <div className={`${styles.handContainer} ${className?.trim() || ''} ${(isMenuOpen) ? "hidden" : ""} relative`}>
+        <div className={`${className?.trim() || ''} ${(isMenuOpen) ? "hidden" : ""} relative`}>
             {turnNumber < 10 && <Indicator className={(player === turn && turn === player) ? "" : "hidden"} type="TURN_INDICATOR" />}
             <div className={styles.hand} data-player={player} data-selectable={player === turn && turn === "blue"}>
                 {cards.map((card, index) => (
-                    <div key={index} className="cell" onClick={() => handleSelectCard(card, player, index)} data-selected={(selectedCard && selectedCard[0] === card && selectedCard[1] === player && index === selectedCard[2])}>
+                    <div key={index} className="cell" onClick={() => handleSelectCard(card, player, index)} onMouseEnter={handleMouseEnter} data-selected={(selectedCard && selectedCard[0] === card && selectedCard[1] === player && index === selectedCard[2])}>
                         <Card id={card} player={player} />
                     </div>
                 ))}

@@ -5,9 +5,15 @@ import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
+import playSound, { stopLoadedSound } from "../../utils/sounds";
 
-const RewardSelectionDialog = () => {
-    const { playerCards, playerHand, enemyHand, selectedReward, winState, dispatch } = useGameContext();
+interface RewardSelectionDialogProps {
+    victorySound: HTMLAudioElement;
+    bgm: HTMLAudioElement;
+}
+
+const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
+    const { playerCards, playerHand, enemyHand, selectedReward, winState, isSoundEnabled, dispatch } = useGameContext();
 
     const winAmount = 1;
 
@@ -19,8 +25,6 @@ const RewardSelectionDialog = () => {
 
     useEffect(() => {
         if (winAmount > 0 && winState === "red" && selectedReward === null) {
-            // dispatch({ type: "SET_IS_GAME_ACTIVE", payload: false });
-
             const updatedPlayerCardsCopy = { ...updatedPlayerCards };
 
             setEnemyRewardCards((prevCards) => {
@@ -38,6 +42,11 @@ const RewardSelectionDialog = () => {
 
                 setSelectedCardId(selectedCard.id);
 
+                playSound("flip", isSoundEnabled);
+                setTimeout(() => {
+                    playSound("place", isSoundEnabled);
+                }, 5000);
+
                 return prevCards.map((card) => ({
                     ...card,
                     player: card.id === selectedCard.id ? "red" : "blue",
@@ -45,6 +54,7 @@ const RewardSelectionDialog = () => {
             });
 
             setTimeout(() => {
+                stopLoadedSound(bgm, isSoundEnabled);
                 dispatch({ type: "RESET_GAME" });
                 dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCardsCopy });
 
@@ -63,6 +73,7 @@ const RewardSelectionDialog = () => {
 
 
     const handleSelectReward = (id: number) => {
+        playSound("flip", isSoundEnabled);
         if (winAmount > 0 && winState === "blue" && selectedReward === null) {
             setRewardCards((prevCards) =>
                 prevCards.map((card) =>
@@ -78,6 +89,11 @@ const RewardSelectionDialog = () => {
 
     const handleConfirmation = () => {
         if (!selectedReward) return;
+        playSound("select", isSoundEnabled);
+
+        setTimeout(() => {
+            playSound("success", isSoundEnabled);
+        }, 3000);
 
         const updatedPlayerCards = { ...playerCards };
 
@@ -87,6 +103,9 @@ const RewardSelectionDialog = () => {
         setIsRewardConfirmed(true);
 
         setTimeout(() => {
+            stopLoadedSound(victorySound, isSoundEnabled);
+
+
             dispatch({ type: "RESET_GAME" });
             dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
             if (typeof window !== 'undefined') {
@@ -96,6 +115,7 @@ const RewardSelectionDialog = () => {
     }
 
     const handleDenial = () => {
+        playSound("back", isSoundEnabled);
         setRewardCards((prevCards) =>
             prevCards.map((card) => ({
                 ...card,
@@ -109,6 +129,7 @@ const RewardSelectionDialog = () => {
     const [hoveredReward, setHoveredReward] = useState<number | undefined>(undefined);
 
     const handleMouseEnter = (cardId: number) => {
+        if (winState === "blue" && !isRewardConfirmed) playSound("select", isSoundEnabled);
         setHoveredReward(cardId);
     }
 

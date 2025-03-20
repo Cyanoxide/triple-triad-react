@@ -38,8 +38,13 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, isRewardSelectionOpen: action.payload };
         case "SET_IS_GAME_ACTIVE":
             return { ...state, isGameActive: action.payload };
+        case "SET_IS_SOUND_ENABLED":
+            return { ...state, isSoundEnabled: action.payload };
         case "RESET_GAME":
-            return initialState;
+            return {
+                ...initialState,
+                isSoundEnabled: state.isSoundEnabled
+            };
         default:
             return state;
     }
@@ -64,4 +69,5 @@ export const initialState: GameState = {
     isCardSelectionOpen: false,
     isRewardSelectionOpen: false,
     isGameActive: false,
+    isSoundEnabled: false,
 };

@@ -52,8 +52,6 @@
         margin-top: -1.35rem;
 
         tr {
-            // cursor: none;
-
             &:hover::after {
                 content: "";
                 position: absolute;

@@ -5,21 +5,24 @@ import cardList from '../../../data/cards.json';
 import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
 import Card from '../Card/Card';
 import Image from 'next/image';
+import playSound from "../../utils/sounds";
 
 const CardSelectionDialog = () => {
-    const { playerCards, currentPlayerCards, currentPlayerHand, score, isCardSelectionOpen, dispatch } = useGameContext();
+    const { playerCards, currentPlayerCards, currentPlayerHand, score, isCardSelectionOpen, isSoundEnabled, dispatch } = useGameContext();
     const [previewCardId, setPreviewCardId] = useState<number>(0);
 
     const hand: number[] = [...currentPlayerHand];
     const cards: Record<number, number> = { ...currentPlayerCards };
 
-    const handleCardSelection = (cardId: number) => {
+    const handleCardSelection = (cardId: number, quantity: number) => {
         if (cards[cardId] > 0 && hand.length < 5) {
 
             hand.push(cardId);
             score[1] += 1;
             cards[cardId] -= 1;
         }
+        const sound = (quantity) ? "place" : "error";
+        playSound(sound, isSoundEnabled);
 
         dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: hand });
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
@@ -27,18 +30,23 @@ const CardSelectionDialog = () => {
 
     const handleCardHover = (cardId: number) => {
         setPreviewCardId(cardId);
+        playSound("select", isSoundEnabled);
     };
 
 
     const handleConfirmation = () => {
+        playSound("select", isSoundEnabled);
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
         dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
         dispatch({ type: "SET_PLAYER_HAND", payload: hand });
+        playSound("spin", isSoundEnabled);
     }
 
     const handleDenial = () => {
         hand.length = 0;
         score[1] = 0;
+
+        playSound("back", isSoundEnabled);
 
         dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: hand });
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: playerCards });
@@ -68,7 +76,7 @@ const CardSelectionDialog = () => {
                     {paginatedCards.map(([cardId, quantity]) => (
                         <tr
                             key={cardId}
-                            onClick={() => handleCardSelection(Number(cardId))}
+                            onClick={() => handleCardSelection(Number(cardId), quantity)}
                             onMouseEnter={() => handleCardHover(Number(cardId))}
                             className={quantity ? "cursor-pointer" : "text-gray-400"}
                         >

@@ -8,26 +8,29 @@ import { useGameContext } from "../../context/GameContext";
 import { getEnemyMove } from '../../utils/ai';
 import SimpleDialog from '../SimpleDialog/SimpleDialog';
 import Indicator from '../Indicator/Indicator';
+import playSound from "../../utils/sounds";
 
 interface BoardProps {
     className?: string;
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, dispatch } = useGameContext();
+    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, dispatch } = useGameContext();
 
 
     const setWinState = useCallback((currentScore: [number, number] = score) => {
-        // if (isGameActive) dispatch({ type: "SET_WIN_STATE", payload: "red" });
+        // if (isGameActive) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
         // return;
 
         if (turnNumber <= 9 || turnState !== "TURN_END") return;
         const [redScore, blueScore] = currentScore;
 
-        if (redScore > blueScore) dispatch({ type: "SET_WIN_STATE", payload: "red" });
-        if (redScore < blueScore) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
         if (redScore === blueScore) dispatch({ type: "SET_WIN_STATE", payload: "draw" });
-    }, [score, turnNumber, turnState, isGameActive, dispatch])
+        if (redScore > blueScore) dispatch({ type: "SET_WIN_STATE", payload: "red" });
+        if (redScore < blueScore) {
+            dispatch({ type: "SET_WIN_STATE", payload: "blue" });
+        }
+    }, [turnNumber])
 
     const resetBoardValuesOnSwap = (board: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][]): ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][] => {
         board.map((row) =>
@@ -103,6 +106,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         }
 
         if (flips.length > 0) {
+            playSound("flip", isSoundEnabled);
             const newBoard = [...currentBoard.map(row => [...row])];
             flips.forEach(({ row, col, player }) => {
                 if (currentBoard[row][col]) {
@@ -140,6 +144,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         if (cardPlayer !== turn) return;
         grabCardFromHand(position, turn);
         placeCard(rowIndex, colIndex, cardId, turn);
+        playSound("place", isSoundEnabled);
         swapTurn();
     }, [board, selectedCard, turn, grabCardFromHand, placeCard, swapTurn]);
 
@@ -151,6 +156,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 const { enemyCardIndex, enemyCard, enemyPosition } = enemyMove;
 
                 setTimeout(() => {
+                    playSound("select", isSoundEnabled);
+
                     dispatch({
                         type: "SET_SELECTED_CARD",
                         payload: [enemyCard, "red", enemyCardIndex],
@@ -160,6 +167,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 setTimeout(() => {
                     grabCardFromHand(enemyCardIndex, "red");
                     placeCard(enemyPosition.row, enemyPosition.col, enemyCard, "red");
+                    playSound("place", isSoundEnabled);
                     swapTurn();
                 }, 4500);
             }
@@ -178,6 +186,11 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         setWinState([redScore, blueScore])
     }, [board]);
 
+    const handleMouseEnter = (rowIndex: number, colIndex: number) => {
+        if (!board[rowIndex][colIndex] && !!selectedCard && turn === "blue") {
+            playSound("select", isSoundEnabled);
+        }
+    }
 
     return (
         <>
@@ -185,7 +198,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             <div className={`${styles.board} ${(isGameActive) ? "" : "invisible"} ${className || ''}`.trim()}>
                 {board.map((row, rowIndex) => (
                     row.map((col, colIndex) => (
-                        <div key={`${rowIndex}-${colIndex}`} className={styles.cell} data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}>
+                        <div key={`${rowIndex}-${colIndex}`} className={styles.cell} data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)} onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}>
                             {col && (() => {
                                 const cardData = cards.find(card => card.id === col[0]);
                                 return cardData && <Card {...cardData} player={col[1]} data-state={col[2]} />;

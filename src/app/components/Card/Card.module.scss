@@ -4,7 +4,6 @@
     height: 163px; //326px
     transform-style: preserve-3d;
     transition: transform 0.2s;
-    // overflow: hidden;
 
     &[data-player=red] {
         background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
