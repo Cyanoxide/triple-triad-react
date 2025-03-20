@@ -49,6 +49,7 @@ function GameContent() {
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
       </div>
       <button className="absolute right-[1rem] bottom-[1rem] text-2xl" onClick={handleSoundToggle}>{(isSoundEnabled) ? "🔊" : "🔇"}</button>
+      <div id="modal"></div>
     </>
   );
 }

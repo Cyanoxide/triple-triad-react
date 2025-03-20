@@ -21,8 +21,10 @@ const CardSelectionDialog = () => {
             score[1] += 1;
             cards[cardId] -= 1;
         }
-        const sound = (quantity) ? "place" : "error";
-        playSound(sound, isSoundEnabled);
+        if (currentPlayerHand.length < 5) {
+            const sound = (quantity) ? "place" : "error";
+            playSound(sound, isSoundEnabled);
+        }
 
         dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: hand });
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
@@ -30,7 +32,7 @@ const CardSelectionDialog = () => {
 
     const handleCardHover = (cardId: number) => {
         setPreviewCardId(cardId);
-        playSound("select", isSoundEnabled);
+        if (currentPlayerHand.length < 5) playSound("select", isSoundEnabled);
     };
 
 

@@ -51,7 +51,7 @@
     table {
         margin-top: -1.35rem;
 
-        tr {
+        tr:not(thead tr) {
             &:hover::after {
                 content: "";
                 position: absolute;

@@ -47,9 +47,10 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
                     playSound("place", isSoundEnabled);
                 }, 5000);
 
-                return prevCards.map((card) => ({
+                const cardIndex = prevCards.findIndex((card) => card.id === selectedCard.id);
+                return prevCards.map((card, index) => ({
                     ...card,
-                    player: card.id === selectedCard.id ? "red" : "blue",
+                    player: (card.id === selectedCard.id && index === cardIndex) ? "red" : "blue",
                 }));
             });
 
