@@ -9,9 +9,9 @@
     min-width: 10rem;
 
     &[data-dialog=cardSelection] {
-        width: 22rem;
-        height: 52vh;
-        left: 19rem;
+        width: 20rem;
+        left: 17rem;
+        min-height: 20rem;
     }
 
     &[data-dialog=confirmation] {
@@ -24,7 +24,41 @@
         left: calc(100% + 2rem);
         bottom: 2rem;
         transform-origin: center;
+        transform-style: preserve-3d;
         animation: spinCard 4s ease-in-out 2s forwards, infiniteSpin 4s linear 2s infinite;
+    }
+
+    .pagination {
+        animation: blink 0.5s infinite;
+
+        button {
+            &::before {
+                content: "\25C0";
+                display: block;
+            }
+
+            &[data-prev]::before {
+                transform: scaleX(0.65);
+            }
+
+            &[data-next]::before {
+                transform: rotate(180deg) scaleX(0.65);
+            }
+
+            &::after {
+                content: none;
+            }
+        }
+    }
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0
+    }
+
+    100% {
+        opacity: 1
     }
 }
 
@@ -36,23 +70,19 @@
 
     20% {
         transform: rotateX(-20deg);
-        /* Slight backward tilt */
     }
 
     100% {
         transform: rotateY(359deg) rotateX(-20deg);
-        /* Full spin */
     }
 }
 
 @keyframes infiniteSpin {
     0% {
         transform: rotateY(1deg) rotateX(-20deg);
-        /* Slight backward tilt */
     }
 
     100% {
         transform: rotateY(359deg) rotateX(-20deg);
-        /* Full spin */
     }
 }

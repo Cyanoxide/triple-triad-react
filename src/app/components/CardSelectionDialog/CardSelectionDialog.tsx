@@ -54,7 +54,7 @@ const CardSelectionDialog = () => {
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: playerCards });
     }
 
-    const itemsPerPage = 10;
+    const itemsPerPage = 11;
     const [currentPage, setCurrentPage] = useState(1);
 
     const cardEntries = Object.entries(cards);
@@ -70,11 +70,11 @@ const CardSelectionDialog = () => {
             <table className="w-full">
                 <thead>
                     <tr>
-                        <td>Cards <span className={(totalPages > 1) ? "" : "hidden"}>P. {currentPage}</span></td>
-                        <td>Num.</td>
+                        <td>Cards <span className={`ml-2 ${(totalPages > 1) ? "" : "hidden"}`.trim()}>P. <span className="ml-1">{currentPage}</span></span></td>
+                        <td className="text-right"><span className="mr-3">Num.</span></td>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody className="mt-2">
                     {paginatedCards.map(([cardId, quantity]) => (
                         <tr
                             key={cardId}
@@ -87,19 +87,15 @@ const CardSelectionDialog = () => {
                                 <span>{cardList.find(card => card.id === Number(cardId))?.name}</span>
 
                             </td>
-                            <td>{quantity}</td>
+                            <td className="text-right"><span className="mr-1">{quantity}</span></td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
-            <div className={(totalPages > 1) ? "" : "hidden"}>
-                <button onClick={() => setCurrentPage(prev => (prev === 1 ? totalPages : prev - 1))} className="disabled:opacity-50">
-                    Left
-                </button>
-                <button onClick={() => setCurrentPage(prev => (prev === totalPages ? 1 : prev + 1))} className="disabled:opacity-50">
-                    Right
-                </button>
+            <div className={`${styles.pagination} flex justify-between absolute bottom-0 left-0 w-full ${(totalPages > 1) ? "" : "hidden"}`.trim()}>
+                <button data-prev onClick={() => setCurrentPage(prev => (prev === 1 ? totalPages : prev - 1))} className="disabled:opacity-50"></button>
+                <button data-next onClick={() => setCurrentPage(prev => (prev === totalPages ? 1 : prev + 1))} className="disabled:opacity-50"></button>
             </div>
 
             {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
