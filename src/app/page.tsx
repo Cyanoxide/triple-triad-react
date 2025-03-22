@@ -41,8 +41,8 @@ function GameContent() {
           {isCardSelectionOpen && <CardSelectionDialog />}
         </div>
         <div className="flex h-screen">
-          <Hand className="order-1 flex justify-end items-center gap-4 flex-col pb-[9rem] w-[20%]" player="red" />
-          <Hand className="order-3 flex justify-end items-center gap-4 flex-col pb-[9rem] w-[20%]" player="blue" />
+          <Hand className="order-1 flex items-center justify-center w-[20%]" player="red" />
+          <Hand className="order-3 flex items-center justify-center w-[20%]" player="blue" />
           <Board className="order-2 grid justify-center items-center gap-1 w-[60%] m-auto" />
         </div>
         {winState && !isRewardSelectionOpen && victorySoundRef.current && <WinDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}

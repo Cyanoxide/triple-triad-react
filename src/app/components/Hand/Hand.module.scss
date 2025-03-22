@@ -1,6 +1,6 @@
 .hand {
-    padding-top: 1rem;
-    padding-bottom: 4rem;
+    min-height: 559px;
+    padding-top: 4rem;
     z-index: 1;
 
     &[data-player=red] {
@@ -57,6 +57,7 @@
     font-style: italic;
     font-weight: bold;
     position: absolute;
-    bottom: 11rem;
+    bottom: -2rem;
     z-index: 4;
+    pointer-events: none;
 }

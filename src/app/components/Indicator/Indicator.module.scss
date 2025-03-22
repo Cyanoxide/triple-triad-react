@@ -19,10 +19,12 @@ $z-offset: 6px;
     }
 
     &[data-type="turn-indicator"] {
+        justify-content: center;
+        top: -4rem;
+    }
+
+    &[data-type="turn-indicator"] {
         position: absolute;
-        left: calc(50% - 20px);
-        top: 9rem;
-        transform: translate(-50%, -50%);
         z-index: 4;
         animation: fade-in 0.1s linear forwards;
         opacity: 0;
