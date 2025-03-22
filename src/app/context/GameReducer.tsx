@@ -10,10 +10,14 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, playerHand: action.payload };
         case "SET_CURRENT_PLAYER_HAND":
             return { ...state, currentPlayerHand: action.payload };
+        case "SET_ENEMY_ID":
+            return { ...state, enemyId: action.payload };
         case "SET_ENEMY_HAND":
             return { ...state, enemyHand: action.payload };
         case "SET_CURRENT_ENEMY_HAND":
             return { ...state, currentEnemyHand: action.payload };
+        case "SET_LOST_CARDS":
+            return { ...state, lostCards: action.payload };
         case "SET_WIN_STATE":
             return { ...state, winState: action.payload };
         case "SET_TURN":
@@ -55,8 +59,10 @@ export const initialState: GameState = {
     currentPlayerCards: [],
     playerHand: [],
     currentPlayerHand: [],
-    enemyHand: [7, 8, 9, 10, 11],
-    currentEnemyHand: [7, 8, 9, 10, 11],
+    enemyId: 1,
+    enemyHand: [1, 1, 1, 1, 1],
+    currentEnemyHand: [1, 1, 1, 1, 1],
+    lostCards: {},
     winState: null,
     turn: null,
     turnNumber: 1,

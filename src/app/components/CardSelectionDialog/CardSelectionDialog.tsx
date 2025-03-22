@@ -10,7 +10,7 @@ import { setAiPlayerCards } from "../../utils/aiCardSelection";
 
 
 const CardSelectionDialog = () => {
-    const { playerCards, currentPlayerCards, currentPlayerHand, score, isCardSelectionOpen, isSoundEnabled, dispatch } = useGameContext();
+    const { playerCards, currentPlayerCards, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isSoundEnabled, dispatch } = useGameContext();
     const [previewCardId, setPreviewCardId] = useState<number>(0);
 
     const hand: number[] = [...currentPlayerHand];
@@ -43,8 +43,8 @@ const CardSelectionDialog = () => {
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
         dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
         dispatch({ type: "SET_PLAYER_HAND", payload: hand });
-        dispatch({ type: "SET_ENEMY_HAND", payload: setAiPlayerCards(1) || [] })
-        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: setAiPlayerCards(1) || [] })
+        dispatch({ type: "SET_ENEMY_HAND", payload: setAiPlayerCards(enemyId, lostCards) || [] })
+        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: setAiPlayerCards(enemyId, lostCards) || [] })
         playSound("spin", isSoundEnabled);
     }
 

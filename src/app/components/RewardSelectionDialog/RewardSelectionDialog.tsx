@@ -13,12 +13,12 @@ interface RewardSelectionDialogProps {
 }
 
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
-    const { playerCards, playerHand, enemyHand, selectedReward, winState, isSoundEnabled, dispatch } = useGameContext();
+    const { playerCards, playerHand, enemyId, enemyHand, lostCards, selectedReward, winState, isSoundEnabled, dispatch } = useGameContext();
 
     const winAmount = 1;
 
-    const [rewardCards, setRewardCards] = useState<{ id: number; level: number, player: "red" | "blue" }[]>(enemyHand.map((card) => ({ id: card, level: cards.find(card => card.id === selectedReward)?.level ?? 0, player: "red" })));
-    const [enemyRewardCards, setEnemyRewardCards] = useState<{ id: number; level: number, player: "red" | "blue" }[]>(playerHand.map((card) => ({ id: card, level: cards.find(card => card.id === selectedReward)?.level ?? 0, player: "blue" })));
+    const [rewardCards, setRewardCards] = useState<{ id: number; level: number, player: "red" | "blue" }[]>(enemyHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "red" })));
+    const [enemyRewardCards, setEnemyRewardCards] = useState<{ id: number; level: number, player: "red" | "blue" }[]>(playerHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "blue" })));
 
     const updatedPlayerCards = { ...playerCards };
     const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
@@ -70,6 +70,14 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         if (selectedCardId !== null) {
             dispatch({ type: "SET_SELECTED_REWARD", payload: selectedCardId });
         }
+
+        if (winState === "red") {
+            const currentLostCards = { ...lostCards };
+            if (selectedCardId) currentLostCards[enemyId] = selectedCardId;
+
+            dispatch({ type: "SET_LOST_CARDS", payload: currentLostCards });
+            localStorage.setItem("lostCards", JSON.stringify(currentLostCards));
+        }
     }, [selectedCardId]);
 
 
@@ -102,6 +110,14 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         else updatedPlayerCards[selectedReward] = 1;
 
         setIsRewardConfirmed(true);
+
+        const currentLostCards = { ...lostCards };
+        if (currentLostCards[enemyId] === selectedReward) {
+            delete currentLostCards[enemyId]
+        }
+
+        dispatch({ type: "SET_LOST_CARDS", payload: currentLostCards });
+        localStorage.setItem("lostCards", JSON.stringify(currentLostCards));
 
         setTimeout(() => {
             stopLoadedSound(victorySound, isSoundEnabled);
