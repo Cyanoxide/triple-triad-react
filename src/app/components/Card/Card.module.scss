@@ -13,16 +13,27 @@
         background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
     }
 
-    &__front,
-    &__back {
-        backface-visibility: hidden;
-    }
-
     &__front {
         background-image: url("/assets/sprites.png");
         image-rendering: pixelated;
         height: 100%;
         background-size: 1568px 1498px;
+        backface-visibility: hidden;
+        transform-style: preserve-3d;
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            background-image: url("/assets/cardback.png");
+            transform: rotateY(180deg);
+            background-size: cover;
+        }
 
         $startX: 5;
         $startY: 5;

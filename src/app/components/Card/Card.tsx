@@ -30,9 +30,6 @@ const Card: React.FC<CardProps> = ({ id, player, ...props }) => {
                     <span className={`${styles.leftValue} leftValue absolute text-center`}>{renderCardValue(card.left)}</span>
                 </div>
             </div>
-            <div className={`${styles.card__back} absolute top-0 z-0`}>
-                <Image src="/assets/cardback.png" alt="Card back" layout="fill" objectFit="cover" />
-            </div>
         </div>
     );
 };
