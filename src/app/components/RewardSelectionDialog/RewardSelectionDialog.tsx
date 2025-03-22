@@ -94,7 +94,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
         setTimeout(() => {
             playSound("success", isSoundEnabled);
-        }, 3000);
+        }, 2500);
 
         const updatedPlayerCards = { ...playerCards };
 

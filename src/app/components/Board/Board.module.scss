@@ -70,8 +70,6 @@
     }
 
     [data-selectable=true] {
-        cursor: none;
-
         &:hover::after {
             content: "";
             position: absolute;
