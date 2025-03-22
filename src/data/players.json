@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "player": "Guy on Bench",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCards": null
+    },
+    {
+        "id": 2,
+        "player": "Running Boy",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCards": 81
+    },
+    {
+        "id": 2,
+        "player": "Trepe Groupie #1",
+        "cards": [
+            1,
+            2,
+            5
+        ],
+        "rareCards": 104
+    }
+]

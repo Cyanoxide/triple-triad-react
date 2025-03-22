@@ -6,6 +6,8 @@ import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
 import Card from '../Card/Card';
 import Image from 'next/image';
 import playSound from "../../utils/sounds";
+import { setAiPlayerCards } from "../../utils/aiCardSelection";
+
 
 const CardSelectionDialog = () => {
     const { playerCards, currentPlayerCards, currentPlayerHand, score, isCardSelectionOpen, isSoundEnabled, dispatch } = useGameContext();
@@ -41,6 +43,8 @@ const CardSelectionDialog = () => {
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
         dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
         dispatch({ type: "SET_PLAYER_HAND", payload: hand });
+        dispatch({ type: "SET_ENEMY_HAND", payload: setAiPlayerCards(1) || [] })
+        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: setAiPlayerCards(1) || [] })
         playSound("spin", isSoundEnabled);
     }
 
