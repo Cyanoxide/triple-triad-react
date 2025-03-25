@@ -113,36 +113,34 @@ p {
 }
 
 .values {
-    text-shadow: 2px 2px 2px #000, -2px -2px 2px #000, 2px -2px #000, -2px 2px 2px #000;
-    font-family: serif;
-    font-weight: bold;
-    font-size: 1.4rem;
+    font-size: 0.45rem;
+    font-family: "Custom FF8 Card Numbers";
 
     span {
         width: 20px;
     }
 
     .topValue {
-        top: 0px;
-        left: 22px;
+        top: -2px;
+        left: 24px;
         transform: translateX(-50%);
     }
 
     .rightValue {
-        top: 36px;
-        left: 22px;
+        top: 33px;
+        left: 24px;
         transform: translateY(-50%);
     }
 
     .bottomValue {
-        top: 36px;
-        left: 22px;
+        top: 39px;
+        left: 24px;
         transform: translateX(-50%);
     }
 
     .leftValue {
-        top: 36px;
-        left: 2px;
+        top: 33px;
+        left: 4px;
         transform: translateY(-50%);
     }
 }
