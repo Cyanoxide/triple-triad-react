@@ -1,6 +1,8 @@
 type sounds = "select" | "flip" | "place" | "error" | "spin" | "back" | "success" | "victory" | "bgm";
 
 export const loadSound = (sound: sounds) => {
+    if (typeof window == "undefined") return;
+
     const src = "/assets/audio/";
 
     const sounds = {
@@ -18,14 +20,14 @@ export const loadSound = (sound: sounds) => {
     return new Audio(`${src}${sounds[sound]}`);
 }
 
-export const playLoadedSound = (audio: HTMLAudioElement, isSoundEnabled: boolean) => {
+export const playLoadedSound = (audio: HTMLAudioElement | undefined, isSoundEnabled: boolean) => {
     if (isSoundEnabled && audio) {
         audio.volume = 0.2;
         audio.play()
     }
 }
 
-export const stopLoadedSound = (audio: HTMLAudioElement, isSoundEnabled: boolean) => {
+export const stopLoadedSound = (audio: HTMLAudioElement | undefined, isSoundEnabled: boolean) => {
     if (isSoundEnabled && audio) {
         audio.pause();
         audio.currentTime = 0;

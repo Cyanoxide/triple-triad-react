@@ -47,10 +47,14 @@ body::before {
   left: 0px;
   right: 0px;
   bottom: 0px;
-  background: radial-gradient(50% 50%, #fff 1%, #ff7f61aa 40%, #32313188 100%), url("/assets/bg.png");
-  background-blend-mode: color-burn;
+  background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), radial-gradient(50% 50%, #fbf8e1ee 1%, #fbf8e100 60%), url("/assets/bg.png");
+  background-blend-mode: soft-light, hard-light;
   background-size: cover;
-  background-position-x: center;
+  background-position: center;
+}
+
+.blue-text {
+  font-family: "Custom FF8 Font Blue";
 }
 
 /* @keyframes jitter {

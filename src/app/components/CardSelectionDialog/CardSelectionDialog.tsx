@@ -39,12 +39,14 @@ const CardSelectionDialog = () => {
 
 
     const handleConfirmation = () => {
+        const enemyCards = setAiPlayerCards(enemyId, lostCards);
+
         playSound("select", isSoundEnabled);
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
         dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
         dispatch({ type: "SET_PLAYER_HAND", payload: hand });
-        dispatch({ type: "SET_ENEMY_HAND", payload: setAiPlayerCards(enemyId, lostCards) || [] })
-        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: setAiPlayerCards(enemyId, lostCards) || [] })
+        dispatch({ type: "SET_ENEMY_HAND", payload: enemyCards || [] })
+        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: enemyCards || [] })
         playSound("spin", isSoundEnabled);
     }
 

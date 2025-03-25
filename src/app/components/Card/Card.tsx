@@ -2,7 +2,6 @@ import React from 'react';
 import styles from './Card.module.scss';
 import cards from '../../../data/cards.json';
 import { useGameContext } from "../../context/GameContext";
-import Image from 'next/image';
 
 interface CardProps {
     id: number;

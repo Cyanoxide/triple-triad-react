@@ -47,13 +47,14 @@
                 $id - 1) % $cardsPerRow;
 
             &[data-card-id="#{$id}"] {
-                background-position: $startX - ($x * $col) $startY - ($y * $row
-                );
-        }
-    }
+                background-position: #{"#{$startX - ($x * $col)}px"} #{"#{$startY - ($y * $row)}px"};
 
-    @for $i from 1 through 110 {
-        @include card-position($i);
+            }
+        }
+
+        @for $i from 1 through 110 {
+            @include card-position($i
+        );
     }
 
     &::after {

@@ -9,7 +9,7 @@ import playSound, { stopLoadedSound } from "../../utils/sounds";
 
 interface RewardSelectionDialogProps {
     victorySound: HTMLAudioElement;
-    bgm: HTMLAudioElement;
+    bgm: HTMLAudioElement | undefined;
 }
 
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {

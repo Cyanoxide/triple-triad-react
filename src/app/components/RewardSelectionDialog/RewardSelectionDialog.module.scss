@@ -1,7 +1,11 @@
 @import "../../styles/dialog.module.scss";
 
 .rewardSelectionContainer {
-    background: #000d;
+    background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), url("/assets/bg-accent.png"), url("/assets/bg.png");
+    background-blend-mode: soft-light;
+    background-size: cover, 95% 95%;
+    background-position: center;
+    background-repeat: no-repeat;
     top: 0;
     left: 0;
     position: fixed;
@@ -71,11 +75,10 @@
 
 .rewardSelectionDialog {
     @extend .dialog;
-    padding: 1rem;
 }
 
 .dialogContainer {
-    min-height: 3.5rem;
+    min-height: 4.1rem;
 }
 
 @keyframes card-preview-blue {

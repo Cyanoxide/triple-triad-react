@@ -6,7 +6,7 @@ import { playLoadedSound, stopLoadedSound } from "../../utils/sounds";
 
 interface WinDialogProps {
     victorySound: HTMLAudioElement;
-    bgm: HTMLAudioElement;
+    bgm: HTMLAudioElement | undefined;
 }
 
 const WinDialog: React.FC<WinDialogProps> = ({ victorySound, bgm }) => {
