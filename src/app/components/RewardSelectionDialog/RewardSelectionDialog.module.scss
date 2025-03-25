@@ -1,4 +1,4 @@
-@import "../../styles/dialog.module.scss";
+@use "../../styles/dialog.module.scss";
 
 .rewardSelectionContainer {
     background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), url("/assets/bg-accent.png"), url("/assets/bg.png");
