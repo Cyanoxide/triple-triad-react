@@ -84,12 +84,18 @@
         }
     }
 
+    [data-state="placed"] {
+        animation: placeCardOnBoard 0.2s ease-out forwards;
+    }
+
     [data-player=red][data-state="flipped"] {
-        animation: card-flip-red 0.2s ease-in-out forwards;
+        transform-style: preserve-3d;
+        animation: card-flip-red 0.4s ease-in-out 0.2s forwards;
     }
 
     [data-player=blue][data-state="flipped"] {
-        animation: card-flip-blue 0.2s ease-in-out forwards;
+        transform-style: preserve-3d;
+        animation: card-flip-blue 0.4s ease-in-out 0.2s forwards;
     }
 }
 
@@ -103,34 +109,54 @@
     }
 }
 
-@keyframes card-flip-blue {
-    49% {
-        transform: rotate3d(0, 1, 0, 0.25turn);
-    }
+// @keyframes card-flip-blue {
+//     49% {
+//         transform: rotate3d(0, 1, 0, 0.25turn);
+//     }
 
+//     50% {
+//         transform: rotate3d(0, 1, 0, 0.75turn);
+//         background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+//     }
+
+//     100% {
+//         transform: rotate3d(0, 1, 0, 1turn);
+//         background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+//     }
+// }
+
+@keyframes card-flip-blue {
     50% {
-        transform: rotate3d(0, 1, 0, 0.75turn);
+        transform: rotate3d(0, 1, 0, 0.5turn) scale(1.2);
         background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+        z-index: 3;
     }
 
     100% {
-        transform: rotate3d(0, 1, 0, 1turn);
+        transform: rotate3d(0, 1, 0, 1turn) scale(1);
         background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
     }
 }
 
 @keyframes card-flip-red {
-    49% {
-        transform: rotate3d(0, 1, 0, 0.25turn);
-    }
-
     50% {
-        transform: rotate3d(0, 1, 0, 0.75turn);
+        transform: rotate3d(0, 1, 0, 0.5turn) scale(1.2);
         background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
+        z-index: 3;
     }
 
     100% {
-        transform: rotate3d(0, 1, 0, 1turn);
+        transform: rotate3d(0, 1, 0, 1turn) scale(1);
         background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
+    }
+}
+
+@keyframes placeCardOnBoard {
+    0% {
+        transform: translateY(-100rem);
+    }
+
+    100% {
+        transform: translateY(0);
     }
 }
