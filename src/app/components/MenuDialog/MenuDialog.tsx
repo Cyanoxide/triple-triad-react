@@ -1,7 +1,7 @@
-import React from 'react';
 import styles from './MenuDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import playSound from "../../utils/sounds";
+import EnemySelectionDialog from '../EnemySelection/EnemySelection';
 
 interface MenuProps {
     rules: string[];
@@ -25,19 +25,22 @@ const MenuDialog: React.FC<MenuProps> = ({ rules }) => {
     }
 
     return (
-        <div className={`${styles.menuDialog} ${(isMenuOpen) ? "" : "hidden"}`}>
-            <h4>Info.</h4>
-            <h3>Rules:</h3>
-            <ul>
-                {rules.map((rule, index) => (
-                    <li key={index}>{rule}</li>
-                ))}
-            </ul>
-            <div className="flex flex-col items-center">
-                <button className="relative" onClick={handlePlayClick} onMouseEnter={handleMouseEnter}>Play</button>
-                <button className="relative" onClick={handleQuitClick} onMouseEnter={handleMouseEnter}>Quit</button>
+        <>
+            <div className={`${styles.menuDialog} ${(isMenuOpen) ? "" : "hidden"}`}>
+                <h4>Info.</h4>
+                <h3>Rules:</h3>
+                <ul>
+                    {rules.map((rule, index) => (
+                        <li key={index}><span>{rule}</span></li>
+                    ))}
+                </ul>
+                <div className="flex flex-col items-center">
+                    <button className="relative" onClick={handlePlayClick} onMouseEnter={handleMouseEnter}>Play</button>
+                    <button className="relative" onClick={handleQuitClick} onMouseEnter={handleMouseEnter}>Quit</button>
+                </div>
             </div>
-        </div>
+            <EnemySelectionDialog />
+        </>
     );
 };
 

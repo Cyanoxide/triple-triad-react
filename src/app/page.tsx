@@ -30,7 +30,6 @@ function GameContent() {
     }
 
     dispatch({ type: "SET_IS_SOUND_ENABLED", payload: toggle });
-    // localStorage.setItem("isSoundEnabled", String(toggle));
   }
 
   return (

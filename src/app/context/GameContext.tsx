@@ -19,6 +19,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
                 console.error("Failed to parse playerCards from localStorage", error);
             }
         }
+
+        const lostCardsJSON = localStorage.getItem("lostCards");
+        if (lostCardsJSON) {
+            try {
+                const lostCards = JSON.parse(lostCardsJSON);
+                dispatch({ type: "SET_LOST_CARDS", payload: lostCards });
+            } catch (error) {
+                console.error("Failed to parse playerCards from localStorage", error);
+            }
+        }
     }, []);
 
     useEffect(() => {

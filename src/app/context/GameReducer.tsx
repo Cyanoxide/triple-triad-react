@@ -10,10 +10,14 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, playerHand: action.payload };
         case "SET_CURRENT_PLAYER_HAND":
             return { ...state, currentPlayerHand: action.payload };
+        case "SET_ENEMY_ID":
+            return { ...state, enemyId: action.payload };
         case "SET_ENEMY_HAND":
             return { ...state, enemyHand: action.payload };
         case "SET_CURRENT_ENEMY_HAND":
             return { ...state, currentEnemyHand: action.payload };
+        case "SET_LOST_CARDS":
+            return { ...state, lostCards: action.payload };
         case "SET_WIN_STATE":
             return { ...state, winState: action.payload };
         case "SET_TURN":
@@ -40,6 +44,10 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, isGameActive: action.payload };
         case "SET_IS_SOUND_ENABLED":
             return { ...state, isSoundEnabled: action.payload };
+        case "SET_CURRENT_PAGES":
+            return { ...state, currentPages: action.payload };
+        case "SET_SLIDE_DIRECTION":
+            return { ...state, slideDirection: action.payload };
         case "RESET_GAME":
             return {
                 ...initialState,
@@ -55,8 +63,10 @@ export const initialState: GameState = {
     currentPlayerCards: [],
     playerHand: [],
     currentPlayerHand: [],
-    enemyHand: [7, 8, 9, 10, 11],
-    currentEnemyHand: [7, 8, 9, 10, 11],
+    enemyId: 1,
+    enemyHand: [1, 1, 1, 1, 1],
+    currentEnemyHand: [1, 1, 1, 1, 1],
+    lostCards: {},
     winState: null,
     turn: null,
     turnNumber: 1,
@@ -70,4 +80,6 @@ export const initialState: GameState = {
     isRewardSelectionOpen: false,
     isGameActive: false,
     isSoundEnabled: false,
+    slideDirection: null,
+    currentPages: { "players": 1, "cards": 1 },
 };

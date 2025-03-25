@@ -44,7 +44,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
                     ))}
                 </div>
 
-                <div className={styles.score}>
+                {isGameActive && <div className={styles.score}>
                     <svg width="128" height="80">
                         <defs>
                             <linearGradient id="textGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -60,7 +60,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
                             <feDropShadow dx="3" dy="3" stdDeviation="2" floodColor="black" />
                         </filter>
                     </svg>
-                </div>
+                </div>}
             </div>
         </div>
     );

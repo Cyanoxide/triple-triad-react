@@ -1,24 +1,20 @@
 .dialog {
     background: linear-gradient(125deg, #434546, #696c69);
-    border: 2px solid;
-    border-top-color: #7c7f7e;
-    border-right-color: #363536;
-    border-bottom-color: #363536;
-    border-left-color: #7c7f7e;
+    box-shadow: inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
     outline: 2px solid #000;
     color: #fff;
-    text-shadow: 2px 2px 0px #424242;
-    padding: 1rem;
+    padding: 1rem 1rem 0.7rem 1rem;
     z-index: 3;
 
     li {
-        list-style: disc;
-        margin-left: 1rem;
+        list-style: square;
+        margin-left: 0.5rem;
+        padding-left: 0.5rem;
     }
 
     button {
         text-align: center;
-        text-shadow: 2px 2px 0px #424242;
+        text-shadow: 1px 1px 0 #000;
 
         &:hover {
             &::after {
@@ -35,33 +31,15 @@
         }
     }
 
-    h4,
-    thead {
+    h4 {
         color: #c9c9c6;
         font-weight: bold;
+        font-family: Arial, Helvetica, sans-serif;
         text-transform: uppercase;
         text-shadow: -2px -2px 0 #040703, 2px -2px 0 #040703, -2px 2px 0 #040703, 2px 2px 0 #040703;
         font-size: 0.7rem;
-        margin-top: -1.35rem;
+        margin-top: -1.6rem;
         margin-left: -0.55rem;
         margin-bottom: 0.1rem;
-    }
-
-    table {
-        margin-top: -1.35rem;
-
-        tr:not(thead tr) {
-            &:hover::after {
-                content: "";
-                position: absolute;
-                left: -1.75rem;
-                background-image: url("/assets/cursor.png");
-                background-size: cover;
-                width: 38px;
-                height: 24px;
-                margin-top: -1.2rem;
-                z-index: 4;
-            }
-        }
     }
 }

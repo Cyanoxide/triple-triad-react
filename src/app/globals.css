@@ -14,15 +14,32 @@
   }
 }
 
+@font-face {
+  font-family: "Custom FF8 Font White";
+  src: url("/assets/fonts/FF8-Font-White.otf");
+}
+
+@font-face {
+  font-family: "Custom FF8 Font Blue";
+  src: url("/assets/fonts/FF8-Font-Blue.otf");
+}
+
+@font-face {
+  font-family: "Custom FF8 Card Numbers";
+  src: url("/assets/fonts/FF8-Card-Numbers.otf");
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Custom FF8 Font White", Arial, Helvetica, sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.8rem;
+  letter-spacing: 0rem;
+  word-spacing: 0.2rem;
+  text-shadow: 1px 1px 0 #000;
+  overflow: hidden;
   /* animation: jitter 10s ease infinite; */
-  /* mask-image: url("/assets/crt.png");
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center; */
 }
 
 body::after {
@@ -47,10 +64,14 @@ body::before {
   left: 0px;
   right: 0px;
   bottom: 0px;
-  background: radial-gradient(50% 50%, #fff 1%, #ff7f61aa 40%, #32313188 100%), url("/assets/bg.png");
-  background-blend-mode: color-burn;
+  background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), radial-gradient(50% 50%, #fbf8e1ee 1%, #fbf8e100 60%), url("/assets/bg.png");
+  background-blend-mode: soft-light, hard-light;
   background-size: cover;
-  background-position-x: center;
+  background-position: center;
+}
+
+.blue-text {
+  font-family: "Custom FF8 Font Blue";
 }
 
 /* @keyframes jitter {

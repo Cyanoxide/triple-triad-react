@@ -1,0 +1,50 @@
+.pagination {
+    animation: blink 0.5s infinite;
+    line-height: 1rem;
+
+    button {
+        &::before {
+            content: "\25C0";
+            display: block;
+        }
+
+        &[data-prev]::before {
+            transform: scaleX(0.65);
+        }
+
+        &[data-next]::before {
+            transform: rotate(180deg) scaleX(0.65) translateY(2px);
+        }
+
+        &::after {
+            content: none !important;
+        }
+    }
+}
+
+.paginationContainer {
+    &>div {
+        transition: all 0.2s ease-in;
+        transform: translateX(0);
+    }
+
+    [data-slide-direction="prev"] {
+        transform: translateX(-10%);
+        opacity: 0;
+    }
+
+    [data-slide-direction="next"] {
+        transform: translateX(10%);
+        opacity: 0;
+    }
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0
+    }
+
+    100% {
+        opacity: 1
+    }
+}

@@ -195,7 +195,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     return (
         <>
             {isGameActive && turnNumber === 1 && <Indicator type="STARTING_PLAYER_INDICATOR" />}
-            <div className={`${styles.board} ${(isGameActive) ? "" : "invisible"} ${className || ''}`.trim()}>
+            <div className={`${styles.board} ${className || ''}`.trim()}>
                 {board.map((row, rowIndex) => (
                     row.map((col, colIndex) => (
                         <div key={`${rowIndex}-${colIndex}`} className={styles.cell} data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)} onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}>

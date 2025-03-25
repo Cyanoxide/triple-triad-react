@@ -5,18 +5,19 @@
 
     &[data-player=red] {
         [data-selected=true] {
-            transform: translateX(50%);
+            transform: translateX(50%) !important;
         }
     }
 
     &[data-player=blue] {
         [data-selected=true] {
-            transform: translateX(-50%);
+            transform: translateX(-50%) !important;
         }
     }
 
     >div {
         margin-top: -50%;
+        animation: placeCardInHand 0.15s ease-out forwards;
     }
 
     &[data-selectable=true] {
@@ -60,4 +61,14 @@
     bottom: -2rem;
     z-index: 4;
     pointer-events: none;
+}
+
+@keyframes placeCardInHand {
+    0% {
+        transform: translateY(100rem);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
 }

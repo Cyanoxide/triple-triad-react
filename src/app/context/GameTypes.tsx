@@ -7,8 +7,10 @@ export interface GameState {
     currentPlayerCards: Record<number, number>;
     playerHand: number[];
     currentPlayerHand: number[];
+    enemyId: number;
     enemyHand: number[];
     currentEnemyHand: number[];
+    lostCards: Record<number, number>,
     winState: Player | "draw" | null;
     turn: Player | null;
     turnNumber: number;
@@ -22,6 +24,8 @@ export interface GameState {
     isRewardSelectionOpen: boolean;
     isGameActive: boolean;
     isSoundEnabled: boolean;
+    slideDirection: "prev" | "next" | null;
+    currentPages: Record<string, number>;
 }
 
 export type GameAction =
@@ -29,8 +33,10 @@ export type GameAction =
     | { type: "SET_CURRENT_PLAYER_CARDS"; payload: Record<number, number> }
     | { type: "SET_PLAYER_HAND"; payload: number[] }
     | { type: "SET_CURRENT_PLAYER_HAND"; payload: number[] }
+    | { type: "SET_ENEMY_ID"; payload: number }
     | { type: "SET_ENEMY_HAND"; payload: number[] }
     | { type: "SET_CURRENT_ENEMY_HAND"; payload: number[] }
+    | { type: "SET_LOST_CARDS"; payload: Record<number, number> }
     | { type: "SET_WIN_STATE"; payload: Player | "draw" | null }
     | { type: "SET_TURN"; payload: Player }
     | { type: "INCREMENT_TURN" }
@@ -44,6 +50,8 @@ export type GameAction =
     | { type: "SET_IS_REWARD_SELECTION_OPEN"; payload: boolean }
     | { type: "SET_IS_GAME_ACTIVE"; payload: boolean }
     | { type: "SET_IS_SOUND_ENABLED"; payload: boolean }
+    | { type: "SET_CURRENT_PAGES"; payload: Record<string, number> }
+    | { type: "SET_SLIDE_DIRECTION"; payload: "prev" | "next" | null }
     | { type: "RESET_GAME" };
 
 export interface GameContextType extends GameState {
