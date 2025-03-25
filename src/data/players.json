@@ -24,15 +24,200 @@
         "rareCard": 81
     },
     {
-        "id": 2,
+        "id": 3,
+        "location": "Deling City",
+        "player": "General Caraway",
+        "additionalDesc": "Caraway's Mansion",
+        "cards": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "rareCard": 107
+    },
+    {
+        "id": 4,
+        "location": "Timber",
+        "player": "Pub Owner",
+        "additionalDesc": "Timber Pub, upper right",
+        "cards": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "rareCard": 86
+    },
+    {
+        "id": 5,
+        "location": "Balamb Garden",
+        "player": "Gatekeeper",
+        "additionalDesc": "Gate Reception",
+        "cards": [
+            1,
+            2,
+            3,
+            5
+        ],
+        "rareCard": null
+    },
+    {
+        "id": 6,
         "location": "Balamb Garden",
         "player": "Trepe Groupie #1",
-        "additionalDesc": "Cafetaria, guy in the back",
+        "additionalDesc": "Cafeteria, guy in the back",
         "cards": [
             1,
             2,
             5
         ],
         "rareCard": 104
+    },
+    {
+        "id": 7,
+        "location": "Dollet",
+        "player": "Pub Owner",
+        "additionalDesc": "Private Room",
+        "cards": [
+            1,
+            3,
+            4
+        ],
+        "rareCard": 98
+    },
+    {
+        "id": 8,
+        "location": "Balamb",
+        "player": "Ma Dincht",
+        "additionalDesc": "Zell's House",
+        "cards": [
+            1,
+            2,
+            4,
+            5
+        ],
+        "rareCard": 106
+    },
+    {
+        "id": 9,
+        "location": "Trabia Garden",
+        "player": "Selphie’s Friend",
+        "additionalDesc": "By the fountain",
+        "cards": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        "rareCard": 103
+    },
+    {
+        "id": 10,
+        "location": "Timber",
+        "player": "Couple on Bench",
+        "additionalDesc": "Intersection to Pub & Station",
+        "cards": [
+            2,
+            3,
+            4
+        ],
+        "rareCard": null
+    },
+    {
+        "id": 11,
+        "location": "Fisherman's Horizon",
+        "player": "Mayor Dobe",
+        "additionalDesc": "Mayor's House, Upstairs",
+        "cards": [
+            1,
+            2,
+            4,
+            5,
+            6
+        ],
+        "rareCard": 83
+    },
+    {
+        "id": 12,
+        "location": "Fisherman's Horizon",
+        "player": "Flo",
+        "additionalDesc": "Mayor's House, Upstairs",
+        "cards": [
+            1,
+            2,
+            5,
+            6
+        ],
+        "rareCard": 105
+    },
+    {
+        "id": 13,
+        "location": "Fisherman's Horizon",
+        "player": "Martine",
+        "additionalDesc": "Right from Mayor's House",
+        "cards": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ],
+        "rareCard": 85
+    },
+    {
+        "id": 14,
+        "location": "Deling City",
+        "player": "Man in Black",
+        "additionalDesc": "Across the Junk Shop",
+        "cards": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ],
+        "rareCard": 101
+    },
+    {
+        "id": 15,
+        "location": "Winhill",
+        "player": "Mansion Owner",
+        "additionalDesc": "Man on the stairs in Mansion",
+        "cards": [
+            3,
+            4,
+            5
+        ],
+        "rareCard": null
+    },
+    {
+        "id": 16,
+        "location": "Balamb",
+        "player": "Hotel Owner",
+        "additionalDesc": "In front of the Hotel",
+        "cards": [
+            4,
+            5
+        ],
+        "rareCard": 93
+    },
+    {
+        "id": 17,
+        "location": "Shumi Village",
+        "player": "Shumi Elder",
+        "additionalDesc": "Elder's House",
+        "cards": [
+            2,
+            4,
+            6,
+            7
+        ],
+        "rareCard": null
     }
 ]

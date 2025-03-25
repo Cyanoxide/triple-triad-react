@@ -1,0 +1,15 @@
+@import "../../styles/dialog.module.scss";
+
+.enemySelectionDialog {
+    @extend .dialog;
+    position: absolute;
+    top: 80%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 20rem;
+
+    h3,
+    p {
+        text-align: center;
+    }
+}
