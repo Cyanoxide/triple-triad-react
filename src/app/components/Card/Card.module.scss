@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .card {
     border: 1px solid #000;
     width: 128px; //256px
@@ -42,7 +44,7 @@
         $cardsPerRow: 11;
 
         @mixin card-position($id) {
-            $row: floor(($id - 1) / $cardsPerRow);
+            $row: math.floor(calc(($id - 1) / $cardsPerRow));
             $col: (
                 $id - 1) % $cardsPerRow;
 

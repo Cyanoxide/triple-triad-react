@@ -1,4 +1,4 @@
-@import "../../styles/dialog.module.scss";
+@use "../../styles/dialog.module.scss";
 
 .confirmationDialog {
     @extend .dialog;
