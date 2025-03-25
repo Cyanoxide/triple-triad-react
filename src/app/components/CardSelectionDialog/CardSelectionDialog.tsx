@@ -7,10 +7,11 @@ import Card from '../Card/Card';
 import Image from 'next/image';
 import playSound from "../../utils/sounds";
 import { setAiPlayerCards } from "../../utils/aiCardSelection";
+import DialogPagination from '../DialogPagination/DialogPagination';
 
 
 const CardSelectionDialog = () => {
-    const { playerCards, currentPlayerCards, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isSoundEnabled, dispatch } = useGameContext();
+    const { playerCards, currentPlayerCards, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isSoundEnabled, currentPages, slideDirection, dispatch } = useGameContext();
     const [previewCardId, setPreviewCardId] = useState<number>(0);
 
     const hand: number[] = [...currentPlayerHand];
@@ -60,49 +61,30 @@ const CardSelectionDialog = () => {
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: playerCards });
     }
 
-    const itemsPerPage = 11;
-    const [currentPage, setCurrentPage] = useState(1);
-
-    const cardEntries = Object.entries(cards);
-    const totalPages = Math.ceil(cardEntries.length / itemsPerPage);
-
-    const paginatedCards = cardEntries.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
+    const cardContent = (item: { id: string, location: string, player: string, additionalDesc: string }, quantity: number) => (
+        < div
+            key={item.id}
+            onClick={() => handleCardSelection(Number(item.id), quantity)}
+            onMouseEnter={() => handleCardHover(Number(item.id))}
+            className={`${styles.cardListItem} ${quantity ? "cursor-pointer" : "opacity-50"} flex justify-between`}
+            data-slide-direction={slideDirection}
+        >
+            <div className="flex">
+                <Image src="/assets/cardicon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
+                <span>{cardList.find(card => card.id === Number(item.id))?.name}</span>
+            </div>
+            <div className="text-right"><span className="mr-1">{quantity}</span></div>
+        </div >
     );
 
     return (
         <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen) ? "" : "hidden"}`} data-dialog="cardSelection">
-            <table className="w-full">
-                <thead>
-                    <tr>
-                        <td>Cards <span className={`ml-2 ${(totalPages > 1) ? "" : "hidden"}`.trim()}>P. <span className="ml-1">{currentPage}</span></span></td>
-                        <td className="text-right"><span className="mr-3">Num.</span></td>
-                    </tr>
-                </thead>
-                <tbody className="mt-2">
-                    {paginatedCards.map(([cardId, quantity]) => (
-                        <tr
-                            key={cardId}
-                            onClick={() => handleCardSelection(Number(cardId), quantity)}
-                            onMouseEnter={() => handleCardHover(Number(cardId))}
-                            className={quantity ? "cursor-pointer" : "text-gray-400"}
-                        >
-                            <td className="flex">
-                                <Image src="/assets/cardIcon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
-                                <span>{cardList.find(card => card.id === Number(cardId))?.name}</span>
-
-                            </td>
-                            <td className="text-right"><span className="mr-1">{quantity}</span></td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            <div className={`${styles.pagination} flex justify-between absolute bottom-0 left-0 w-full ${(totalPages > 1) ? "" : "hidden"}`.trim()}>
-                <button data-prev onClick={() => setCurrentPage(prev => (prev === 1 ? totalPages : prev - 1))} className="disabled:opacity-50"></button>
-                <button data-next onClick={() => setCurrentPage(prev => (prev === totalPages ? 1 : prev + 1))} className="disabled:opacity-50"></button>
+            <div className="flex justify-between">
+                <h4>Cards <span className={`ml-2 ${(Object.entries(playerCards).length > 1) ? "" : "hidden"}`.trim()}>P. <span className="ml-1">{currentPages.cards}</span></span></h4>
+                <h4 className="text-right"><span className="mr-3">Num.</span></h4>
             </div>
+            <DialogPagination items={Object.entries(cards)} itemsPerPage={11} renderItem={([cardId, quantity]: [string, number]) =>
+                cardContent({ id: cardId, location: '', player: '', additionalDesc: '' }, quantity)} pagination="cards" />
 
             {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
             <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
