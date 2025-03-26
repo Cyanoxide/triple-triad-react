@@ -51,7 +51,7 @@ body::after {
   bottom: 0px;
   background: repeating-linear-gradient(0deg, #111 0px, #111 1px, transparent 2px, transparent 5px);
   background-size: 100% 3px;
-  /* animation: lines 3s ease-out infinite; */
+  animation: lines 3s ease-out infinite;
   opacity: 0.2;
   pointer-events: none;
   z-index: 11;
@@ -74,7 +74,7 @@ body::before {
   font-family: "Custom FF8 Font Blue";
 }
 
-/* @keyframes jitter {
+@keyframes jitter {
 
   0%,
   100% {
@@ -84,9 +84,9 @@ body::before {
   50% {
     transform: translateY(0.25px);
   }
-} */
+}
 
-/* @keyframes lines {
+@keyframes lines {
   0% {
     background-position: 0px 0px;
   }
@@ -94,4 +94,4 @@ body::before {
   100% {
     background-position: 0px 15px;
   }
-} */
+}
