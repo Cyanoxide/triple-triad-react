@@ -16,17 +16,17 @@
 
 @font-face {
   font-family: "Custom FF8 Font White";
-  src: url("/assets/fonts/FF8-Font-White.otf");
+  src: url("/assets/fonts/old/FF8-Font-White.otf");
 }
 
 @font-face {
   font-family: "Custom FF8 Font Blue";
-  src: url("/assets/fonts/FF8-Font-Blue.otf");
+  src: url("/assets/fonts/old/FF8-Font-Blue.otf");
 }
 
 @font-face {
   font-family: "Custom FF8 Card Numbers";
-  src: url("/assets/fonts/FF8-Card-Numbers.otf");
+  src: url("/assets/fonts/FF8-Card-Numbers.ttf");
 }
 
 body {
@@ -37,7 +37,7 @@ body {
   line-height: 1.8rem;
   letter-spacing: 0rem;
   word-spacing: 0.2rem;
-  text-shadow: 1px 1px 0 #000;
+  text-shadow: 2px 2px 0 #212121;
   overflow: hidden;
   /* animation: jitter 10s ease infinite; */
 }
