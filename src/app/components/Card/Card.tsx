@@ -23,10 +23,10 @@ const Card: React.FC<CardProps> = ({ id, player, ...props }) => {
         <div className={`${styles.card} ${(!isGameActive && player === "red") ? styles["card--hidden"] : ""} card relative`} data-player={player} {...props} >
             <div className={styles.card__front} data-card-id={card.id} data-level={card.level}>
                 <div className={`${styles.values} relative`}>
-                    <span className={`${styles.topValue} absolute text-center`}>{renderCardValue(card.top)}</span>
-                    <span className={`${styles.rightValue} rightValue absolute text-center`}>{renderCardValue(card.right)}</span>
-                    <span className={`${styles.bottomValue} bottomValue absolute text-center`}>{renderCardValue(card.bottom)}</span>
-                    <span className={`${styles.leftValue} leftValue absolute text-center`}>{renderCardValue(card.left)}</span>
+                    <span className={`${styles.topValue} absolute text-center`} data-sprite={card.top}>{renderCardValue(card.top)}</span>
+                    <span className={`${styles.rightValue} rightValue absolute text-center`} data-sprite={card.right}>{renderCardValue(card.right)}</span>
+                    <span className={`${styles.bottomValue} bottomValue absolute text-center`} data-sprite={card.bottom}>{renderCardValue(card.bottom)}</span>
+                    <span className={`${styles.leftValue} leftValue absolute text-center`} data-sprite={card.left}>{renderCardValue(card.left)}</span>
                 </div>
             </div>
         </div>

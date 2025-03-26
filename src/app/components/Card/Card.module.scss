@@ -115,34 +115,81 @@ p {
 }
 
 .values {
-    font-size: 0.45rem;
+    font-size: 1rem;
     font-family: "Custom FF8 Card Numbers";
 
-    span {
-        width: 20px;
+    [data-sprite] {
+        width: 16px;
+        text-shadow: none;
+        background-image: url("/assets/card-numbers-spritesheet.png");
+        text-indent: -100000%;
+        background-size: 159px 21px;
+        height: 21px;
+        image-rendering: pixelated;
+    }
+
+    [data-sprite="1"] {
+        background-position-x: 0px;
+        width: 14px;
+    }
+
+    [data-sprite="2"] {
+        background-position-x: -15px;
+    }
+
+    [data-sprite="3"] {
+        background-position-x: -31px;
+    }
+
+    [data-sprite="4"] {
+        background-position-x: -47px;
+    }
+
+    [data-sprite="5"] {
+        background-position-x: -63px;
+    }
+
+    [data-sprite="6"] {
+        background-position-x: -79px;
+    }
+
+    [data-sprite="7"] {
+        background-position-x: -96.5px;
+    }
+
+    [data-sprite="8"] {
+        background-position-x: -112px;
+    }
+
+    [data-sprite="9"] {
+        background-position-x: -127px;
+    }
+
+    [data-sprite="10"] {
+        background-position-x: -144px;
     }
 
     .topValue {
-        top: -2px;
-        left: 24px;
+        top: 6px;
+        left: 22px;
         transform: translateX(-50%);
     }
 
     .rightValue {
-        top: 33px;
+        top: 36px;
         left: 24px;
         transform: translateY(-50%);
     }
 
     .bottomValue {
-        top: 39px;
-        left: 24px;
+        top: 45px;
+        left: 22px;
         transform: translateX(-50%);
     }
 
     .leftValue {
-        top: 33px;
-        left: 4px;
+        top: 36px;
+        left: 5px;
         transform: translateY(-50%);
     }
 }
