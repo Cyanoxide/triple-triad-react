@@ -4,11 +4,10 @@
     @extend .dialog;
     position: absolute;
     top: 50%;
-    left: 50%;
+    left: calc(50% - 11rem);
     transform: translate(-50%, -50%);
     min-width: 10rem;
     width: 20rem;
-    left: 17rem;
     min-height: 21.9rem;
 
 
