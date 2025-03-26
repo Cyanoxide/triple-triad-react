@@ -66,22 +66,26 @@ const CardSelectionDialog = () => {
             key={item.id}
             onClick={() => handleCardSelection(Number(item.id), quantity)}
             onMouseEnter={() => handleCardHover(Number(item.id))}
-            className={`${styles.cardListItem} ${quantity ? "cursor-pointer" : "opacity-50"} flex justify-between`}
+            className={`${styles.cardListItem} flex justify-between`}
             data-slide-direction={slideDirection}
         >
-            <div className="flex">
+            <div className={`flex ${quantity ? "cursor-pointer" : "opacity-50"}`}>
                 <Image src="/assets/cardicon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
                 <span>{cardList.find(card => card.id === Number(item.id))?.name}</span>
             </div>
-            <div className="text-right"><span className="mr-1">{quantity}</span></div>
+            <div className={`${quantity ? "cursor-pointer" : "opacity-50"} text-right`}><span className="mr-1">{quantity}</span></div>
         </div >
     );
 
     return (
         <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen) ? "" : "hidden"}`} data-dialog="cardSelection">
             <div className="flex justify-between">
-                <h4>Cards <span className={`ml-2 ${(Object.entries(playerCards).length > 1) ? "" : "hidden"}`.trim()}>P. <span className="ml-1">{currentPages.cards}</span></span></h4>
-                <h4 className="text-right"><span className="mr-3">Num.</span></h4>
+                <h4 className={styles.meta} data-sprite="cards">Cards
+                    <span className={`${styles.meta} ml-2 ${(Object.entries(playerCards).length > 1) ? "" : "hidden"}`.trim()} data-sprite="p.">P.
+                        <span className={`${styles.meta} ml-1`} data-sprite={currentPages.cards}>{currentPages.cards}</span>
+                    </span>
+                </h4>
+                <h4 className={`${styles.meta} mr-3`} data-sprite="num.">Num.</h4>
             </div>
             <DialogPagination items={Object.entries(cards)} itemsPerPage={11} renderItem={([cardId, quantity]: [string, number]) =>
                 cardContent({ id: cardId, location: '', player: '', additionalDesc: '' }, quantity)} pagination="cards" />

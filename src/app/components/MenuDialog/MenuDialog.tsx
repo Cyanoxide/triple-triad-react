@@ -27,7 +27,7 @@ const MenuDialog: React.FC<MenuProps> = ({ rules }) => {
     return (
         <>
             <div className={`${styles.menuDialog} ${(isMenuOpen) ? "" : "hidden"}`}>
-                <h4>Info.</h4>
+                <h4 className={styles.meta} data-sprite="info.">Info.</h4>
                 <h3>Rules:</h3>
                 <ul>
                     {rules.map((rule, index) => (

@@ -21,7 +21,7 @@ const EnemySelectionDialog = () => {
 
     return (
         <div className={`${styles.enemySelectionDialog} ${(isMenuOpen) ? "" : "hidden"} top-[80%]`}>
-            <h4>Players</h4>
+            <h4 className={styles.meta} data-sprite="players">Players</h4>
             <DialogPagination items={players} itemsPerPage={1} renderItem={playerContent} pagination="players" />
         </div>
     );

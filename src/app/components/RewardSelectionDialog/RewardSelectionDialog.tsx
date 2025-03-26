@@ -163,7 +163,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     return (
         <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
             <div className={styles.rewardSelectionDialog} data-dialog="rewardSelectionInfo">
-                <h4>Info.</h4>
+                <h4 className={styles.meta} data-sprite="info.">Info.</h4>
                 <h3>{(isRewardConfirmed || (winState === "red" && selectedReward)) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`}</h3>
             </div>
 
@@ -183,7 +183,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
             <div className={`${styles.dialogContainer} ${recentCardName ? "" : "invisible"}`}>
                 {!isRewardConfirmed && winState === "blue" && <div className={styles.rewardSelectionDialog} data-dialog="rewardCardNameInfo">
-                    <h4>Info.</h4>
+                    <h4 className={styles.meta} data-sprite="info.">Info.</h4>
                     <h3 className={recentCard && !(recentCard in playerCards) ? "blue-text" : ""}>{recentCardName}</h3>
                 </div>}
             </div>

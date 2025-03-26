@@ -76,6 +76,7 @@
 
 .rewardSelectionDialog {
     @extend .dialog;
+    position: relative;
 }
 
 .dialogContainer {

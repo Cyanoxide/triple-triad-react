@@ -14,32 +14,114 @@
 
     button {
         text-align: center;
-        text-shadow: 1px 1px 0 #000;
+        text-shadow: 2px 2px 0 #212121;
 
         &:hover {
             &::after {
                 content: "";
                 position: absolute;
-                left: -3rem;
+                left: -3.4rem;
                 background-image: url("/assets/cursor.png");
                 background-size: cover;
-                width: 38px;
-                height: 24px;
-                margin-top: 0.4rem;
+                width: 45px;
+                height: 28px;
+                margin-top: 0.2rem;
                 z-index: 4;
+                image-rendering: pixelated;
             }
         }
     }
 
-    h4 {
-        color: #c9c9c6;
-        font-weight: bold;
-        font-family: Arial, Helvetica, sans-serif;
-        text-transform: uppercase;
-        text-shadow: -2px -2px 0 #040703, 2px -2px 0 #040703, -2px 2px 0 #040703, 2px 2px 0 #040703;
-        font-size: 0.7rem;
-        margin-top: -1.6rem;
-        margin-left: -0.55rem;
-        margin-bottom: 0.1rem;
+    .meta {
+        text-indent: -10000%;
+        background: url("/assets/meta-spritesheet.png");
+        background-size: 257px 32px;
+        image-rendering: pixelated;
+        height: 9px;
+        position: absolute;
+        top: 0;
+        left: 0.6rem;
+
+        &[data-sprite="p."] {
+            width: 10px;
+            background-position: 0px -1px;
+            left: 43px;
+        }
+
+        &[data-sprite="1"] {
+            width: 9px;
+            background-position: -22px -1px;
+        }
+
+        &[data-sprite="2"] {
+            width: 9px;
+            background-position: -33px -1px;
+        }
+
+        &[data-sprite="3"] {
+            width: 9px;
+            background-position: -43px -1px;
+        }
+
+        &[data-sprite="4"] {
+            width: 9px;
+            background-position: -53px -1px;
+        }
+
+        &[data-sprite="5"] {
+            width: 9px;
+            background-position: -63px -1px;
+        }
+
+        &[data-sprite="6"] {
+            width: 9px;
+            background-position: -74px -1px;
+        }
+
+        &[data-sprite="7"] {
+            width: 9px;
+            background-position: -84px -1px;
+        }
+
+        &[data-sprite="8"] {
+            width: 9px;
+            background-position: -94px -1px;
+        }
+
+        &[data-sprite="9"] {
+            width: 9px;
+            background-position: -105px -1px;
+        }
+
+        &[data-sprite="10"] {
+            width: 14px;
+            background-position: -115px -1px;
+        }
+
+        &[data-sprite="num."] {
+            width: 29px;
+            background-position: 0px -12px;
+            left: calc(100% - 55px);
+        }
+
+        &[data-sprite="cards"] {
+            width: 38px;
+            background-position: -30px -12px;
+        }
+
+        &[data-sprite="info."] {
+            width: 29px;
+            background-position: -69px -76px;
+        }
+
+        &[data-sprite="players"] {
+            width: 50px;
+            background-position: -99px -13px;
+        }
+
+        &[data-sprite="choice"] {
+            width: 40px;
+            background-position: -150px -13px;
+        }
     }
 }
