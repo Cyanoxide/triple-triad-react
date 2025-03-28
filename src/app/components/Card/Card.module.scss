@@ -69,6 +69,7 @@
         top: 0;
         left: 0;
         background-size: 506px 161px;
+        backface-visibility: hidden;
     }
 
     &[data-level="6"],
@@ -117,6 +118,7 @@ p {
 .values {
     font-size: 1rem;
     font-family: "Custom FF8 Card Numbers";
+    backface-visibility: hidden;
 
     [data-sprite] {
         width: 16px;

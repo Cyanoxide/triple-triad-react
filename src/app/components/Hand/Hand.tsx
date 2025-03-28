@@ -33,7 +33,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
     }
 
     return (
-        <div className={`${className?.trim() || ''} ${(isMenuOpen) ? "hidden" : ""} relative`}>
+        <div className={`${styles.handContainer} ${className?.trim() || ''} ${(isMenuOpen) ? "hidden" : ""} relative`}>
             <div className="flex flex-end items-center flex-col relative">
                 {turnNumber < 10 && <Indicator className={(player === turn && turn === player) ? "flex" : "hidden"} type="TURN_INDICATOR" />}
                 <div className={`${styles.hand} flex flex-col ${(isGameActive) ? "justify-end" : "justify-start"}`} data-player={player} data-selectable={player === turn && turn === "blue"}>
