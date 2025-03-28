@@ -43,24 +43,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
                         </div>
                     ))}
                 </div>
-
-                {isGameActive && <div className={styles.score}>
-                    <svg width="128" height="80">
-                        <defs>
-                            <linearGradient id="textGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stopColor="#a0a3ae" />
-                                <stop offset="50%" stopColor="#ffffff" />
-                                <stop offset="100%" stopColor="#6b6e7e" />
-                            </linearGradient>
-                        </defs>
-                        <text x="39" y="70" fontSize="80" fontWeight="bold" fill="url(#textGradient)" stroke="black" filter="url(#shadow)">
-                            {(player === "red") ? score[0] : score[1]}
-                        </text>
-                        <filter id="shadow">
-                            <feDropShadow dx="3" dy="3" stdDeviation="2" floodColor="black" />
-                        </filter>
-                    </svg>
-                </div>}
+                {isGameActive && <div className={styles.score} data-sprite={(player === "red") ? score[0] : score[1]}></div>}
             </div>
         </div>
     );
