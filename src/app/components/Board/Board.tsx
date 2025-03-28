@@ -9,6 +9,7 @@ import { getEnemyMove } from '../../utils/ai';
 import SimpleDialog from '../SimpleDialog/SimpleDialog';
 import Indicator from '../Indicator/Indicator';
 import playSound from "../../utils/sounds";
+import textToSprite from '../../utils/textToSprite';
 
 interface BoardProps {
     className?: string;
@@ -207,7 +208,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                     ))
                 ))}
             </div >
-            {turn === "blue" && selectedCard && <div className={styles.selectedCardLabel}><SimpleDialog>{cards.find(card => card.id === selectedCard[0])?.name}</SimpleDialog></div>}
+            {turn === "blue" && selectedCard && <div className={styles.selectedCardLabel}><SimpleDialog>{textToSprite(cards.find(card => card.id === selectedCard[0])?.name || "")}</SimpleDialog></div>}
         </>
     );
 };

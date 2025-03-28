@@ -2,6 +2,7 @@ import styles from './MenuDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import playSound from "../../utils/sounds";
 import EnemySelectionDialog from '../EnemySelection/EnemySelection';
+import textToSprite from '../../utils/textToSprite';
 
 interface MenuProps {
     rules: string[];
@@ -28,15 +29,15 @@ const MenuDialog: React.FC<MenuProps> = ({ rules }) => {
         <>
             <div className={`${styles.menuDialog} ${(isMenuOpen) ? "" : "hidden"}`}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                <h3>Rules:</h3>
+                <p>{textToSprite("Rules:")}</p>
                 <ul>
                     {rules.map((rule, index) => (
-                        <li key={index}><span>{rule}</span></li>
+                        <li key={index}><span>{textToSprite(rule)}</span></li>
                     ))}
                 </ul>
                 <div className="flex flex-col items-center">
-                    <button className="relative" onClick={handlePlayClick} onMouseEnter={handleMouseEnter}>Play</button>
-                    <button className="relative" onClick={handleQuitClick} onMouseEnter={handleMouseEnter}>Quit</button>
+                    <button className="relative" onClick={handlePlayClick} onMouseEnter={handleMouseEnter}>{textToSprite("Play")}</button>
+                    <button className="relative" onClick={handleQuitClick} onMouseEnter={handleMouseEnter}>{textToSprite("Quit")}</button>
                 </div>
             </div>
             <EnemySelectionDialog />

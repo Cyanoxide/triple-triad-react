@@ -3,6 +3,7 @@ import styles from './EnemySelection.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import players from '../../../data/players.json';
 import DialogPagination from '../DialogPagination/DialogPagination';
+import textToSprite from "../../utils/textToSprite";
 
 const EnemySelectionDialog = () => {
     const { isMenuOpen, currentPages, slideDirection, dispatch } = useGameContext();
@@ -13,9 +14,9 @@ const EnemySelectionDialog = () => {
 
     const playerContent = (item: { id: string, location: string, player: string, additionalDesc: string }) => (
         <div key={item.id} data-slide-direction={slideDirection}>
-            <p className="opacity-50">{item.location}</p>
-            <p>{item.player}</p>
-            {/* <p className="italic">{item.additionalDesc}</p> */}
+            <p className="opacity-50">{textToSprite(item.location)}</p>
+            <p>{textToSprite(item.player)}</p>
+            {/* <p className="italic">{textToSprite(item.additionalDesc)}</p> */}
         </div>
     );
 

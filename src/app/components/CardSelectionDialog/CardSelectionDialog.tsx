@@ -8,6 +8,7 @@ import Image from 'next/image';
 import playSound from "../../utils/sounds";
 import { setAiPlayerCards } from "../../utils/aiCardSelection";
 import DialogPagination from '../DialogPagination/DialogPagination';
+import textToSprite from '../../utils/textToSprite';
 
 
 const CardSelectionDialog = () => {
@@ -71,9 +72,11 @@ const CardSelectionDialog = () => {
         >
             <div className={`flex ${quantity ? "cursor-pointer" : "opacity-50"}`}>
                 <Image src="/assets/cardicon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
-                <span>{cardList.find(card => card.id === Number(item.id))?.name}</span>
+                <span>{textToSprite(cardList.find(card => card.id === Number(item.id))?.name || "")}</span>
             </div>
-            <div className={`${quantity ? "cursor-pointer" : "opacity-50"} text-right`}><span className="mr-1">{quantity}</span></div>
+            <div className={quantity ? "cursor-pointer" : "opacity-50"}>
+                <span className="mr-1">{textToSprite(String(quantity))}</span>
+            </div>
         </div >
     );
 

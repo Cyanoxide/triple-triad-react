@@ -1,0 +1,464 @@
+.font {
+    line-height: 1.2rem;
+}
+
+.font-glyph {
+    background-image: url("/assets/font-white-spritesheet.png");
+    display: inline-block;
+    width: 20px;
+    height: 18px;
+    background-size: 401px 168px;
+    text-indent: -10000px;
+    image-rendering: pixelated;
+    /* background-color: red; */
+}
+
+/* .font-glyph:nth-child(2n) {
+  background-color: blue;
+} */
+
+
+.font-glyph[data-sprite=" "] {
+    background-position: 0 0;
+    width: 7px;
+}
+
+.font-glyph[data-sprite="0"] {
+    background-position: -19px 0;
+    width: 13.5px;
+}
+
+.font-glyph[data-sprite="1"] {
+    background-position: -40px 0;
+    width: 8.5px;
+}
+
+.font-glyph[data-sprite="2"] {
+    background-position: -58px 0;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="3"] {
+    background-position: -77px 0;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="4"] {
+    background-position: -96px 0;
+    width: 13.5px;
+}
+
+.font-glyph[data-sprite="5"] {
+    background-position: -116px 0;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="6"] {
+    background-position: -133px 0;
+    width: 15px;
+}
+
+.font-glyph[data-sprite="7"] {
+    background-position: -154px 0;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="8"] {
+    background-position: -173px 0;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="9"] {
+    background-position: -192px 0;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="%"] {
+    background-position: -212px 0;
+    width: 18px;
+}
+
+.font-glyph[data-sprite="/"] {
+    background-position: -231px 0;
+    width: 11px;
+}
+
+.font-glyph[data-sprite=":"] {
+    background-position: -250px 0;
+    width: 7px;
+}
+
+.font-glyph[data-sprite="!"] {
+    background-position: -269px 0;
+    width: 9px;
+}
+
+.font-glyph[data-sprite="?"] {
+    background-position: -288px 0;
+    width: 12px;
+}
+
+.font-glyph[data-sprite="…"] {
+    background-position: -308px 0;
+    width: 16px;
+}
+
+.font-glyph[data-sprite="+"] {
+    background-position: -327px 0;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="-"] {
+    background-position: -346px 0;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="="] {
+    background-position: -366px 0;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="*"] {
+    background-position: -385px 0;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="&"] {
+    background-position: 0 -18px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="⌈"] {
+    background-position: -19px -18px;
+    width: 10px;
+}
+
+.font-glyph[data-sprite="⌋"] {
+    background-position: -38px -18px;
+    width: 10px;
+}
+
+.font-glyph[data-sprite="("] {
+    background-position: -58px -18px;
+    width: 7px;
+}
+
+.font-glyph[data-sprite=")"] {
+    background-position: -78px -18px;
+    width: 9px;
+}
+
+.font-glyph[data-sprite="•"] {
+    background-position: -96px -18px;
+    width: 7px;
+}
+
+.font-glyph[data-sprite="."] {
+    background-position: -115px -18px;
+    width: 7px;
+}
+
+.font-glyph[data-sprite=","] {
+    background-position: -135px -18px;
+    width: 6px;
+}
+
+.font-glyph[data-sprite="~"] {
+    background-position: -154px -18px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="”"] {
+    background-position: -173px -18px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="“"] {
+    background-position: -192px -18px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="‘"] {
+    background-position: -211px -18px;
+    width: 7px;
+}
+
+.font-glyph[data-sprite="#"] {
+    background-position: -231px -18px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="$"] {
+    background-position: -250px -18px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="'"] {
+    background-position: -269px -18px;
+    width: 7px;
+}
+
+.font-glyph[data-sprite="_"] {
+    background-position: -289px -18px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="A"] {
+    background-position: -308px -18px;
+    width: 12px;
+}
+
+.font-glyph[data-sprite="B"] {
+    background-position: -326px -18px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="C"] {
+    background-position: -346px -18px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="D"] {
+    background-position: -365px -18px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="E"] {
+    background-position: -384px -18px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="F"] {
+    background-position: 0 -37px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="G"] {
+    background-position: -19px -37px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="H"] {
+    background-position: -38px -37px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="I"] {
+    background-position: -58px -37px;
+    width: 7px;
+}
+
+.font-glyph[data-sprite="J"] {
+    background-position: -76px -37px;
+    width: 12.5px;
+}
+
+.font-glyph[data-sprite="K"] {
+    background-position: -96px -37px;
+    width: 12px;
+}
+
+.font-glyph[data-sprite="L"] {
+    background-position: -114px -37px;
+    width: 12.5px;
+}
+
+.font-glyph[data-sprite="M"] {
+    background-position: -134px -37px;
+    width: 15px;
+}
+
+.font-glyph[data-sprite="N"] {
+    background-position: -153.5px -37px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="O"] {
+    background-position: -173px -37px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="P"] {
+    background-position: -192px -37px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="Q"] {
+    background-position: -211px -37px;
+    width: 15px;
+}
+
+.font-glyph[data-sprite="R"] {
+    background-position: -230px -37px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="S"] {
+    background-position: -250px -37px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="T"] {
+    background-position: -269px -37px;
+    width: 14.5px;
+}
+
+.font-glyph[data-sprite="U"] {
+    background-position: -288px -37px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="V"] {
+    background-position: -307px -37px;
+    width: 15px;
+}
+
+.font-glyph[data-sprite="W"] {
+    background-position: -326px -37px;
+    width: 15px;
+}
+
+.font-glyph[data-sprite="X"] {
+    background-position: -345px -37px;
+    width: 15.5px;
+}
+
+.font-glyph[data-sprite="Y"] {
+    background-position: -365px -37px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="Z"] {
+    background-position: -385px -37px;
+    width: 14px;
+}
+
+.font-glyph[data-sprite="a"] {
+    background-position: 0 -55.5px;
+    width: 13px;
+}
+
+.font-glyph[data-sprite="b"] {
+    background-position: -19px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="c"] {
+    background-position: -38px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="d"] {
+    background-position: -57px -55.5px;
+    width: 12px;
+}
+
+.font-glyph[data-sprite="e"] {
+    background-position: -77px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="f"] {
+    background-position: -96px -55.5px;
+    width: 8px;
+}
+
+.font-glyph[data-sprite="g"] {
+    background-position: -115px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="h"] {
+    background-position: -134px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="i"] {
+    background-position: -153px -55.5px;
+    width: 6px;
+}
+
+.font-glyph[data-sprite="j"] {
+    background-position: -173px -55.5px;
+    width: 8px;
+}
+
+.font-glyph[data-sprite="k"] {
+    background-position: -192px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="l"] {
+    background-position: -211px -55.5px;
+    width: 5px;
+}
+
+.font-glyph[data-sprite="m"] {
+    background-position: -230px -55.5px;
+    width: 15px;
+}
+
+.font-glyph[data-sprite="n"] {
+    background-position: -250px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="o"] {
+    background-position: -269px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="p"] {
+    background-position: -288px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="q"] {
+    background-position: -307px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="r"] {
+    background-position: -326px -55.5px;
+    width: 10px;
+}
+
+.font-glyph[data-sprite="s"] {
+    background-position: -346px -55.5px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="t"] {
+    background-position: -365px -55.5px;
+    width: 10px;
+}
+
+.font-glyph[data-sprite="u"] {
+    background-position: -384px -55.5px;
+    width: 12px;
+}
+
+.font-glyph[data-sprite="v"] {
+    background-position: 0 -74px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="w"] {
+    background-position: -19px -74px;
+    width: 11.5px;
+}
+
+.font-glyph[data-sprite="x"] {
+    background-position: -38px -74px;
+    width: 11px;
+}
+
+.font-glyph[data-sprite="y"] {
+    background-position: -57px -74px;
+    width: 11.5px;
+}
+
+.font-glyph[data-sprite="z"] {
+    background-position: -75px -74px;
+    width: 13px;
+}
