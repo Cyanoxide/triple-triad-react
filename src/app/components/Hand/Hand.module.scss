@@ -1,3 +1,7 @@
+.handContainer {
+    z-index: 1;
+}
+
 .hand {
     min-height: 559px;
     padding-top: 4rem;
@@ -38,13 +42,14 @@
                     &::after {
                         content: "";
                         position: absolute;
-                        left: -1rem;
+                        left: -1.7rem;
                         background-image: url("/assets/cursor.png");
                         background-size: cover;
-                        width: 38px;
-                        height: 25px;
-                        margin-top: 3.4rem;
+                        width: 45px;
+                        height: 28px;
+                        margin-top: 3.2rem;
                         z-index: 4;
+                        image-rendering: pixelated;
                     }
                 }
             }
@@ -53,14 +58,57 @@
 }
 
 .score {
-    font-size: 3rem;
-    font-family: serif;
-    font-style: italic;
-    font-weight: bold;
-    position: absolute;
+    // font-size: 3rem;
+    // font-family: serif;
+    // font-style: italic;
+    // font-weight: bold;
+    // position: absolute;
     bottom: -2rem;
     z-index: 4;
     pointer-events: none;
+    background-image: url("/assets/score-spritesheet.png");
+    height: 72px;
+    width: 56px;
+    background-size: cover;
+    position: absolute;
+    image-rendering: pixelated;
+
+    &[data-sprite="1"] {
+        background-position-x: 0;
+        width: 50px;
+    }
+
+    &[data-sprite="2"] {
+        background-position-x: -55px;
+    }
+
+    &[data-sprite="3"] {
+        background-position-x: -113px;
+    }
+
+    &[data-sprite="4"] {
+        background-position-x: -175px;
+    }
+
+    &[data-sprite="5"] {
+        background-position-x: -232px;
+    }
+
+    &[data-sprite="6"] {
+        background-position-x: -293px;
+    }
+
+    &[data-sprite="7"] {
+        background-position-x: -355px;
+    }
+
+    &[data-sprite="8"] {
+        background-position-x: -415px;
+    }
+
+    &[data-sprite="9"] {
+        background-position-x: -475px;
+    }
 }
 
 @keyframes placeCardInHand {

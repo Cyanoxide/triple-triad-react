@@ -34,15 +34,15 @@ function GameContent() {
 
   return (
     <>
-      <div className="max-w-4xl m-auto relative">
+      <div id="app" className="max-w-4xl m-auto relative">
         <div>
           {isMenuOpen && <MenuDialog rules={["Open", "Trade Rule: One"]} />}
           {isCardSelectionOpen && <CardSelectionDialog />}
         </div>
-        <div className="flex h-screen">
-          <Hand className="order-1 flex items-center justify-center w-[20%]" player="red" />
-          <Hand className="order-3 flex items-center justify-center w-[20%]" player="blue" />
-          <Board className="order-2 grid justify-center items-center gap-1 w-[60%] m-auto" />
+        <div className="flex h-screen justify-center">
+          <Hand className="order-1 flex items-center justify-center w-[150px] flex-shrink-0" player="red" />
+          <Hand className="order-3 flex items-center justify-center w-[150px] flex-shrink-0" player="blue" />
+          <Board className="order-2 grid justify-center items-center gap-1 w-[535px] flex-shrink-0 m-auto" />
         </div>
         {winState && !isRewardSelectionOpen && victorySoundRef.current && <WinDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}

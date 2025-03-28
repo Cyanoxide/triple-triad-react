@@ -6,6 +6,7 @@ import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
 import playSound, { stopLoadedSound } from "../../utils/sounds";
+import textToSprite from "../../utils/textToSprite";
 
 interface RewardSelectionDialogProps {
     victorySound: HTMLAudioElement;
@@ -163,8 +164,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     return (
         <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
             <div className={styles.rewardSelectionDialog} data-dialog="rewardSelectionInfo">
-                <h4>Info.</h4>
-                <h3>{(isRewardConfirmed || (winState === "red" && selectedReward)) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`}</h3>
+                <h4 className={styles.meta} data-sprite="info.">Info.</h4>
+                <h3>{textToSprite((isRewardConfirmed || (winState === "red" && selectedReward)) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`)}</h3>
             </div>
 
             <div className="flex justify-center mb-7">
@@ -183,13 +184,18 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
             <div className={`${styles.dialogContainer} ${recentCardName ? "" : "invisible"}`}>
                 {!isRewardConfirmed && winState === "blue" && <div className={styles.rewardSelectionDialog} data-dialog="rewardCardNameInfo">
-                    <h4>Info.</h4>
-                    <h3 className={recentCard && !(recentCard in playerCards) ? "blue-text" : ""}>{recentCardName}</h3>
+                    <h4 className={styles.meta} data-sprite="info.">Info.</h4>
+                    <h3 className={recentCard && !(recentCard in playerCards) ? "blue-text" : ""}>{textToSprite(recentCardName || "")}</h3>
                 </div>}
             </div>
 
             {selectedReward && !isRewardConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
-            {winState === "red" && Object.keys(playerCards).length <= 5 && <SimpleDialog>Your opponent took pity on you and decided not to take any of your remaining cards.</SimpleDialog>}
+            {winState === "red" && Object.keys(playerCards).length <= 5 &&
+                <SimpleDialog>
+                    <p>{textToSprite("Your opponent took pity on you and decided not")}</p>
+                    <p>{textToSprite("to take any of your remaining cards.")}</p>
+                </SimpleDialog>
+            }
         </div>
     );
 };

@@ -14,30 +14,15 @@
   }
 }
 
-@font-face {
-  font-family: "Custom FF8 Font White";
-  src: url("/assets/fonts/FF8-Font-White.otf");
-}
-
-@font-face {
-  font-family: "Custom FF8 Font Blue";
-  src: url("/assets/fonts/FF8-Font-Blue.otf");
-}
-
-@font-face {
-  font-family: "Custom FF8 Card Numbers";
-  src: url("/assets/fonts/FF8-Card-Numbers.otf");
-}
-
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: "Custom FF8 Font White", Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 0.8rem;
   line-height: 1.8rem;
   letter-spacing: 0rem;
   word-spacing: 0.2rem;
-  text-shadow: 1px 1px 0 #000;
+  text-shadow: 2px 2px 0 #212121;
   overflow: hidden;
   /* animation: jitter 10s ease infinite; */
 }
@@ -51,7 +36,7 @@ body::after {
   bottom: 0px;
   background: repeating-linear-gradient(0deg, #111 0px, #111 1px, transparent 2px, transparent 5px);
   background-size: 100% 3px;
-  /* animation: lines 3s ease-out infinite; */
+  animation: lines 3s ease-out infinite;
   opacity: 0.2;
   pointer-events: none;
   z-index: 11;
@@ -70,11 +55,7 @@ body::before {
   background-position: center;
 }
 
-.blue-text {
-  font-family: "Custom FF8 Font Blue";
-}
-
-/* @keyframes jitter {
+@keyframes jitter {
 
   0%,
   100% {
@@ -84,9 +65,9 @@ body::before {
   50% {
     transform: translateY(0.25px);
   }
-} */
+}
 
-/* @keyframes lines {
+@keyframes lines {
   0% {
     background-position: 0px 0px;
   }
@@ -94,4 +75,4 @@ body::before {
   100% {
     background-position: 0px 15px;
   }
-} */
+}

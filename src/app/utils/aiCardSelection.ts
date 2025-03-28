@@ -6,8 +6,6 @@ export const setAiPlayerCards = (playerId: number, lostCards: Record<number, num
     const player = players.find((player) => player.id === playerId);
     if (!player) return;
 
-    console.log(playerId, player.id)
-
     const cardPool = cards.filter(card => player.cards.includes(card.level));
 
     const lostCardsJSON = localStorage.getItem("lostCards");

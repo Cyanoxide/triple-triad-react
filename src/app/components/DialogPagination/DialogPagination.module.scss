@@ -4,16 +4,23 @@
 
     button {
         &::before {
-            content: "\25C0";
+            content: "";
             display: block;
+            background-image: url("/assets/pagination-arrows.png");
+            image-rendering: pixelated;
+            margin-bottom: 1px;
+            width: 6px;
+            height: 10px;
         }
 
         &[data-prev]::before {
-            transform: scaleX(0.65);
+            margin-left: 1px;
+            background-position: 0 0;
         }
 
         &[data-next]::before {
-            transform: rotate(180deg) scaleX(0.65) translateY(2px);
+            margin-right: 1px;
+            background-position: -7px 0;
         }
 
         &::after {
