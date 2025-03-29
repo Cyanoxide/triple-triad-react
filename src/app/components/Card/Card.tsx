@@ -28,6 +28,7 @@ const Card: React.FC<CardProps> = ({ id, player, ...props }) => {
                     <span className={`${styles.bottomValue} bottomValue absolute text-center`} data-sprite={card.bottom}>{renderCardValue(card.bottom)}</span>
                     <span className={`${styles.leftValue} leftValue absolute text-center`} data-sprite={card.left}>{renderCardValue(card.left)}</span>
                 </div>
+                {card.element && <div className={`${styles.element} relative`} data-sprite={card.element}>{card.element}</div>}
             </div>
         </div>
     );
