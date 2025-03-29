@@ -68,7 +68,78 @@
         >div {
             z-index: 2;
         }
+
+        [data-element] {
+            background-image: url("/assets/elements-spritesheet.png");
+            background-size: cover;
+            background-repeat: no-repeat;
+            text-indent: -10000px;
+            position: absolute;
+            width: 29px;
+            height: 34px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            image-rendering: pixelated;
+            opacity: 0.6;
+            animation: bounce 0.4s ease-in-out infinite;
+
+            &[data-sprite="thunder"] {
+                background-position-x: 0;
+            }
+
+            &[data-sprite="earth"] {
+                background-position-x: -29px;
+            }
+
+            &[data-sprite="ice"] {
+                background-position-x: -58px;
+            }
+
+            &[data-sprite="wind"] {
+                background-position-x: -87px;
+                width: 28px;
+            }
+
+            &[data-sprite="poison"] {
+                background-position-x: -114px;
+                width: 26px;
+            }
+
+            &[data-sprite="fire"] {
+                background-position-x: -141px;
+            }
+
+            &[data-sprite="water"] {
+                background-position-x: -169px;
+            }
+
+            &[data-sprite="holy"] {
+                background-position-x: -196px;
+            }
+        }
+
+        [data-state]+[data-sprite] {
+            background-image: url("/assets/multiplier-spritesheet.png");
+            opacity: 1;
+            animation: none;
+            background-position-x: 0;
+            width: 50px;
+            height: 44px;
+        }
+
+        [element="lightning"]+[data-sprite="lightning"],
+        [element="earth"]+[data-sprite="earth"],
+        [element="ice"]+[data-sprite="ice"],
+        [element="fire"]+[data-sprite="fire"],
+        [element="poison"]+[data-sprite="poison"],
+        [element="wind"]+[data-sprite="wind"],
+        [element="water"]+[data-sprite="water"],
+        [element="holy"]+[data-sprite="holy"] {
+            background-position-x: -64px;
+        }
     }
+
 
     [data-selectable=true] {
         &:hover::after {
@@ -110,22 +181,6 @@
     }
 }
 
-// @keyframes card-flip-blue {
-//     49% {
-//         transform: rotate3d(0, 1, 0, 0.25turn);
-//     }
-
-//     50% {
-//         transform: rotate3d(0, 1, 0, 0.75turn);
-//         background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
-//     }
-
-//     100% {
-//         transform: rotate3d(0, 1, 0, 1turn);
-//         background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
-//     }
-// }
-
 @keyframes card-flip-blue {
     50% {
         transform: rotate3d(0, 1, 0, 0.5turn) scale(1.2);
@@ -159,5 +214,15 @@
 
     100% {
         transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0% {
+        margin-top: 0;
+    }
+
+    100% {
+        margin-top: -0.3rem;
     }
 }
