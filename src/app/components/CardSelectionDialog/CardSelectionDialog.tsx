@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './CardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import cardList from '../../../data/cards.json';
@@ -12,11 +12,21 @@ import textToSprite from '../../utils/textToSprite';
 
 
 const CardSelectionDialog = () => {
-    const { playerCards, currentPlayerCards, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isSoundEnabled, currentPages, slideDirection, dispatch } = useGameContext();
+    const { playerCards, currentPlayerCards, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isSoundEnabled, currentPages, slideDirection, rules, dispatch } = useGameContext();
     const [previewCardId, setPreviewCardId] = useState<number>(0);
 
     const hand: number[] = [...currentPlayerHand];
     const cards: Record<number, number> = { ...currentPlayerCards };
+
+    const gameStart = () => {
+        const enemyCards = setAiPlayerCards(enemyId, lostCards);
+        dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
+        dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
+        dispatch({ type: "SET_PLAYER_HAND", payload: hand });
+        dispatch({ type: "SET_ENEMY_HAND", payload: enemyCards || [] })
+        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: enemyCards || [] })
+        playSound("spin", isSoundEnabled);
+    }
 
     const handleCardSelection = (cardId: number, quantity: number) => {
         if (cards[cardId] > 0 && hand.length < 5) {
@@ -41,15 +51,8 @@ const CardSelectionDialog = () => {
 
 
     const handleConfirmation = () => {
-        const enemyCards = setAiPlayerCards(enemyId, lostCards);
-
         playSound("select", isSoundEnabled);
-        dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
-        dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
-        dispatch({ type: "SET_PLAYER_HAND", payload: hand });
-        dispatch({ type: "SET_ENEMY_HAND", payload: enemyCards || [] })
-        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: enemyCards || [] })
-        playSound("spin", isSoundEnabled);
+        gameStart();
     }
 
     const handleDenial = () => {
@@ -79,6 +82,24 @@ const CardSelectionDialog = () => {
             </div>
         </div >
     );
+
+
+    useEffect(() => {
+        if (rules && rules.includes("random") && isCardSelectionOpen) {
+            const currentPlayerCards = { ...playerCards };
+
+            while (hand.length < 5) {
+                const cardId = Math.floor(Math.random() * Object.keys(currentPlayerCards).length + 1);
+
+                if (currentPlayerCards[cardId] > 0) {
+                    handleCardSelection(cardId, currentPlayerCards[cardId]);
+                    currentPlayerCards[cardId]--;
+                }
+            }
+            gameStart();
+        }
+    }, [isCardSelectionOpen]);
+
 
     return (
         <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen) ? "" : "hidden"}`} data-dialog="cardSelection">
