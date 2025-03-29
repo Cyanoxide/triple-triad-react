@@ -1,0 +1,17 @@
+{
+    "rules": {
+        "open": "Open",
+        "elemental": "Elemental",
+        "random": "Random",
+        "same": "Same",
+        "plus": "Plus",
+        "suddenDeath": "Sudden Death",
+        "sameWall": "Same Wall"
+    },
+    "tradeRules": {
+        "one": "One",
+        "diff": "Diff.",
+        "direct": "Direct",
+        "all": "All"
+    }
+}

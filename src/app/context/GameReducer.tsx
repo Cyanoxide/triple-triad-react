@@ -48,6 +48,12 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, currentPages: action.payload };
         case "SET_SLIDE_DIRECTION":
             return { ...state, slideDirection: action.payload };
+        case "SET_RULES":
+            return { ...state, rules: action.payload };
+        case "SET_TRADE_RULES":
+            return { ...state, tradeRules: action.payload };
+        case "SET_ELEMENTS":
+            return { ...state, elements: action.payload };
         case "RESET_GAME":
             return {
                 ...initialState,
@@ -82,4 +88,7 @@ export const initialState: GameState = {
     isSoundEnabled: false,
     slideDirection: null,
     currentPages: { "players": 1, "cards": 1 },
+    rules: ["open", "elemental"],
+    tradeRules: ["one"],
+    elements: null,
 };
