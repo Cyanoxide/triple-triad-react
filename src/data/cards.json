@@ -58,7 +58,7 @@
         "right": 1,
         "bottom": 4,
         "left": 4,
-        "element": "thunder"
+        "element": "lightning"
     },
     {
         "id": 7,
@@ -110,7 +110,7 @@
         "right": 1,
         "bottom": 2,
         "left": 6,
-        "element": "thunder"
+        "element": "lightning"
     },
     {
         "id": 12,
@@ -194,7 +194,7 @@
         "right": 2,
         "bottom": 5,
         "left": 2,
-        "element": "thunder"
+        "element": "lightning"
     },
     {
         "id": 20,
@@ -205,7 +205,7 @@
         "right": 4,
         "bottom": 5,
         "left": 2,
-        "element": "thunder"
+        "element": "lightning"
     },
     {
         "id": 21,
@@ -394,7 +394,7 @@
         "right": 6,
         "bottom": 4,
         "left": 7,
-        "element": "thunder"
+        "element": "lightning"
     },
     {
         "id": 39,
@@ -713,7 +713,7 @@
         "right": 5,
         "bottom": 2,
         "left": 8,
-        "element": "thunder"
+        "element": "lightning"
     },
     {
         "id": 70,
@@ -854,7 +854,7 @@
         "right": 9,
         "bottom": 9,
         "left": 4,
-        "element": "thunder"
+        "element": "lightning"
     },
     {
         "id": 84,
