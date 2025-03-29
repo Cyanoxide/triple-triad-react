@@ -2,6 +2,14 @@
     line-height: 1.2rem;
 }
 
+.font.blue .font-glyph {
+    background-image: url("/assets/font-blue-spritesheet.png");
+}
+
+.font.yellow .font-glyph {
+    background-image: url("/assets/font-yellow-spritesheet.png");
+}
+
 .font-glyph {
     background-image: url("/assets/font-white-spritesheet.png");
     display: inline-block;

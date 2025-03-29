@@ -185,7 +185,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             <div className={`${styles.dialogContainer} ${recentCardName ? "" : "invisible"}`}>
                 {!isRewardConfirmed && winState === "blue" && <div className={styles.rewardSelectionDialog} data-dialog="rewardCardNameInfo">
                     <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                    <h3 className={recentCard && !(recentCard in playerCards) ? "blue-text" : ""}>{textToSprite(recentCardName || "")}</h3>
+                    <h3>{textToSprite(recentCardName || "", (recentCard && recentCard == lostCards[enemyId]) ? "yellow" : (recentCard && !(recentCard in playerCards)) ? "blue" : "")}</h3>
                 </div>}
             </div>
 
