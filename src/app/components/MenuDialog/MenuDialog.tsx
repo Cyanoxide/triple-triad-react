@@ -5,13 +5,8 @@ import EnemySelectionDialog from '../EnemySelection/EnemySelection';
 import textToSprite from '../../utils/textToSprite';
 import rulesList from "../../../data/rules.json";
 
-interface MenuProps {
-    rules: string[];
-    tradeRules: string[];
-}
-
-const MenuDialog: React.FC<MenuProps> = ({ rules, tradeRules }) => {
-    const { isMenuOpen, isSoundEnabled, dispatch } = useGameContext();
+const MenuDialog = () => {
+    const { isMenuOpen, isSoundEnabled, rules, tradeRules, dispatch } = useGameContext();
 
     const handlePlayClick = () => {
         dispatch({ type: "SET_IS_MENU_OPEN", payload: false });
@@ -33,12 +28,12 @@ const MenuDialog: React.FC<MenuProps> = ({ rules, tradeRules }) => {
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
                 <p>{textToSprite("Rules:")}</p>
                 <ul>
-                    {rules.map((rule: string, index) => (
+                    {rules && rules.map((rule: string, index) => (
                         <li key={index}><span>{textToSprite(rulesList.rules[rule as keyof typeof rulesList.rules])}</span></li>
                     ))}
                 </ul>
                 <ul>
-                    {tradeRules.map((rule: string, index) => (
+                    {tradeRules && tradeRules.map((rule: string, index) => (
                         <li key={index}><span>{textToSprite(`Trade Rule: ${rulesList.tradeRules[rule as keyof typeof rulesList.tradeRules]}`)}</span></li>
                     ))}
                 </ul>

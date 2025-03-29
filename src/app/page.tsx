@@ -36,7 +36,7 @@ function GameContent() {
     <>
       <div id="app" className="max-w-4xl m-auto relative">
         <div>
-          {isMenuOpen && <MenuDialog rules={["open", "elemental"]} tradeRules={["one"]} />}
+          {isMenuOpen && <MenuDialog />}
           {isCardSelectionOpen && <CardSelectionDialog />}
         </div>
         <div className="flex h-screen justify-center">
