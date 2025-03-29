@@ -1,4 +1,4 @@
-import cards from '../../data/cards.json';
+import cards from "../../data/cards.json";
 
 const difficultySettings = {
     beginner: 10,
@@ -6,7 +6,7 @@ const difficultySettings = {
     advanced: 2,
 }
 
-export function getEnemyMove(boardState: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][], enemyHand: number[], method: "random" | "beginner" | "intermediate" | "advanced") {
+export function getEnemyMove(boardState: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][], enemyHand: number[], method: "random" | "beginner" | "intermediate" | "advanced", elements: Record<string, string> | null) {
     const availablePositions = boardState
         .map((row, rowIndex) =>
             row.map((cell, colIndex) => (!cell ? { row: rowIndex, col: colIndex } : null))
@@ -37,10 +37,10 @@ export function getEnemyMove(boardState: ([number, "red" | "blue", "placed" | "f
             } as const;
 
             const potentialFlips = {
-                top: { row: row - 1, col },
-                right: { row, col: col + 1 },
-                bottom: { row: row + 1, col },
-                left: { row, col: col - 1 },
+                top: { r: row - 1, c: col },
+                right: { r: row, c: col + 1 },
+                bottom: { r: row + 1, c: col },
+                left: { r: row, c: col - 1 },
             };
 
             const flips: { row: number; col: number; player: "red" | "blue" }[] = [];
@@ -49,11 +49,11 @@ export function getEnemyMove(boardState: ([number, "red" | "blue", "placed" | "f
             let totalOpenValue = 0;
             let openSideCount = 0;
 
-            for (const [direction, { row, col }] of Object.entries(potentialFlips) as [keyof typeof competingCardMap, { row: number, col: number }][]) {
-                const isWithinBounds = row >= 0 && row < boardState.length && col >= 0 && col < boardState[0].length;
+            for (const [direction, { r, c }] of Object.entries(potentialFlips) as [keyof typeof competingCardMap, { r: number, c: number }][]) {
+                const isWithinBounds = r >= 0 && r < boardState.length && c >= 0 && c < boardState[0].length;
                 if (!isWithinBounds) continue;
 
-                const competingCardData = boardState[row]?.[col];
+                const competingCardData = boardState[r]?.[c];
 
                 if (!competingCardData) {
                     totalOpenValue += activeCard[direction];
@@ -66,8 +66,22 @@ export function getEnemyMove(boardState: ([number, "red" | "blue", "placed" | "f
 
                 const competingCard = cards.find(card => card.id === competingCardId);
                 if (competingCard) {
-                    if (activeCard[direction] > competingCard[competingCardMap[direction]]) {
-                        flips.push({ row, col, player: "red" });
+
+                    let activeCardModifier = 0
+                    if (elements && String([row, col]) in elements) {
+                        activeCardModifier = (elements[String([row, col])] === activeCard?.element) ? 1 : -1;
+                    }
+
+                    let competingCardModifier = 0;
+                    console.log(String([r, c]), elements)
+                    if (elements && String([r, c]) in elements) {
+                        competingCardModifier = (elements[String([r, c])] === competingCard?.element) ? 1 : -1;
+                    }
+
+                    console.log(activeCard[direction], activeCardModifier, activeCard[direction] + activeCardModifier, competingCard[competingCardMap[direction]], competingCardModifier, competingCard[competingCardMap[direction]] + competingCardModifier)
+
+                    if (activeCard[direction] + activeCardModifier > competingCard[competingCardMap[direction]] + competingCardModifier) {
+                        flips.push({ row: r, col: c, player: "red" });
                     }
                 }
             }

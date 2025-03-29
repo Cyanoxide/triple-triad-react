@@ -125,7 +125,17 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             const competingCard = cards.find(card => card.id === competingCardId);
             if (!competingCard) continue;
 
-            if (activeCard[direction] > competingCard[competingCardMap[direction]]) {
+            let activeCardModifier = 0
+            if (elements && String([row, col]) in elements) {
+                activeCardModifier = (elements[String([row, col])] === activeCard?.element) ? 1 : -1;
+            }
+
+            let competingCardModifier = 0;
+            if (elements && String([r, c]) in elements) {
+                competingCardModifier = (elements[String([r, c])] === competingCard?.element) ? 1 : -1;
+            }
+
+            if ((activeCard[direction] + activeCardModifier) > (competingCard[competingCardMap[direction]] + competingCardModifier)) {
                 flips.push({ row: r, col: c, player });
             }
         }
@@ -174,9 +184,16 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }, [board, selectedCard, turn, grabCardFromHand, placeCard, swapTurn]);
 
 
+    const handleMouseEnter = (rowIndex: number, colIndex: number) => {
+        if (!board[rowIndex][colIndex] && !!selectedCard && turn === "blue") {
+            playSound("select", isSoundEnabled);
+        }
+    }
+
+
     useEffect(() => {
         if (turn === "red" && turnNumber <= 9) {
-            const enemyMove = getEnemyMove(board, currentEnemyHand, "advanced");
+            const enemyMove = getEnemyMove(board, currentEnemyHand, "advanced", elements);
             if (enemyMove) {
                 const { enemyCardIndex, enemyCard, enemyPosition } = enemyMove;
 
