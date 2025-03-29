@@ -26,6 +26,9 @@ export interface GameState {
     isSoundEnabled: boolean;
     slideDirection: "prev" | "next" | null;
     currentPages: Record<string, number>;
+    rules: string[] | null;
+    tradeRules: string[] | null;
+    elements: Record<string, string> | null;
 }
 
 export type GameAction =
@@ -52,6 +55,9 @@ export type GameAction =
     | { type: "SET_IS_SOUND_ENABLED"; payload: boolean }
     | { type: "SET_CURRENT_PAGES"; payload: Record<string, number> }
     | { type: "SET_SLIDE_DIRECTION"; payload: "prev" | "next" | null }
+    | { type: "SET_RULES"; payload: string[] | null }
+    | { type: "SET_TRADE_RULES"; payload: string[] | null }
+    | { type: "SET_ELEMENTS"; payload: Record<string, string> | null; }
     | { type: "RESET_GAME" };
 
 export interface GameContextType extends GameState {
