@@ -256,7 +256,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                                 if (elements && String([rowIndex, colIndex]) in elements) {
                                     modifier = (elements[String([rowIndex, colIndex])] === cardData?.element) ? 1 : -1;
                                 }
-                                return cardData && <Card {...cardData} player={col[1]} data-state={col[2]} data-modifier={modifier} />;
+                                return cardData && <Card {...cardData} player={col[1]} onBoard={true} data-state={col[2]} data-modifier={modifier} />;
                             })()}
                             {elements && String([rowIndex, colIndex]) in elements && <div data-element data-sprite={elements[String([rowIndex, colIndex])]}>{elements[String([rowIndex, colIndex])]}</div>}
                         </div>
