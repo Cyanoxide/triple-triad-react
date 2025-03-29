@@ -10,14 +10,14 @@ import SimpleDialog from '../SimpleDialog/SimpleDialog';
 import Indicator from '../Indicator/Indicator';
 import playSound from "../../utils/sounds";
 import textToSprite from '../../utils/textToSprite';
+import elementsList from "../../../data/elements.json";
 
 interface BoardProps {
     className?: string;
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, dispatch } = useGameContext();
-
+    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, dispatch } = useGameContext();
 
     const setWinState = useCallback((currentScore: [number, number] = score) => {
         // if (isGameActive) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
@@ -31,7 +31,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         if (redScore < blueScore) {
             dispatch({ type: "SET_WIN_STATE", payload: "blue" });
         }
-    }, [turnNumber])
+    }, [turnNumber]);
+
 
     const resetBoardValuesOnSwap = (board: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][]): ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][] => {
         board.map((row) =>
@@ -65,6 +66,29 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
         return selectedCardId;
     }, [currentEnemyHand, currentPlayerHand, dispatch]);
+
+
+    const determineElementalBoardCells = () => {
+        if (!rules || !rules?.includes("elemental")) return;
+        const position = new Set<string>();
+
+        for (let i = 0; i <= 2; i++) {
+            if (position.size && Math.random() < 0.6) continue;
+
+            const row = Math.floor(Math.random() * 3);
+            const col = Math.floor(Math.random() * 3);
+            const pos = `${row},${col}`;
+            position.add(pos);
+        }
+
+        const result: { [key: string]: (typeof elementsList)[number] } = {};
+        position.forEach((pos) => {
+            const element = elementsList[Math.floor(Math.random() * elementsList.length)];
+            result[pos] = element;
+        });
+
+        dispatch({ type: "SET_ELEMENTS", payload: result });
+    };
 
 
     const determineCardFlips = useCallback((row: number, col: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][] = board) => {
@@ -187,11 +211,12 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         setWinState([redScore, blueScore])
     }, [board]);
 
-    const handleMouseEnter = (rowIndex: number, colIndex: number) => {
-        if (!board[rowIndex][colIndex] && !!selectedCard && turn === "blue") {
-            playSound("select", isSoundEnabled);
-        }
-    }
+
+    useEffect(() => {
+        if (!isGameActive) return;
+        determineElementalBoardCells();
+    }, [isGameActive]);
+
 
     return (
         <>
@@ -199,11 +224,24 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             <div className={`${styles.board} ${className || ''}`.trim()}>
                 {board.map((row, rowIndex) => (
                     row.map((col, colIndex) => (
-                        <div key={`${rowIndex}-${colIndex}`} className={styles.cell} data-position={[rowIndex, colIndex]} data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"} onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)} onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}>
+                        <div
+                            key={`${rowIndex}-${colIndex}`}
+                            className={styles.cell}
+                            data-position={[rowIndex, colIndex]}
+                            data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"}
+                            data-element={(elements && String([rowIndex, colIndex]) in elements) ? elements[String([rowIndex, colIndex])] : null}
+                            onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
+                            onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}
+                        >
                             {col && (() => {
                                 const cardData = cards.find(card => card.id === col[0]);
-                                return cardData && <Card {...cardData} player={col[1]} data-state={col[2]} />;
+                                let modifier = 0;
+                                if (elements && String([rowIndex, colIndex]) in elements) {
+                                    modifier = (elements[String([rowIndex, colIndex])] === cardData?.element) ? 1 : -1;
+                                }
+                                return cardData && <Card {...cardData} player={col[1]} data-state={col[2]} data-modifier={modifier} />;
                             })()}
+                            {elements && String([rowIndex, colIndex]) in elements && <div data-element data-sprite={elements[String([rowIndex, colIndex])]}>{elements[String([rowIndex, colIndex])]}</div>}
                         </div>
                     ))
                 ))}
