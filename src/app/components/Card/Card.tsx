@@ -6,13 +6,13 @@ import { useGameContext } from "../../context/GameContext";
 interface CardProps {
     id: number;
     player: "red" | "blue";
-    onBoard: boolean;
+    onBoard?: boolean;
     onClick?: () => void;
     onMouseEnter?: () => void;
     onMouseLeave?: () => void;
 }
 
-const Card: React.FC<CardProps> = ({ id, player, onBoard = false, ...props }) => {
+const Card: React.FC<CardProps> = ({ id, player, onBoard, ...props }) => {
     const { isGameActive, rules } = useGameContext();
     const card = cards.find(card => card.id === id);
 
