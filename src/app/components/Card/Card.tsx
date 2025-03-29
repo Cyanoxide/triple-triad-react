@@ -12,7 +12,7 @@ interface CardProps {
     onMouseLeave?: () => void;
 }
 
-const Card: React.FC<CardProps> = ({ id, player, onBoard, ...props }) => {
+const Card: React.FC<CardProps> = ({ id, player, onBoard = false, ...props }) => {
     const { isGameActive, rules } = useGameContext();
     const card = cards.find(card => card.id === id);
 
