@@ -73,12 +73,9 @@ export function getEnemyMove(boardState: ([number, "red" | "blue", "placed" | "f
                     }
 
                     let competingCardModifier = 0;
-                    console.log(String([r, c]), elements)
                     if (elements && String([r, c]) in elements) {
                         competingCardModifier = (elements[String([r, c])] === competingCard?.element) ? 1 : -1;
                     }
-
-                    console.log(activeCard[direction], activeCardModifier, activeCard[direction] + activeCardModifier, competingCard[competingCardMap[direction]], competingCardModifier, competingCard[competingCardMap[direction]] + competingCardModifier)
 
                     if (activeCard[direction] + activeCardModifier > competingCard[competingCardMap[direction]] + competingCardModifier) {
                         flips.push({ row: r, col: c, player: "red" });
