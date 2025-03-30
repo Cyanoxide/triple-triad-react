@@ -18,9 +18,9 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.8rem;
-  letter-spacing: 0rem;
-  word-spacing: 0.2rem;
+  font-size: 0.8em;
+  letter-spacing: 0;
+  word-spacing: 0.2em;
   text-shadow: 2px 2px 0 #212121;
   overflow: hidden;
   display: flex;
@@ -60,12 +60,12 @@ p,
 h3,
 li,
 button {
-  margin-top: 0.35rem;
-  margin-bottom: 0.35rem;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 button {
-  margin-top: 0.35rem
+  margin-top: 4px;
 }
 
 @keyframes jitter {

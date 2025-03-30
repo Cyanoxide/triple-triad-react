@@ -1,5 +1,6 @@
 .font {
-    line-height: 1.2rem;
+    height: 18px;
+    display: inherit;
 }
 
 .font.blue .font-glyph {
@@ -18,13 +19,7 @@
     background-size: 401px 168px;
     text-indent: -10000px;
     image-rendering: pixelated;
-    /* background-color: red; */
 }
-
-/* .font-glyph:nth-child(2n) {
-  background-color: blue;
-} */
-
 
 .font-glyph[data-sprite=" "] {
     background-position: 0 0;

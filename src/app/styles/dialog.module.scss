@@ -3,13 +3,13 @@
     box-shadow: inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
     outline: 2px solid #000;
     color: #fff;
-    padding: 1rem 1rem 0.7rem 1rem;
+    padding: 1em 1em 0.7em 1em;
     z-index: 3;
 
     li {
         list-style: square;
-        margin-left: 0.5rem;
-        padding-left: 0.5rem;
+        margin-left: 0.5em;
+        padding-left: 0.5em;
     }
 
     button {
@@ -20,12 +20,12 @@
             &::after {
                 content: "";
                 position: absolute;
-                left: -3.4rem;
+                left: -3.4em;
                 background-image: url("/assets/cursor.png");
                 background-size: cover;
                 width: 45px;
                 height: 28px;
-                margin-top: 0.3rem;
+                margin-top: 0.3em;
                 z-index: 4;
                 image-rendering: pixelated;
             }
@@ -40,7 +40,7 @@
         height: 9px;
         position: absolute;
         top: 0;
-        left: 0.6rem;
+        left: 0.6em;
 
         &[data-sprite="p."] {
             width: 10px;

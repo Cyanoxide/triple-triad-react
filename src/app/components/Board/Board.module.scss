@@ -12,7 +12,7 @@
         transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
         background-position: center;
-        background-size: 37rem;
+        background-size: 37em;
         background-repeat: no-repeat;
         mix-blend-mode: soft-light;
     }
@@ -145,12 +145,12 @@
         &:hover::after {
             content: "";
             position: absolute;
-            margin-left: 1.2rem;
+            margin-left: 1.2em;
             background-image: url("/assets/cursor.png");
             background-size: cover;
             width: 45px;
             height: 28px;
-            margin-top: 4.4rem;
+            margin-top: 4.4em;
             z-index: 4;
             image-rendering: pixelated;
         }
@@ -172,7 +172,7 @@
 }
 
 .selectedCardLabel {
-    bottom: calc(50% - 20rem);
+    bottom: calc(50% - 20em);
     position: absolute;
     left: 50%;
 
@@ -209,7 +209,7 @@
 
 @keyframes placeCardOnBoard {
     0% {
-        transform: translateY(-100rem);
+        transform: translateY(-100em);
     }
 
     100% {
@@ -223,6 +223,6 @@
     }
 
     100% {
-        margin-top: -0.3rem;
+        margin-top: -0.3em;
     }
 }
