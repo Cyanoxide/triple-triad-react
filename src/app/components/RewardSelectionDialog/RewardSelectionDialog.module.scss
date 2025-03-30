@@ -11,6 +11,8 @@
     position: fixed;
     bottom: 0;
     overflow: hidden;
+    width: 100%;
+    height: 100%;
 
     [data-selected][data-confirmed] {
         &[data-selected=true][data-player="blue"] {

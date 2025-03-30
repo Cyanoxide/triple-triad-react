@@ -34,12 +34,12 @@ function GameContent() {
 
   return (
     <>
-      <div id="app" className="max-w-4xl m-auto relative">
+      <div id="app" className="max-w-4xl w-full h-full m-auto relative">
         <div>
           {isMenuOpen && <MenuDialog />}
           {isCardSelectionOpen && <CardSelectionDialog />}
         </div>
-        <div className="flex h-screen justify-center">
+        <div className="flex h-full justify-center">
           <Hand className="order-1 flex items-center justify-center w-[150px] flex-shrink-0" player="red" />
           <Hand className="order-3 flex items-center justify-center w-[150px] flex-shrink-0" player="blue" />
           <Board className="order-2 grid justify-center items-center gap-1 w-[535px] flex-shrink-0 m-auto" />
