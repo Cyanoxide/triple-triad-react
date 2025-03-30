@@ -19,6 +19,25 @@ function GameContent() {
     playLoadedSound(bgmRef.current, isSoundEnabled);
   }, [isSoundEnabled, isGameActive])
 
+  useEffect(() => {
+    const app = document.getElementById('app');
+    if (app) {
+      const scaleApp = () => {
+        const originalWidth = 950;
+        const originalHeight = 750;
+
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+
+        const scale = Math.min(windowWidth / originalWidth, windowHeight / originalHeight);
+        app.style.zoom = String(scale);
+      }
+
+      window.addEventListener('load', scaleApp);
+      window.addEventListener('resize', scaleApp);
+    }
+  }, [])
+
   const handleSoundToggle = () => {
     playSound("select", !isSoundEnabled);
     const toggle = (isSoundEnabled === false) ? true : false;
