@@ -1,5 +1,7 @@
 .board {
     grid-template-columns: repeat(3, 0fr);
+    margin-left: 0;
+    margin-right: 0;
 
     &::before {
         content: "";

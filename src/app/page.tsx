@@ -35,6 +35,7 @@ function GameContent() {
 
       window.addEventListener('load', scaleApp);
       window.addEventListener('resize', scaleApp);
+      scaleApp();
     }
   }, [])
 
