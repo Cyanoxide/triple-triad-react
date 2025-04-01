@@ -55,15 +55,15 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
                 }));
             });
 
-            // setTimeout(() => {
-            //     stopLoadedSound(bgm, isSoundEnabled);
-            //     dispatch({ type: "RESET_GAME" });
-            //     dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCardsCopy });
+            setTimeout(() => {
+                stopLoadedSound(bgm, isSoundEnabled);
+                dispatch({ type: "RESET_GAME" });
+                dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCardsCopy });
 
-            //     if (typeof window !== "undefined") {
-            //         localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCardsCopy));
-            //     }
-            // }, 7000);
+                if (typeof window !== "undefined") {
+                    localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCardsCopy));
+                }
+            }, 7000);
         }
     }, []);
 
