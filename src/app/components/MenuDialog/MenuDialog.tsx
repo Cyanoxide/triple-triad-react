@@ -29,12 +29,12 @@ const MenuDialog = () => {
                 <p>{textToSprite("Rules:")}</p>
                 <ul>
                     {rules && rules.map((rule: string, index) => (
-                        <li key={index}><span>{textToSprite(rulesList.rules[rule as keyof typeof rulesList.rules])}</span></li>
+                        <li key={index}><span>{textToSprite(`• ${rulesList.rules[rule as keyof typeof rulesList.rules]}`)}</span></li>
                     ))}
                 </ul>
                 <ul>
                     {tradeRules && tradeRules.map((rule: string, index) => (
-                        <li key={index}><span>{textToSprite(`Trade Rule: ${rulesList.tradeRules[rule as keyof typeof rulesList.tradeRules]}`)}</span></li>
+                        <li key={index}><span>{textToSprite(`• Trade Rule: ${rulesList.tradeRules[rule as keyof typeof rulesList.tradeRules]}`)}</span></li>
                     ))}
                 </ul>
                 <div className="flex flex-col items-center">

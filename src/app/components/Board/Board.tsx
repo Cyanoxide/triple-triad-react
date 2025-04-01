@@ -263,7 +263,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                     ))
                 ))}
             </div >
-            {turn === "blue" && selectedCard && <div className={styles.selectedCardLabel}><SimpleDialog>{textToSprite(cards.find(card => card.id === selectedCard[0])?.name || "")}</SimpleDialog></div>}
+            {turn === "blue" && selectedCard && <div className={styles.selectedCardLabel}><SimpleDialog>{textToSprite(cards.find(card => card.id === selectedCard[0])?.name || "", undefined, true)}</SimpleDialog></div>}
         </>
     );
 };

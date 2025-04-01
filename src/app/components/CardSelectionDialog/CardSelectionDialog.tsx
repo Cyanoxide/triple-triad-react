@@ -66,19 +66,19 @@ const CardSelectionDialog = () => {
     }
 
     const cardContent = (item: { id: string, location: string, player: string, additionalDesc: string }, quantity: number) => (
-        < div
+        <div
             key={item.id}
             onClick={() => handleCardSelection(Number(item.id), quantity)}
             onMouseEnter={() => handleCardHover(Number(item.id))}
-            className={`${styles.cardListItem} flex justify-between`}
+            className={`${styles.cardListItem} flex justify-between ${quantity ? "cursor-pointer" : "opacity-50"}`}
             data-slide-direction={slideDirection}
         >
-            <div className={`flex ${quantity ? "cursor-pointer" : "opacity-50"}`}>
+            <div className="flex">
                 <Image src="/assets/cardicon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
-                <span>{textToSprite(cardList.find(card => card.id === Number(item.id))?.name || "")}</span>
+                {textToSprite(cardList.find(card => card.id === Number(item.id))?.name || "")}
             </div>
-            <div className={quantity ? "cursor-pointer" : "opacity-50"}>
-                <span className="mr-1">{textToSprite(String(quantity))}</span>
+            <div>
+                {textToSprite(String(quantity))}
             </div>
         </div >
     );
@@ -89,7 +89,8 @@ const CardSelectionDialog = () => {
             const currentPlayerCards = { ...playerCards };
 
             while (hand.length < 5) {
-                const cardId = Math.floor(Math.random() * Object.keys(currentPlayerCards).length + 1);
+                const cardIdIndex = Math.floor(Math.random() * Object.keys(currentPlayerCards).length);
+                const cardId: number = Number(Object.keys(currentPlayerCards)[cardIdIndex]);
 
                 if (currentPlayerCards[cardId] > 0) {
                     handleCardSelection(cardId, currentPlayerCards[cardId]);

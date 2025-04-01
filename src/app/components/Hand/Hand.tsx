@@ -43,7 +43,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
                         </div>
                     ))}
                 </div>
-                {isGameActive && <div className={styles.score} data-sprite={(player === "red") ? score[0] : score[1]}></div>}
+                <div className={`${styles.score} ${(!isGameActive) ? "invisible" : ""}`} data-sprite={(player === "red") ? score[0] : score[1]}></div>
             </div>
         </div>
     );

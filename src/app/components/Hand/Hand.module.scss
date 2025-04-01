@@ -3,8 +3,8 @@
 }
 
 .hand {
-    min-height: 559px;
-    padding-top: 4rem;
+    min-height: 556px;
+    padding-top: 50px;
     z-index: 1;
 
     &[data-player=red] {
@@ -20,7 +20,7 @@
     }
 
     >div {
-        margin-top: -50%;
+        margin-top: -48%;
         animation: placeCardInHand 0.15s ease-out forwards;
     }
 
@@ -33,7 +33,7 @@
             &:hover {
                 &::after {
                     position: absolute;
-                    top: 1.2rem;
+                    top: 16px;
                 }
             }
 
@@ -42,12 +42,12 @@
                     &::after {
                         content: "";
                         position: absolute;
-                        left: -1.7rem;
+                        left: -36px;
                         background-image: url("/assets/cursor.png");
                         background-size: cover;
                         width: 45px;
                         height: 28px;
-                        margin-top: 3.2rem;
+                        margin-top: 50px;
                         z-index: 4;
                         image-rendering: pixelated;
                     }
@@ -58,12 +58,7 @@
 }
 
 .score {
-    // font-size: 3rem;
-    // font-family: serif;
-    // font-style: italic;
-    // font-weight: bold;
-    // position: absolute;
-    bottom: -2rem;
+    bottom: -26px;
     z-index: 4;
     pointer-events: none;
     background-image: url("/assets/score-spritesheet.png");
@@ -113,7 +108,7 @@
 
 @keyframes placeCardInHand {
     0% {
-        transform: translateY(100rem);
+        transform: translateY(1000px);
     }
 
     100% {

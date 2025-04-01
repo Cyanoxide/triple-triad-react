@@ -192,8 +192,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             {selectedReward && !isRewardConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
             {winState === "red" && Object.keys(playerCards).length <= 5 &&
                 <SimpleDialog>
-                    <p>{textToSprite("Your opponent took pity on you and decided not")}</p>
-                    <p>{textToSprite("to take any of your remaining cards.")}</p>
+                    <div className="mb-2">{textToSprite("Your opponent took pity on you and decided not")}</div>
+                    <div className="mb-2">{textToSprite("to take any of your remaining cards.")}</div>
                 </SimpleDialog>
             }
         </div>

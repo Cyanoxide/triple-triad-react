@@ -6,11 +6,10 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    min-width: 10rem;
 
     &[data-dialog="playerSelection"] {
         top: 80%;
-        min-width: 20rem;
+        width: 250px;
 
         h3,
         p {
