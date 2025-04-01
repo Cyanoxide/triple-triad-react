@@ -21,7 +21,8 @@ function GameContent() {
 
   useEffect(() => {
     const app = document.getElementById('app');
-    if (app) {
+    const modal = document.getElementById('modal');
+    if (app && modal) {
       const scaleApp = () => {
         const originalWidth = 950;
         const originalHeight = 750;
@@ -31,13 +32,14 @@ function GameContent() {
 
         const scale = Math.min(windowWidth / originalWidth, windowHeight / originalHeight);
         app.style.zoom = String(scale);
+        modal.style.zoom = String(scale);
       }
 
       window.addEventListener('load', scaleApp);
       window.addEventListener('resize', scaleApp);
       scaleApp();
     }
-  }, [])
+  }, []);
 
   const handleSoundToggle = () => {
     playSound("select", !isSoundEnabled);

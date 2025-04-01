@@ -4,16 +4,14 @@
     @extend .dialog;
     position: absolute;
     top: 50%;
-    left: calc(50% - 11em);
+    left: calc(50% - 175px);
     transform: translate(-50%, -50%);
-    min-width: 10em;
-    width: 20em;
-    min-height: 21.9em;
-
+    width: 288px;
+    min-height: 305px;
 
     .cardSelectionPreview {
-        left: calc(100% + 2em);
-        bottom: 2em;
+        left: calc(100% + 32px);
+        bottom: 32px;
         transform-origin: center;
         transform-style: preserve-3d;
         animation: spinCard 4s ease-in-out 2s forwards, infiniteSpin 4s linear 2s infinite;
@@ -24,19 +22,19 @@
             &:before {
                 content: "";
                 position: absolute;
-                left: -3em;
+                left: -50px;
                 background-image: url("/assets/cursor.png");
                 background-size: cover;
                 width: 45px;
                 height: 28px;
-                margin-top: 0.3em;
+                margin-top: 2px;
                 z-index: 4;
                 image-rendering: pixelated;
             }
         }
 
         img {
-            margin-top: -0.3em;
+            margin-top: -2px;
         }
     }
 }

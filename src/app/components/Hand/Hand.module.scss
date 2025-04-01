@@ -4,7 +4,7 @@
 
 .hand {
     min-height: 559px;
-    padding-top: 4em;
+    padding-top: 50px;
     z-index: 1;
 
     &[data-player=red] {
@@ -33,7 +33,7 @@
             &:hover {
                 &::after {
                     position: absolute;
-                    top: 1.2em;
+                    top: 16px;
                 }
             }
 
@@ -42,12 +42,12 @@
                     &::after {
                         content: "";
                         position: absolute;
-                        left: -1.7em;
+                        left: -22px;
                         background-image: url("/assets/cursor.png");
                         background-size: cover;
                         width: 45px;
                         height: 28px;
-                        margin-top: 3.2em;
+                        margin-top: 42px;
                         z-index: 4;
                         image-rendering: pixelated;
                     }
@@ -58,12 +58,7 @@
 }
 
 .score {
-    // font-size: 3em;
-    // font-family: serif;
-    // font-style: italic;
-    // font-weight: bold;
-    // position: absolute;
-    bottom: -2em;
+    bottom: -26px;
     z-index: 4;
     pointer-events: none;
     background-image: url("/assets/score-spritesheet.png");
@@ -113,7 +108,7 @@
 
 @keyframes placeCardInHand {
     0% {
-        transform: translateY(100em);
+        transform: translateY(1000px);
     }
 
     100% {

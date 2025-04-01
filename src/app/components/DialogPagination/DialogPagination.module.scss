@@ -1,8 +1,10 @@
 .pagination {
     animation: blink 0.5s infinite;
-    line-height: 1em;
+    line-height: 13px;
 
     button {
+        height: 8px;
+
         &::before {
             content: "";
             display: block;
@@ -33,6 +35,7 @@
     &>div {
         transition: all 0.2s ease-in;
         transform: translateX(0);
+        margin-top: 5px;
     }
 
     [data-slide-direction="prev"] {

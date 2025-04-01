@@ -55,15 +55,15 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
                 }));
             });
 
-            setTimeout(() => {
-                stopLoadedSound(bgm, isSoundEnabled);
-                dispatch({ type: "RESET_GAME" });
-                dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCardsCopy });
+            // setTimeout(() => {
+            //     stopLoadedSound(bgm, isSoundEnabled);
+            //     dispatch({ type: "RESET_GAME" });
+            //     dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCardsCopy });
 
-                if (typeof window !== "undefined") {
-                    localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCardsCopy));
-                }
-            }, 7000);
+            //     if (typeof window !== "undefined") {
+            //         localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCardsCopy));
+            //     }
+            // }, 7000);
         }
     }, []);
 
@@ -192,8 +192,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             {selectedReward && !isRewardConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
             {winState === "red" && Object.keys(playerCards).length <= 5 &&
                 <SimpleDialog>
-                    <p>{textToSprite("Your opponent took pity on you and decided not")}</p>
-                    <p>{textToSprite("to take any of your remaining cards.")}</p>
+                    <div className="mb-2">{textToSprite("Your opponent took pity on you and decided not")}</div>
+                    <div className="mb-2">{textToSprite("to take any of your remaining cards.")}</div>
                 </SimpleDialog>
             }
         </div>

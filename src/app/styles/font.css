@@ -1,6 +1,7 @@
 .font {
     height: 18px;
     display: inherit;
+    white-space: nowrap;
 }
 
 .font.blue .font-glyph {

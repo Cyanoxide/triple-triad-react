@@ -147,12 +147,12 @@
         &:hover::after {
             content: "";
             position: absolute;
-            margin-left: 1.2em;
+            margin-left: 16px;
             background-image: url("/assets/cursor.png");
             background-size: cover;
             width: 45px;
             height: 28px;
-            margin-top: 4.4em;
+            margin-top: 57px;
             z-index: 4;
             image-rendering: pixelated;
         }
@@ -174,7 +174,7 @@
 }
 
 .selectedCardLabel {
-    bottom: calc(50% - 20em);
+    bottom: calc(50% - 300px);
     position: absolute;
     left: 50%;
 
@@ -211,7 +211,7 @@
 
 @keyframes placeCardOnBoard {
     0% {
-        transform: translateY(-100em);
+        transform: translateY(-1000px);
     }
 
     100% {
@@ -225,6 +225,6 @@
     }
 
     100% {
-        margin-top: -0.3em;
+        margin-top: -4px;
     }
 }
