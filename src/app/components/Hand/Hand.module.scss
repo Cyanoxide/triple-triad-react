@@ -42,12 +42,12 @@
                     &::after {
                         content: "";
                         position: absolute;
-                        left: -22px;
+                        left: -36px;
                         background-image: url("/assets/cursor.png");
                         background-size: cover;
                         width: 45px;
                         height: 28px;
-                        margin-top: 42px;
+                        margin-top: 50px;
                         z-index: 4;
                         image-rendering: pixelated;
                     }

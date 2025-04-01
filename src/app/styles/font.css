@@ -1,6 +1,6 @@
 .font {
     height: 18px;
-    display: inherit;
+    display: flex;
     white-space: nowrap;
 }
 

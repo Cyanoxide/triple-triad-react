@@ -14,8 +14,8 @@ const EnemySelectionDialog = () => {
 
     const playerContent = (item: { id: string, location: string, player: string, additionalDesc: string }) => (
         <div key={item.id} data-slide-direction={slideDirection}>
-            <p className="opacity-50">{textToSprite(item.location)}</p>
-            <p>{textToSprite(item.player)}</p>
+            <p className="opacity-50">{textToSprite(item.location, undefined, true)}</p>
+            <p>{textToSprite(item.player, undefined, true)}</p>
             {/* <p className="italic">{textToSprite(item.additionalDesc)}</p> */}
         </div>
     );
