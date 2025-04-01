@@ -89,7 +89,8 @@ const CardSelectionDialog = () => {
             const currentPlayerCards = { ...playerCards };
 
             while (hand.length < 5) {
-                const cardId = Math.floor(Math.random() * Object.keys(currentPlayerCards).length + 1);
+                const cardIdIndex = Math.floor(Math.random() * Object.keys(currentPlayerCards).length);
+                const cardId: number = Number(Object.keys(currentPlayerCards)[cardIdIndex]);
 
                 if (currentPlayerCards[cardId] > 0) {
                     handleCardSelection(cardId, currentPlayerCards[cardId]);
