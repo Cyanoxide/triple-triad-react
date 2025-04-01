@@ -3,7 +3,7 @@
 }
 
 .hand {
-    min-height: 559px;
+    min-height: 556px;
     padding-top: 50px;
     z-index: 1;
 
@@ -20,7 +20,7 @@
     }
 
     >div {
-        margin-top: -50%;
+        margin-top: -48%;
         animation: placeCardInHand 0.15s ease-out forwards;
     }
 
