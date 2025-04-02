@@ -41,9 +41,10 @@ export type GameAction =
     | { type: "SET_CURRENT_ENEMY_HAND"; payload: number[] }
     | { type: "SET_LOST_CARDS"; payload: Record<number, number> }
     | { type: "SET_WIN_STATE"; payload: Player | "draw" | null }
-    | { type: "SET_TURN"; payload: Player }
+    | { type: "SET_TURN"; payload: Player | null }
     | { type: "INCREMENT_TURN" }
-    | { type: "SET_TURN_STATE"; payload: string }
+    | { type: "RESET_TURN" }
+    | { type: "SET_TURN_STATE"; payload: string | null }
     | { type: "SET_SCORE"; payload: [number, number] }
     | { type: "SET_BOARD"; payload: ([number, Player, CardState] | null)[][] }
     | { type: "SET_SELECTED_CARD"; payload: [number, Player, number] | null }

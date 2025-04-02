@@ -24,6 +24,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, turn: action.payload };
         case "INCREMENT_TURN":
             return { ...state, turnNumber: state.turnNumber + 1 };
+        case "RESET_TURN":
+            return { ...state, turnNumber: 1 };
         case "SET_TURN_STATE":
             return { ...state, turnState: action.payload };
         case "SET_SCORE":
@@ -88,7 +90,7 @@ export const initialState: GameState = {
     isSoundEnabled: false,
     slideDirection: null,
     currentPages: { "players": 1, "cards": 1 },
-    rules: ["open", "elemental"],
+    rules: ["open", "elemental", "suddenDeath"],
     tradeRules: ["one"],
     elements: null,
 };

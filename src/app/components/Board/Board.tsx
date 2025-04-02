@@ -17,7 +17,7 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
-    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, dispatch } = useGameContext();
+    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, winState, dispatch } = useGameContext();
 
     const setWinState = useCallback((currentScore: [number, number] = score) => {
         // if (isGameActive) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
@@ -224,7 +224,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         const blueScore = board.flat().filter(entry => entry?.[1] === "blue").length + currentPlayerHand.length;
 
         dispatch({ type: "SET_SCORE", payload: [redScore, blueScore] });
-
+        
         setWinState([redScore, blueScore])
     }, [board]);
 
