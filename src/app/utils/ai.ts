@@ -6,7 +6,7 @@ const difficultySettings = {
     advanced: 2,
 }
 
-export function getEnemyMove(boardState: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][], enemyHand: number[], method: "random" | "beginner" | "intermediate" | "advanced", elements: Record<string, string> | null) {
+export function getEnemyMove(boardState: ([number, "red" | "blue", string | undefined] | null)[][], enemyHand: number[], method: "random" | "beginner" | "intermediate" | "advanced", elements: Record<string, string> | null) {
     const availablePositions = boardState
         .map((row, rowIndex) =>
             row.map((cell, colIndex) => (!cell ? { row: rowIndex, col: colIndex } : null))

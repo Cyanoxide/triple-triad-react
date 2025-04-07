@@ -1,5 +1,5 @@
 export type Player = "red" | "blue";
-export type CardState = "placed" | "flipped" | undefined;
+export type CardState = string | undefined;
 export type Position = [number, number];
 
 export interface GameState {

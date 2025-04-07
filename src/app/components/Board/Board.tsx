@@ -34,7 +34,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }, [turnNumber]);
 
 
-    const resetBoardValuesOnSwap = (board: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][]): ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][] => {
+    const resetBoardValuesOnSwap = (board: ([number, "red" | "blue", string | undefined] | null)[][]): ([number, "red" | "blue", string | undefined] | null)[][] => {
         board.map((row) =>
             row.map((cell) =>
                 cell && cell[2] === "flipped" ? [cell[0], cell[1], "placed"] as [number, "red" | "blue", "placed"] : cell
@@ -91,9 +91,49 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     };
 
 
-    const determineCardFlips = useCallback((row: number, col: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][] = board) => {
+    const isEligableforPlusSame = (row: number, col: number) => {
+        if (rules?.includes("same") || rules?.includes("plus")) {
+            const directions = [
+                [-1, 0], // Up
+                [0, 1], // Right
+                [1, 0], // Down
+                [0, -1], // Left
+            ];
+
+            let adjacentCount = 0;
+            const adjacentCards: { [key: string]: [number, "red" | "blue", string | undefined] } = {};
+            let hasEnemy = false;
+
+            for (const [x, y] of directions) {
+                const newRow = row + x;
+                const newCol = col + y;
+
+                if (newRow >= 0 && newRow < board.length && newCol >= 0 && newCol < board[0].length) {
+                    const adjacentCard = board[newRow][newCol];
+
+                    if (adjacentCard !== null) {
+
+                        adjacentCards[String([newRow, newCol])] = adjacentCard;
+                        adjacentCount++;
+
+                        const [, cardColor] = adjacentCard;
+                        if (cardColor !== turn) {
+                            hasEnemy = true;
+                        }
+                    }
+                }
+            }
+
+            return adjacentCount >= 2 && hasEnemy;
+        }
+    }
+
+
+    const determineCardFlips = useCallback((row: number, col: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue", string | undefined] | null)[][] = board) => {
         dispatch({ type: "SET_TURN_STATE", payload: "PROCESSING_FLIPS" });
         if (!currentBoard[row][col]) return;
+
+        const sameMatches = [];
 
         const competingCardMap = {
             top: "bottom",
@@ -113,14 +153,13 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         const activeCard = cards.find(card => card.id === cardId);
         if (!activeCard) return;
 
-        const flips: { row: number; col: number; player: "red" | "blue" }[] = [];
+        const flips: { row: number; col: number; player: "red" | "blue", type: string }[] = [];
 
         for (const [direction, { row: r, col: c }] of Object.entries(potentialFlips) as [keyof typeof competingCardMap, { row: number, col: number }][]) {
             const competingCardData = currentBoard[r]?.[c];
             if (!competingCardData) continue;
 
-            const [competingCardId, competingCardOwner] = competingCardData;
-            if (player === competingCardOwner) continue;
+            const [competingCardId] = competingCardData;
 
             const competingCard = cards.find(card => card.id === competingCardId);
             if (!competingCard) continue;
@@ -136,28 +175,41 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             }
 
             if ((activeCard[direction] + activeCardModifier) > (competingCard[competingCardMap[direction]] + competingCardModifier)) {
-                flips.push({ row: r, col: c, player });
+                flips.push({ row: r, col: c, player, type: "flip" });
             }
+
+            if (isEligableforPlusSame(row, col) && (activeCard[direction] + activeCardModifier) === (competingCard[competingCardMap[direction]] + competingCardModifier)) {
+                sameMatches.push({ row: r, col: c, player });
+            }
+        }
+
+        const newBoard = [...currentBoard.map(row => [...row])];
+
+        if (sameMatches.length >= 2) {
+            playSound("flip", isSoundEnabled);
+            sameMatches.forEach(({ row, col }) => {
+                if (currentBoard[row][col] && currentBoard[row][col][1] !== player) {
+                    newBoard[row][col] = [currentBoard[row][col][0], player, "same"];
+                }
+            });
         }
 
         if (flips.length > 0) {
             playSound("flip", isSoundEnabled);
-            const newBoard = [...currentBoard.map(row => [...row])];
             flips.forEach(({ row, col, player }) => {
-                if (currentBoard[row][col]) {
+                if (currentBoard[row][col] && currentBoard[row][col][1] !== player) {
                     newBoard[row][col] = [currentBoard[row][col]![0], player, "flipped"];
                 }
             });
-
-            dispatch({ type: "SET_BOARD", payload: newBoard });
-            return;
         }
 
-        dispatch({ type: "SET_BOARD", payload: currentBoard });
+        console.log(newBoard)
+
+        dispatch({ type: "SET_BOARD", payload: newBoard });
     }, [board, dispatch]);
 
 
-    const placeCard = useCallback((row: number, col: number, cardId: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][] = board) => {
+    const placeCard = useCallback((row: number, col: number, cardId: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue", string | undefined] | null)[][] = board) => {
         dispatch({ type: "SET_TURN_STATE", payload: "PLACING_CARD" });
         if (currentBoard[row][col]) return;
 
