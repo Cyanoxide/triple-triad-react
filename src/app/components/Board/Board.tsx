@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import styles from './Board.module.scss';
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
@@ -11,6 +11,7 @@ import Indicator from '../Indicator/Indicator';
 import playSound from "../../utils/sounds";
 import textToSprite from '../../utils/textToSprite';
 import elementsList from "../../../data/elements.json";
+import BoardMessage from "../BoardMessage/BoardMessage";
 
 interface BoardProps {
     className?: string;
@@ -18,6 +19,9 @@ interface BoardProps {
 
 const Board: React.FC<BoardProps> = ({ className }) => {
     const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, dispatch } = useGameContext();
+    const [sameFlag, setSameFlag] = useState(false);
+    const [plusFlag, setPlusFlag] = useState(false);
+
 
     const setWinState = useCallback((currentScore: [number, number] = score) => {
         // if (isGameActive) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
@@ -187,6 +191,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
         if (sameMatches.length >= 2) {
             playSound("flip", isSoundEnabled);
+            setSameFlag(true);
+
             sameMatches.forEach(({ row, col }) => {
                 if (currentBoard[row][col] && currentBoard[row][col][1] !== player) {
                     newBoard[row][col] = [currentBoard[row][col][0], player, "same"];
@@ -203,10 +209,17 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             });
         }
 
-        console.log(newBoard)
-
         dispatch({ type: "SET_BOARD", payload: newBoard });
     }, [board, dispatch]);
+
+    useEffect(() => {
+        if (sameFlag || plusFlag) {
+            setTimeout(() => {
+                setSameFlag(false);
+                setPlusFlag(false);
+            }, 750);
+        }
+    }, [sameFlag, plusFlag]);
 
 
     const placeCard = useCallback((row: number, col: number, cardId: number, player: "red" | "blue", currentBoard: ([number, "red" | "blue", string | undefined] | null)[][] = board) => {
@@ -316,6 +329,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 ))}
             </div >
             {turn === "blue" && selectedCard && <div className={styles.selectedCardLabel}><SimpleDialog>{textToSprite(cards.find(card => card.id === selectedCard[0])?.name || "", undefined, true)}</SimpleDialog></div>}
+            {(sameFlag || plusFlag) && <BoardMessage message={(sameFlag) ? "same" : "plus"} />}
+
         </>
     );
 };
