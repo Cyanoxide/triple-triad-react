@@ -1,4 +1,5 @@
 import cards from "../../data/cards.json";
+import { BoardType, AiMethodType, PlayerType } from "../context/GameTypes";
 
 const difficultySettings = {
     beginner: 10,
@@ -6,7 +7,7 @@ const difficultySettings = {
     advanced: 2,
 }
 
-export function getEnemyMove(boardState: ([number, "red" | "blue", "placed" | "flipped" | undefined] | null)[][], enemyHand: number[], method: "random" | "beginner" | "intermediate" | "advanced", elements: Record<string, string> | null) {
+export function getEnemyMove(boardState: BoardType, enemyHand: number[], method: AiMethodType, elements: Record<string, string> | null) {
     const availablePositions = boardState
         .map((row, rowIndex) =>
             row.map((cell, colIndex) => (!cell ? { row: rowIndex, col: colIndex } : null))
@@ -43,7 +44,7 @@ export function getEnemyMove(boardState: ([number, "red" | "blue", "placed" | "f
                 left: { r: row, c: col - 1 },
             };
 
-            const flips: { row: number; col: number; player: "red" | "blue" }[] = [];
+            const flips: { row: number; col: number; player: PlayerType }[] = [];
             const activeCard = cards.find(card => card.id === cardId);
             if (!activeCard) continue;
             let totalOpenValue = 0;

@@ -2,10 +2,11 @@ import React from 'react';
 import styles from './Card.module.scss';
 import cards from '../../../data/cards.json';
 import { useGameContext } from "../../context/GameContext";
+import { PlayerType } from "../../context/GameTypes";
 
 interface CardProps {
     id: number;
-    player: "red" | "blue";
+    player: PlayerType;
     onBoard?: boolean;
     onClick?: () => void;
     onMouseEnter?: () => void;

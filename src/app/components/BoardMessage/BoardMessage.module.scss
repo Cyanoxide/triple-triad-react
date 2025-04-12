@@ -1,0 +1,25 @@
+.boardMessage {
+    height: 105px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    overflow: hidden;
+    z-index: 4;
+}
+
+.same {
+    object-position: 0 0;
+    width: 280px;
+}
+
+.plus {
+    object-position: -308px 0;
+    width: 237px;
+}
+
+.combo {
+    object-position: -572px 0;
+    width: 342px;
+}
