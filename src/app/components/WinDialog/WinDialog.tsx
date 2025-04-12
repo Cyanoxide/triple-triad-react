@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useGameContext } from "../../context/GameContext";
+import { PlayerType } from "../../context/GameTypes";
 import Image from "next/image";
 import styles from "./WinDialog.module.scss";
 import { playLoadedSound, stopLoadedSound } from "../../utils/sounds";
@@ -18,7 +19,7 @@ const WinDialog: React.FC<WinDialogProps> = ({ victorySound, bgm }) => {
         playLoadedSound(victorySound, isSoundEnabled);
     }
 
-    const getCardIdsFromBoard = (player: "red" | "blue") => {
+    const getCardIdsFromBoard = (player: PlayerType) => {
         return board
             .flatMap(row => row)
             .filter(cell => cell !== null && cell[1] === player)

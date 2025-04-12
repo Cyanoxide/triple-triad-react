@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from './RewardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
+import { PlayerType } from "../../context/GameTypes";
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
@@ -18,8 +19,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     const winAmount = 1;
 
-    const [rewardCards, setRewardCards] = useState<{ id: number; level: number, player: "red" | "blue" }[]>(enemyHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "red" })));
-    const [enemyRewardCards, setEnemyRewardCards] = useState<{ id: number; level: number, player: "red" | "blue" }[]>(playerHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "blue" })));
+    const [rewardCards, setRewardCards] = useState<{ id: number; level: number, player: PlayerType }[]>(enemyHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "red" })));
+    const [enemyRewardCards, setEnemyRewardCards] = useState<{ id: number; level: number, player: PlayerType }[]>(playerHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "blue" })));
 
     const updatedPlayerCards = { ...playerCards };
     const [selectedCardId, setSelectedCardId] = useState<number | null>(null);

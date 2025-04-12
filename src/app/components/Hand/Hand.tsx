@@ -3,22 +3,23 @@ import styles from './Hand.module.scss';
 import Card from '../Card/Card';
 import Indicator from '../Indicator/Indicator';
 import { useGameContext } from "../../context/GameContext";
+import { PlayerType } from "../../context/GameTypes";
 import playSound from "../../utils/sounds";
 
 interface HandProps {
     className?: string;
-    player: "red" | "blue";
+    player: PlayerType;
 }
 
 const Hand: React.FC<HandProps> = ({ className, player }) => {
     const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, score, isMenuOpen, isGameActive, isSoundEnabled, dispatch } = useGameContext();
     const cards = (player === "red") ? currentEnemyHand : currentPlayerHand;
 
-    const handleSelectCard = (cardId: number, player: "red" | "blue", position: number) => {
+    const handleSelectCard = (cardId: number, player: PlayerType, position: number) => {
         playSound("select", isSoundEnabled);
         if (player === "red") return;
 
-        const activeSelection: [number, "red" | "blue", number] | null = (selectedCard && cardId === selectedCard[0]) ? null : [cardId, player, position];
+        const activeSelection: [number, PlayerType, number] | null = (selectedCard && cardId === selectedCard[0]) ? null : [cardId, player, position];
 
         dispatch({
             type: "SET_SELECTED_CARD",

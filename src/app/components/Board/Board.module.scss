@@ -163,15 +163,27 @@
     }
 
     [data-player=red][data-state="flipped"],
-    [data-player=red][data-state="same"] {
+    [data-player=red][data-state="same"],
+    [data-player=red][data-state="plus"] {
         transform-style: preserve-3d;
         animation: card-flip-red 0.4s ease-in-out 0.2s forwards;
     }
 
+    [data-player=red][data-state="combo"] {
+        transform-style: preserve-3d;
+        animation: card-flip-red 0.4s ease-in-out 0.5s forwards;
+    }
+
     [data-player=blue][data-state="flipped"],
-    [data-player=blue][data-state="same"] {
+    [data-player=blue][data-state="same"],
+    [data-player=blue][data-state="plus"] {
         transform-style: preserve-3d;
         animation: card-flip-blue 0.4s ease-in-out 0.2s forwards;
+    }
+
+    [data-player=blue][data-state="combo"] {
+        transform-style: preserve-3d;
+        animation: card-flip-blue 0.4s ease-in-out 0.5s forwards;
     }
 }
 

@@ -3,7 +3,7 @@ import Image from "next/image";
 import styles from "./BoardMessage.module.scss";
 
 interface BoardMessageProps {
-    message: "same" | "plus";
+    message: "same" | "plus" | "combo";
 }
 
 export default function BoardMessage({ message }: BoardMessageProps) {
