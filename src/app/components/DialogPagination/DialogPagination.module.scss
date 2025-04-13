@@ -4,6 +4,8 @@
 
     button {
         height: 8px;
+        padding-top: 8px;
+        padding-bottom: 8px;
 
         &::before {
             content: "";
@@ -15,14 +17,22 @@
             height: 10px;
         }
 
-        &[data-prev]::before {
-            margin-left: 1px;
-            background-position: 0 0;
+        &[data-prev] {
+            padding-right: 10px;
+
+            &::before {
+                margin-left: 1px;
+                background-position: 0 0;
+            }
         }
 
-        &[data-next]::before {
-            margin-right: 1px;
-            background-position: -7px 0;
+        &[data-next] {
+            padding-left: 10px;
+
+            &::before {
+                margin-right: 1px;
+                background-position: -7px 0;
+            }
         }
 
         &::after {
