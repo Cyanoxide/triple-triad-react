@@ -171,7 +171,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
             <div className="flex justify-center mb-7">
                 {rewardCards.map((card, index) => (
-                    <div key={index} onClick={() => handleSelectReward(card.id)}>
+                    <div className={styles.cell} key={index} onClick={() => handleSelectReward(card.id)}>
                         <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id)} onMouseLeave={handleMouseLeave} data-selected={card.id === selectedReward} data-confirmed={isRewardConfirmed} data-index={index} />
                     </div>
                 ))}
@@ -179,15 +179,17 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
             <div className="flex justify-center">
                 {enemyRewardCards.map((card, index) => (
-                    <Card key={index} id={card.id} player={card.player} data-enemy-selected={card.id === selectedReward} data-index={index} />
+                    <div className={styles.cell} key={index}>
+                        <Card id={card.id} player={card.player} data-enemy-selected={card.id === selectedReward} data-index={index} />
+                    </div>
                 ))}
             </div>
 
             <div className={`${styles.dialogContainer} ${recentCardName ? "" : "invisible"}`}>
-                {!isRewardConfirmed && winState === "blue" && <div className={styles.rewardSelectionDialog} data-dialog="rewardCardNameInfo">
+                <div className={`${styles.rewardSelectionDialog} ${(isRewardConfirmed || winState !== "blue") ? "invisible" : ""}`} data-dialog="rewardCardNameInfo">
                     <h4 className={styles.meta} data-sprite="info.">Info.</h4>
                     <h3>{textToSprite(recentCardName || "", (recentCard && recentCard == lostCards[enemyId]) ? "yellow" : (recentCard && !(recentCard in playerCards)) ? "blue" : "")}</h3>
-                </div>}
+                </div>
             </div>
 
             {selectedReward && !isRewardConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
