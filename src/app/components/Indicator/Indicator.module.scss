@@ -20,7 +20,7 @@ $z-offset: 6px;
 
     &[data-type="turn-indicator"] {
         justify-content: center;
-        top: -60px;
+        top: -75px;
     }
 
     &[data-type="turn-indicator"] {
@@ -42,6 +42,7 @@ $z-offset: 6px;
     transform-style: preserve-3d;
     animation: spin 3s linear infinite;
     width: 42px;
+    pointer-events: none;
 }
 
 .indicatorFace {
