@@ -19,6 +19,7 @@ interface BoardProps {
 }
 
 const Board: React.FC<BoardProps> = ({ className }) => {
+    const debug = false;
     const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, winState, dispatch } = useGameContext();
     const [sameFlag, setSameFlag] = useState(false);
     const [plusFlag, setPlusFlag] = useState(false);
@@ -44,8 +45,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }
 
     const setWinState = useCallback((currentScore: [number, number] = score) => {
-        // if (isGameActive) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
-        // return;
+        if (debug) {
+            if (isGameActive) dispatch({ type: "SET_WIN_STATE", payload: debug });
+            return;
+        }
 
         if (turnNumber <= 9 || turnState !== "TURN_END") return;
         const [redScore, blueScore] = currentScore;
@@ -412,7 +415,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
 
     useEffect(() => {
-        if (turn === "red" && turnNumber <= 9) {
+        if (turn === "red" && turnNumber <= ((debug) ? 1 : 9)) {
             const enemyMove = getEnemyMove(board, currentEnemyHand, "advanced", elements);
             if (enemyMove) {
                 const { enemyCardIndex, enemyCard, enemyPosition } = enemyMove;
