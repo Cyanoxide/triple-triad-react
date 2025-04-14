@@ -38,6 +38,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         left: "right",
     } as const;
 
+    const isOutOfBounds = (position: PositionType) => {
+        const [row, col] = position;
+        return row < 0 || row >= board.length || col < 0 || col >= board[0].length;
+    }
 
     const setWinState = useCallback((currentScore: [number, number] = score) => {
         // if (isGameActive) dispatch({ type: "SET_WIN_STATE", payload: "blue" });
@@ -118,13 +122,31 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
         values.opposingRow = Number(row + x);
         values.opposingCol = Number(col + y);
-        const opposingPosition = String([values.opposingRow, values.opposingCol]);
+        const opposingPosition = [values.opposingRow, values.opposingCol] as PositionType;
+        let opposingCard = null;
+        let activeCard = null;
 
-        if (values.opposingRow < 0 || values.opposingRow >= board.length || values.opposingCol < 0 || values.opposingCol >= board[0].length) return;
+        const isActiveOutOfBounds = isOutOfBounds(position);
+        const isOpposingOutOfBounds = isOutOfBounds(opposingPosition);
 
-        const activeCard = currentBoard[row][col];
+        if (isOpposingOutOfBounds || isActiveOutOfBounds) {
+            if (rules && rules.includes("sameWall")) {
+                opposingCard = isOpposingOutOfBounds
+                    ? [110, turn === "red" ? "blue" : "red", "wall"] as CardType
+                    : currentBoard[values.opposingRow][values.opposingCol];
+
+                activeCard = isActiveOutOfBounds
+                    ? [110, turn, "wall"] as CardType
+                    : currentBoard[row][col];
+            } else {
+                return;
+            }
+        } else {
+            opposingCard = currentBoard[values.opposingRow][values.opposingCol];
+            activeCard = currentBoard[row][col];
+        }
+
         const activeCardData = cards.find(card => card.id === activeCard?.[0]);
-        const opposingCard = currentBoard[values.opposingRow][values.opposingCol];
         const opposingCardData = cards.find(card => card.id === opposingCard?.[0]);
 
         if (!activeCard || !activeCardData) return;
@@ -132,10 +154,11 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
         values.isOpponent = (opposingCard[1] === turn) ? false : true;
 
-        const positionString = String(position);
+        const positionStr = String(position);
+        const opposingPositionStr = String(position);
 
-        const activeCardModifier = (elements && positionString in elements) ? elements[positionString] === activeCardData?.element ? 1 : -1 : 0;
-        const opposingCardModifier = (elements && opposingPosition in elements) ? elements[opposingPosition] === opposingCardData?.element ? 1 : -1 : 0;
+        const activeCardModifier = (elements && positionStr in elements) ? elements[positionStr] === activeCardData?.element ? 1 : -1 : 0;
+        const opposingCardModifier = (elements && opposingPositionStr in elements) ? elements[opposingPositionStr] === opposingCardData?.element ? 1 : -1 : 0;
 
         const opposingDirection = opposingCardMap[direction];
 
@@ -147,7 +170,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
 
     const isEligableforPlusSame = (position: PositionType, currentBoard: BoardType = board) => {
-        if (!rules || (!rules.includes("same") && !rules.includes("plus"))) return;
+        if (!rules || (!rules.includes("same") && !rules.includes("sameWall") && !rules.includes("plus"))) return;
 
         const adjacentCards: { [key: string]: CardType } = {};
         const [row, col] = position;
@@ -158,12 +181,20 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             const opposingRow = row + x;
             const opposingCol = col + y;
 
-            if (opposingRow < 0 || opposingRow >= board.length || opposingCol < 0 || opposingCol >= board[0].length) continue;
+            const isOpposingOutOfBounds = isOutOfBounds([opposingRow, opposingCol]);
+            let adjacentCard = null;
 
-            const adjacentCard = currentBoard[opposingRow][opposingCol];
+            if (isOpposingOutOfBounds) {
+                if (rules.includes("sameWall")) {
+                    adjacentCard = [110, (turn === "red") ? "blue" : "red", "wall"] as CardType;
+                } else {
+                    continue;
+                }
+            } else {
+                adjacentCard = currentBoard[opposingRow][opposingCol];
+            }
 
             if (adjacentCard === null) continue;
-
             adjacentCards[String(position)] = adjacentCard;
             adjacentCount++;
 
@@ -195,7 +226,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
 
     const determineSameCardFlips = (position: PositionType, currentBoard: BoardType = board) => {
-        if (!rules || !rules.includes("same")) return;
+        if (!rules || (!rules.includes("same") && !rules.includes("sameWall"))) return;
         const cardFlips: { position: PositionType; action: string }[] = [];
         const comboFlips: { position: PositionType; action: string }[] = [];
 
@@ -290,6 +321,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
                 sameFlips.forEach(({ position, action }) => {
                     const [row, col] = position;
+
+                    if (isOutOfBounds(position)) return;
 
                     if (currentBoard[row][col] && currentBoard[row][col][1] !== turn) {
                         newBoard[row][col] = [currentBoard[row][col][0], turn, action];

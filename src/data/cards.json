@@ -1134,5 +1134,15 @@
         "right": 4,
         "bottom": 6,
         "left": 9
+    },
+    {
+        "id": 110,
+        "name": "Wall",
+        "rarity": null,
+        "level": 0,
+        "top": 10,
+        "right": 10,
+        "bottom": 10,
+        "left": 10
     }
 ]
