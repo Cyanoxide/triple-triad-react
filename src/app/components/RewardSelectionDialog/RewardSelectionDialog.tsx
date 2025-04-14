@@ -15,9 +15,29 @@ interface RewardSelectionDialogProps {
 }
 
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
-    const { playerCards, playerHand, enemyId, enemyHand, lostCards, selectedReward, winState, isSoundEnabled, dispatch } = useGameContext();
+    const { playerCards, playerHand, enemyId, enemyHand, lostCards, selectedRewards, winState, score, tradeRule, isSoundEnabled, dispatch } = useGameContext();
 
-    const winAmount = 1;
+
+    const scoreSorted = score.sort((a, b) => b - a);
+    const [winningScore, losingScore] = scoreSorted;
+    const scoreDifference = winningScore - losingScore;
+
+    let winAmount = 0;
+
+    switch (tradeRule) {
+        case "one":
+            winAmount = 1;
+            break;
+
+        case "all":
+            winAmount = 5;
+            break;
+
+        case "diff":
+        case "direct":
+            winAmount = scoreDifference;
+            break;
+    }
 
     const [rewardCards, setRewardCards] = useState<{ id: number; level: number, player: PlayerType }[]>(enemyHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "red" })));
     const [enemyRewardCards, setEnemyRewardCards] = useState<{ id: number; level: number, player: PlayerType }[]>(playerHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "blue" })));
@@ -26,7 +46,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
 
     useEffect(() => {
-        if (winAmount > 0 && winState === "red" && selectedReward === null) {
+        if (winAmount > 0 && winState === "red" && selectedRewards.length < winAmount) {
             const updatedPlayerCardsCopy = { ...updatedPlayerCards };
 
             setEnemyRewardCards((prevCards) => {
@@ -66,11 +86,14 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
                 }
             }, 7000);
         }
-    }, []);
+    }, [selectedRewards]);
 
     useEffect(() => {
         if (selectedCardId !== null) {
-            dispatch({ type: "SET_SELECTED_REWARD", payload: selectedCardId });
+            const currentSelectedRewards = [...selectedRewards];
+            currentSelectedRewards.push(selectedCardId);
+
+            dispatch({ type: "SET_SELECTED_REWARDS", payload: currentSelectedRewards });
         }
 
         if (winState === "red") {
@@ -85,21 +108,24 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     const handleSelectReward = (id: number) => {
         playSound("flip", isSoundEnabled);
-        if (winAmount > 0 && winState === "blue" && selectedReward === null) {
+        if (winAmount > 0 && winState === "blue" && selectedRewards.length < winAmount) {
+            const currentSelectedRewards = [...selectedRewards];
+            currentSelectedRewards.push(id);
+
             setRewardCards((prevCards) =>
                 prevCards.map((card) =>
-                    (card.id === Number(id)) ? { ...card, player: "blue" } : { ...card, player: "red" }
+                    (card.id === Number(id)) ? { ...card, player: "blue" } : { ...card }
                 )
             );
 
-            dispatch({ type: "SET_SELECTED_REWARD", payload: id })
+            dispatch({ type: "SET_SELECTED_REWARDS", payload: currentSelectedRewards })
         }
     };
 
     const [isRewardConfirmed, setIsRewardConfirmed] = useState(false);
 
     const handleConfirmation = () => {
-        if (!selectedReward) return;
+        if (selectedRewards.length < winAmount) return;
         playSound("select", isSoundEnabled);
 
         setTimeout(() => {
@@ -107,16 +133,24 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         }, 2500);
 
         const updatedPlayerCards = { ...playerCards };
+        const currentLostCards = { ...lostCards };
 
-        if (selectedReward in updatedPlayerCards) updatedPlayerCards[selectedReward]++
-        else updatedPlayerCards[selectedReward] = 1;
+        selectedRewards.forEach((reward) => {
+            if (!reward) return;
+
+            if (reward in updatedPlayerCards) {
+                updatedPlayerCards[reward]++
+            } else {
+                updatedPlayerCards[reward] = 1;
+            }
+
+            if (currentLostCards[enemyId] === reward) {
+                delete currentLostCards[enemyId]
+            }
+        });
 
         setIsRewardConfirmed(true);
 
-        const currentLostCards = { ...lostCards };
-        if (currentLostCards[enemyId] === selectedReward) {
-            delete currentLostCards[enemyId]
-        }
 
         dispatch({ type: "SET_LOST_CARDS", payload: currentLostCards });
         localStorage.setItem("lostCards", JSON.stringify(currentLostCards));
@@ -142,7 +176,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             }))
         );
 
-        dispatch({ type: "SET_SELECTED_REWARD", payload: null })
+        dispatch({ type: "SET_SELECTED_REWARDS", payload: [] })
     }
 
     const [hoveredReward, setHoveredReward] = useState<number | undefined>(undefined);
@@ -156,9 +190,9 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         setHoveredReward(undefined);
     }
 
-    const recentCard = selectedReward || hoveredReward;
+    const recentCard = selectedRewards[selectedRewards.length - 1] || hoveredReward;
     const recentCardName = cards.find(card => card.id === recentCard)?.name;
-    const selectedRewardName = cards.find(card => card.id === selectedReward)?.name;
+    const selectedRewardName = cards.find(card => card.id === selectedRewards[selectedRewards.length - 1])?.name;
 
     const infoMessage = (winState === "red") ? "lost" : "acquired";
 
@@ -166,13 +200,13 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
             <div className={styles.rewardSelectionDialog} data-dialog="rewardSelectionInfo">
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                <h3>{textToSprite((isRewardConfirmed || (winState === "red" && selectedReward)) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`)}</h3>
+                <h3>{textToSprite((isRewardConfirmed || (winState === "red" && selectedRewards)) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`)}</h3>
             </div>
 
             <div className="flex justify-center mb-7">
                 {rewardCards.map((card, index) => (
                     <div className={styles.cell} key={index} onClick={() => handleSelectReward(card.id)}>
-                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id)} onMouseLeave={handleMouseLeave} data-selected={card.id === selectedReward} data-confirmed={isRewardConfirmed} data-index={index} />
+                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id)} onMouseLeave={handleMouseLeave} data-selected={selectedRewards.includes(card.id)} data-confirmed={isRewardConfirmed} data-index={index} />
                     </div>
                 ))}
             </div>
@@ -180,7 +214,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             <div className="flex justify-center">
                 {enemyRewardCards.map((card, index) => (
                     <div className={styles.cell} key={index}>
-                        <Card id={card.id} player={card.player} data-enemy-selected={card.id === selectedReward} data-index={index} />
+                        <Card id={card.id} player={card.player} data-enemy-selected={selectedRewards.includes(card.id)} data-index={index} />
                     </div>
                 ))}
             </div>
@@ -192,7 +226,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
                 </div>
             </div>
 
-            {selectedReward && !isRewardConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+            {selectedRewards.length === winAmount && !isRewardConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
             {winState === "red" && Object.keys(playerCards).length <= 5 &&
                 <SimpleDialog>
                     <div className="mb-2">{textToSprite("Your opponent took pity on you and decided not")}</div>

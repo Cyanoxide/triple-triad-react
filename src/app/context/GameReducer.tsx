@@ -34,8 +34,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, board: action.payload };
         case "SET_SELECTED_CARD":
             return { ...state, selectedCard: action.payload };
-        case "SET_SELECTED_REWARD":
-            return { ...state, selectedReward: action.payload };
+        case "SET_SELECTED_REWARDS":
+            return { ...state, selectedRewards: action.payload };
         case "SET_IS_MENU_OPEN":
             return { ...state, isMenuOpen: action.payload };
         case "SET_IS_CARD_SELECTION_OPEN":
@@ -52,8 +52,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, slideDirection: action.payload };
         case "SET_RULES":
             return { ...state, rules: action.payload };
-        case "SET_TRADE_RULES":
-            return { ...state, tradeRules: action.payload };
+        case "SET_TRADE_RULE":
+            return { ...state, tradeRule: action.payload };
         case "SET_ELEMENTS":
             return { ...state, elements: action.payload };
         case "RESET_GAME":
@@ -82,7 +82,7 @@ export const initialState: GameState = {
     score: [5, 5],
     board: Array(3).fill(null).map(() => Array(3).fill(null)),
     selectedCard: null,
-    selectedReward: null,
+    selectedRewards: [],
     isMenuOpen: true,
     isCardSelectionOpen: false,
     isRewardSelectionOpen: false,
@@ -91,6 +91,6 @@ export const initialState: GameState = {
     slideDirection: null,
     currentPages: { "players": 1, "cards": 1 },
     rules: ["open", "same", "plus"],
-    tradeRules: ["one"],
+    tradeRule: "all",
     elements: null,
 };
