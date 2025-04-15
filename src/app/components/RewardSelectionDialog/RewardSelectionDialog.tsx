@@ -190,9 +190,36 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         setHoveredReward(undefined);
     }
 
-    const recentCard = selectedRewards[selectedRewards.length - 1] || hoveredReward;
+    const [selectedReward, setSelectedReward] = useState<number | null>(null);
+    const [redeemableCards, setRedeemableCards] = useState<number[]>([]);
+    const [redeemedCards, setRedeemedCards] = useState<number[]>([]);
+
+
+    useEffect(() => {
+        setRedeemableCards(selectedRewards as number[]);
+    }, [isRewardConfirmed]);
+
+
+    useEffect(() => {
+        if (isRewardConfirmed && redeemableCards.length) {
+            setTimeout(() => {
+                const rewardsList = [...redeemableCards];
+                const redeemedCardsList = [...redeemedCards];
+
+                const reward = rewardsList.shift();
+                setSelectedReward(reward as number);
+
+                redeemedCardsList.push(reward as number);
+                setRedeemedCards(redeemedCardsList);
+
+                setRedeemableCards(rewardsList as number[]);
+            }, 5000);
+        }
+    }, [redeemableCards]);
+
+    const recentCard = selectedReward || hoveredReward;
     const recentCardName = cards.find(card => card.id === recentCard)?.name;
-    const selectedRewardName = cards.find(card => card.id === selectedRewards[selectedRewards.length - 1])?.name;
+    const selectedRewardName = cards.find(card => card.id === selectedReward)?.name;
 
     const infoMessage = (winState === "red") ? "lost" : "acquired";
 
@@ -206,7 +233,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             <div className="flex justify-center mb-7">
                 {rewardCards.map((card, index) => (
                     <div className={styles.cell} key={index} onClick={() => handleSelectReward(card.id)}>
-                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id)} onMouseLeave={handleMouseLeave} data-selected={selectedRewards.includes(card.id)} data-confirmed={isRewardConfirmed} data-index={index} />
+                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id)} onMouseLeave={handleMouseLeave} data-selected={selectedRewards.includes(card.id)} data-confirmed={isRewardConfirmed && redeemedCards.includes(card.id)} data-index={index} />
                     </div>
                 ))}
             </div>
