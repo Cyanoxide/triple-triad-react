@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './CardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
+import { CardType } from "../../context/GameTypes";
 import cardList from '../../../data/cards.json';
 import ConfirmationDialog from '../ConfirmationDialog/ConfirmationDialog';
 import Card from '../Card/Card';
@@ -9,13 +10,14 @@ import playSound from "../../utils/sounds";
 import { setAiPlayerCards } from "../../utils/aiCardSelection";
 import DialogPagination from '../DialogPagination/DialogPagination';
 import textToSprite from '../../utils/textToSprite';
+import { generateCardFromId } from "../../utils/general";
 
 
 const CardSelectionDialog = () => {
     const { playerCards, currentPlayerCards, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isSoundEnabled, currentPages, slideDirection, rules, dispatch } = useGameContext();
     const [previewCardId, setPreviewCardId] = useState<number>(0);
 
-    const hand: number[] = [...currentPlayerHand];
+    const hand: CardType[] = [...currentPlayerHand];
     const cards: Record<number, number> = { ...currentPlayerCards };
 
     const gameStart = () => {
@@ -30,8 +32,9 @@ const CardSelectionDialog = () => {
 
     const handleCardSelection = (cardId: number, quantity: number) => {
         if (cards[cardId] > 0 && hand.length < 5) {
+            const card = generateCardFromId(cardId, "blue");
+            if (card) hand.push(card);
 
-            hand.push(cardId);
             score[1] += 1;
             cards[cardId] -= 1;
         }
@@ -65,11 +68,11 @@ const CardSelectionDialog = () => {
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: playerCards });
     }
 
-    const cardContent = (item: { id: string, location: string, player: string, additionalDesc: string }, quantity: number) => (
+    const cardContent = (item: { id: number, location: string, player: string, additionalDesc: string }, quantity: number) => (
         <div
             key={item.id}
-            onClick={() => handleCardSelection(Number(item.id), quantity)}
-            onMouseEnter={() => handleCardHover(Number(item.id))}
+            onClick={() => handleCardSelection(item.id, quantity)}
+            onMouseEnter={() => handleCardHover(item.id)}
             className={`${styles.cardListItem} flex justify-between ${quantity ? "cursor-pointer" : "opacity-50"}`}
             data-slide-direction={slideDirection}
         >
@@ -112,7 +115,7 @@ const CardSelectionDialog = () => {
                 </h4>
                 <h4 className={`${styles.meta} mr-3`} data-sprite="num.">Num.</h4>
             </div>
-            <DialogPagination items={Object.entries(cards)} itemsPerPage={11} renderItem={([cardId, quantity]: [string, number]) =>
+            <DialogPagination items={Object.entries(cards)} itemsPerPage={11} renderItem={([cardId, quantity]: [number, number]) =>
                 cardContent({ id: cardId, location: '', player: '', additionalDesc: '' }, quantity)} pagination="cards" />
 
             {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}

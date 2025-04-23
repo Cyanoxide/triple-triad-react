@@ -15,7 +15,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ id, player, onBoard, ...props }) => {
     const { isGameActive, rules } = useGameContext();
-    const card = cards.find(card => card.id === id);
+    const card = cards.find(card => card.id === +id);
 
     const renderCardValue = (number: number) => (number === 10) ? "A" : number;
 

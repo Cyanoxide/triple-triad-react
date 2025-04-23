@@ -2,18 +2,18 @@ export type PlayerType = "red" | "blue" | null;
 export type CardStateType = string | undefined;
 export type PositionType = [number, number];
 export type DirectionType = "top" | "right" | "bottom" | "left";
-export type CardType = [number, PlayerType, string]
-export type BoardType = (CardType | null)[][]
+export type CardType = [number, PlayerType, number | number[] | null, string | null];
+export type BoardType = (CardType | null)[][];
 export type AiMethodType = "random" | "beginner" | "intermediate" | "advanced";
 
 export interface GameState {
     playerCards: Record<number, number>;
     currentPlayerCards: Record<number, number>;
-    playerHand: number[];
-    currentPlayerHand: number[];
+    playerHand: CardType[];
+    currentPlayerHand: CardType[];
     enemyId: number;
-    enemyHand: number[];
-    currentEnemyHand: number[];
+    enemyHand: CardType[];
+    currentEnemyHand: CardType[];
     lostCards: Record<number, number>,
     winState: PlayerType | "draw";
     turn: PlayerType | null;
@@ -21,7 +21,7 @@ export interface GameState {
     turnState: string | null;
     score: [number, number];
     board: BoardType;
-    selectedCard: [number, PlayerType, number] | null;
+    selectedCard: CardType | null;
     selectedRewards: (number | null)[];
     isMenuOpen: boolean;
     isCardSelectionOpen: boolean;
@@ -38,11 +38,11 @@ export interface GameState {
 export type GameAction =
     | { type: "SET_PLAYER_CARDS"; payload: Record<number, number> }
     | { type: "SET_CURRENT_PLAYER_CARDS"; payload: Record<number, number> }
-    | { type: "SET_PLAYER_HAND"; payload: number[] }
-    | { type: "SET_CURRENT_PLAYER_HAND"; payload: number[] }
+    | { type: "SET_PLAYER_HAND"; payload: CardType[] }
+    | { type: "SET_CURRENT_PLAYER_HAND"; payload: CardType[] }
     | { type: "SET_ENEMY_ID"; payload: number }
-    | { type: "SET_ENEMY_HAND"; payload: number[] }
-    | { type: "SET_CURRENT_ENEMY_HAND"; payload: number[] }
+    | { type: "SET_ENEMY_HAND"; payload: CardType[] }
+    | { type: "SET_CURRENT_ENEMY_HAND"; payload: CardType[] }
     | { type: "SET_LOST_CARDS"; payload: Record<number, number> }
     | { type: "SET_WIN_STATE"; payload: PlayerType | "draw" }
     | { type: "SET_TURN"; payload: PlayerType }
@@ -51,7 +51,7 @@ export type GameAction =
     | { type: "SET_TURN_STATE"; payload: string | null }
     | { type: "SET_SCORE"; payload: [number, number] }
     | { type: "SET_BOARD"; payload: BoardType }
-    | { type: "SET_SELECTED_CARD"; payload: [number, PlayerType, number] | null }
+    | { type: "SET_SELECTED_CARD"; payload: CardType | null }
     | { type: "SET_SELECTED_REWARDS"; payload: (number | null)[] }
     | { type: "SET_IS_MENU_OPEN"; payload: boolean }
     | { type: "SET_IS_CARD_SELECTION_OPEN"; payload: boolean }

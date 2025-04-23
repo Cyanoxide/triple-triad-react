@@ -4,6 +4,7 @@ import { PlayerType } from "../../context/GameTypes";
 import Image from "next/image";
 import styles from "./WinDialog.module.scss";
 import { playLoadedSound, stopLoadedSound } from "../../utils/sounds";
+import { generateCardsFromIds } from "../../utils/general";
 
 interface WinDialogProps {
     victorySound: HTMLAudioElement;
@@ -33,8 +34,8 @@ const WinDialog: React.FC<WinDialogProps> = ({ victorySound, bgm }) => {
                 dispatch({ type: "SET_IS_REWARD_SELECTION_OPEN", payload: true });
             } else {
                 if (rules?.includes("suddenDeath")) {
-                    const newEnemyHand = currentEnemyHand.concat(getCardIdsFromBoard("red"));
-                    const newPlayerHand = currentPlayerHand.concat(getCardIdsFromBoard("blue"));
+                    const newEnemyHand = currentEnemyHand.concat(generateCardsFromIds(getCardIdsFromBoard("red"), "red"));
+                    const newPlayerHand = currentPlayerHand.concat(generateCardsFromIds(getCardIdsFromBoard("blue"), "blue"));
 
                     dispatch({ type: "SET_BOARD", payload: board.map(() => Array(3).fill(null)) });
                     dispatch({ type: "SET_WIN_STATE", payload: null });
