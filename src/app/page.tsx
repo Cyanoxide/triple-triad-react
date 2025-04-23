@@ -69,7 +69,7 @@ function GameContent() {
         {winState && !isRewardSelectionOpen && victorySoundRef.current && <WinDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
       </div>
-      <button className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl" onClick={handleSoundToggle}>{(isSoundEnabled) ? "🔊" : "🔇"}</button>
+      <button className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-10" onClick={handleSoundToggle}>{(isSoundEnabled) ? "🔊" : "🔇"}</button>
       <div id="modal"></div>
     </>
   );
