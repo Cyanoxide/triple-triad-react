@@ -6,16 +6,26 @@ import DialogPagination from '../DialogPagination/DialogPagination';
 import textToSprite from "../../utils/textToSprite";
 
 const EnemySelectionDialog = () => {
-    const { isMenuOpen, currentPages, slideDirection, dispatch } = useGameContext();
+    const { isMenuOpen, currentPages, slideDirection, lostCards, dispatch } = useGameContext();
 
     useEffect(() => {
         dispatch({ type: "SET_ENEMY_ID", payload: currentPages.players });
-    }, [currentPages.players])
+    }, [currentPages.players]);
 
-    const playerContent = (item: { id: string, location: string, player: string, additionalDesc: string }) => (
+
+    const hasLostCard = (enemyPlayer: { id: string }) => {
+        const lostCardsJSON = localStorage.getItem("lostCards");
+        const currentLostCards = (lostCardsJSON) ? JSON.parse(lostCardsJSON) : lostCards;
+
+        if (enemyPlayer.id && currentLostCards[enemyPlayer.id]) return true;
+
+        return false;
+    }
+
+    const playerContent = (item: { id: string, location: string, player: string, additionalDesc: string, rareCard: number }) => (
         <div key={item.id} data-slide-direction={slideDirection}>
             <p className="opacity-50">{textToSprite(item.location, undefined, true)}</p>
-            <p>{textToSprite(item.player, undefined, true)}</p>
+            <p>{textToSprite(item.player, (hasLostCard(item)) ? "yellow" : (item.rareCard) ? "blue" : undefined, true)}</p>
             {/* <p className="italic">{textToSprite(item.additionalDesc)}</p> */}
         </div>
     );
