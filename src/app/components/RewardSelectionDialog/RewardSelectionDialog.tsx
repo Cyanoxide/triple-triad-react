@@ -17,12 +17,12 @@ interface RewardSelectionDialogProps {
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
     const { playerCards, playerHand, enemyId, enemyHand, lostCards, winState, score, tradeRule, isSoundEnabled, dispatch } = useGameContext();
 
-    type RewardType = { id: number; level: number, player: PlayerType }
+    type RewardType = { id: number; level: number, player: PlayerType, position: number }
 
     const isManualSelect = (winState === "blue" && ["one", "diff"].includes(tradeRule as string));
 
-    const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card) => ({ id: card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "red" })));
-    const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card) => ({ id: card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "blue" })));
+    const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card, index) => ({ id: card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "red", position: index })));
+    const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card, index) => ({ id: card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "blue", position: index })));
 
     const [isSelectionConfirmed, setIsSelectionConfirmed] = useState(false);
     const [selectableRewards, setSelectableRewards] = useState<RewardType[]>((winState === "red") ? [...enemyRewardSelection] : [...playerRewardSelection])
@@ -61,7 +61,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
             const cardData = cards.find(card => card.id === id);
             if (!cardData) return;
 
-            currentSelectedRewards.push({ id, level: cardData.level, player: winState });
+            currentSelectedRewards.push({ id, level: cardData.level, player: winState, position: currentSelectedRewards.length });
 
             setPlayerRewardSelection((prevCards) =>
                 prevCards.map((card) =>
@@ -128,12 +128,12 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
 
     const [hoveredReward, setHoveredReward] = useState<RewardType | undefined>(undefined);
 
-    const handleMouseEnter = (id: number) => {
+    const handleMouseEnter = (id: number, position: number) => {
         if (winState === "blue" && !isSelectionConfirmed) playSound("select", isSoundEnabled);
         const cardData = cards.find(card => card.id === id);
         if (!cardData) return;
 
-        setHoveredReward({ id, level: cardData.level, player: (winState === "red") ? "blue" : "red" });
+        setHoveredReward({ id, level: cardData.level, player: (winState === "red") ? "blue" : "red", position });
     }
 
     const handleMouseLeave = () => {
@@ -167,7 +167,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
 
         setRewardSelection((prevCards) =>
             prevCards.map((card) =>
-                selectedRewards.some((reward) => reward.id === card.id)
+                selectedRewards.some((reward) => reward.id === card.id && reward.position === card.position)
                     ? { ...card, player: winState as PlayerType }
                     : { ...card }
             )
@@ -225,7 +225,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
             <div className="flex justify-center mb-7">
                 {playerRewardSelection.map((card, index) => (
                     <div className={styles.cell} key={index} onClick={() => handleSelectReward(card.id, card.player)}>
-                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id)} onMouseLeave={handleMouseLeave} data-selected={selectedRewards.some((reward) => reward.id === card.id)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id)} data-index={index} />
+                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id, index)} onMouseLeave={handleMouseLeave} data-selected={selectedRewards.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
                     </div>
                 ))}
             </div>
@@ -233,7 +233,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
             <div className="flex justify-center">
                 {enemyRewardSelection.map((card, index) => (
                     <div className={styles.cell} key={index}>
-                        <Card id={card.id} player={card.player} data-enemy-selected={selectedRewards.some((reward) => reward.id === card.id)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id)} data-index={index} />
+                        <Card id={card.id} player={card.player} data-enemy-selected={selectedRewards.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
                     </div>
                 ))}
             </div>
