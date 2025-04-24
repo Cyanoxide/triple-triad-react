@@ -6,7 +6,7 @@ import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
-import playSound from "../../utils/sounds";
+import playSound, { stopLoadedSound } from "../../utils/sounds";
 import textToSprite from "../../utils/textToSprite";
 
 interface RewardSelectionDialogProps {
@@ -14,7 +14,7 @@ interface RewardSelectionDialogProps {
     bgm: HTMLAudioElement | undefined;
 }
 
-const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
+const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
     const { playerCards, playerHand, enemyId, enemyHand, lostCards, winState, score, tradeRule, isSoundEnabled, dispatch } = useGameContext();
 
     type RewardType = { id: number; level: number, player: PlayerType, position: number }
@@ -103,15 +103,16 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
         dispatch({ type: "SET_LOST_CARDS", payload: currentLostCards });
         localStorage.setItem("lostCards", JSON.stringify(currentLostCards));
 
-        // setTimeout(() => {
-        //     stopLoadedSound(victorySound, isSoundEnabled);
+        setTimeout(() => {
+            stopLoadedSound(victorySound, isSoundEnabled);
+            stopLoadedSound(bgm, isSoundEnabled);
 
-        //     dispatch({ type: "RESET_GAME" });
-        //     dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
-        //     if (typeof window !== 'undefined') {
-        //         localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
-        //     }
-        // }, 5000);
+            dispatch({ type: "RESET_GAME" });
+            dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
+            if (typeof window !== 'undefined') {
+                localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
+            }
+        }, 5000);
     }
 
     const handleDenial = () => {
@@ -185,6 +186,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
         setSelectedRewards(autoRewards);
         setIsSelectionConfirmed(true);
 
+        playSound("flip", isSoundEnabled);
+
         areRewardsConfirmed.current = true;
     }, [winState]);
 
@@ -197,6 +200,10 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = () => {
 
         setSelectedReward(reward);
         setSelectedRewards(rewardsList);
+
+        setTimeout(() => {
+            playSound((winState === "blue") ? "success" : "place", isSoundEnabled);
+        }, (winState === "blue") ? 2500 : 5000);
 
         confirmedList.push(reward);
         setConfirmedCards(confirmedList);
