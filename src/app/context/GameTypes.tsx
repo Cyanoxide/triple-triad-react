@@ -2,7 +2,7 @@ export type PlayerType = "red" | "blue" | null;
 export type CardStateType = string | undefined;
 export type PositionType = [number, number];
 export type DirectionType = "top" | "right" | "bottom" | "left";
-export type CardType = [number, PlayerType, number | number[] | null, string | null];
+export type CardType = [number, PlayerType, number | number[] | null, string | null, PlayerType | null];
 export type BoardType = (CardType | null)[][];
 export type AiMethodType = "random" | "beginner" | "intermediate" | "advanced";
 

@@ -50,8 +50,6 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             break;
     }
 
-    // ---
-
 
     const handleSelectReward = (id: number, player: PlayerType) => {
         if (player === winState || !isManualSelect) return;

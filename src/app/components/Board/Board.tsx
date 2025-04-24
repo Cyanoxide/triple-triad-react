@@ -135,11 +135,11 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         if (isOpposingOutOfBounds || isActiveOutOfBounds) {
             if (rules && rules.includes("sameWall")) {
                 opposingCard = isOpposingOutOfBounds
-                    ? [110, turn === "red" ? "blue" : "red", opposingPosition, "wall"] as CardType
+                    ? [110, turn === "red" ? "blue" : "red", opposingPosition, "wall", null] as CardType
                     : currentBoard[values.opposingRow][values.opposingCol];
 
                 activeCard = isActiveOutOfBounds
-                    ? [110, turn, opposingPosition, "wall"] as CardType
+                    ? [110, turn, opposingPosition, "wall", null] as CardType
                     : currentBoard[row][col];
             } else {
                 return;
@@ -189,7 +189,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
             if (isOpposingOutOfBounds) {
                 if (rules.includes("sameWall")) {
-                    adjacentCard = [110, (turn === "red") ? "blue" : "red", [opposingRow, opposingCol], "wall"] as CardType;
+                    adjacentCard = [110, (turn === "red") ? "blue" : "red", [opposingRow, opposingCol], "wall", null] as CardType;
                 } else {
                     continue;
                 }
@@ -311,7 +311,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 const [row, col] = position;
 
                 if (currentBoard[row][col] && currentBoard[row][col][1] !== turn) {
-                    newBoard[row][col] = [currentBoard[row][col]![0], turn, [row, col], action];
+                    newBoard[row][col] = [currentBoard[row][col]![0], turn, [row, col], action, currentBoard[row][col][1]];
                 }
             });
         }
@@ -328,7 +328,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                     if (isOutOfBounds(position)) return;
 
                     if (currentBoard[row][col] && currentBoard[row][col][1] !== turn) {
-                        newBoard[row][col] = [currentBoard[row][col][0], turn, [row, col], action];
+                        newBoard[row][col] = [currentBoard[row][col][0], turn, [row, col], action, currentBoard[row][col][1]];
                     }
                 });
 
@@ -349,7 +349,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                     const [row, col] = position;
 
                     if (currentBoard[row][col] && currentBoard[row][col][1] !== turn) {
-                        newBoard[row][col] = [currentBoard[row][col][0], turn, [row, col], action];
+                        newBoard[row][col] = [currentBoard[row][col][0], turn, [row, col], action, currentBoard[row][col][1]];
                     }
                 });
 
@@ -384,7 +384,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         if (board[row][col]) return;
 
         const newBoard = board.map(row => [...row]);
-        newBoard[row][col] = [Number(cardId), turn, [row, col], "placed"];
+        newBoard[row][col] = [Number(cardId), turn, [row, col], "placed", turn];
 
         dispatch({ type: "SET_SELECTED_CARD", payload: null });
         dispatch({ type: "SET_BOARD", payload: newBoard });
@@ -427,7 +427,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
                     dispatch({
                         type: "SET_SELECTED_CARD",
-                        payload: [enemyCardId, "red", enemyCardIndex, ""],
+                        payload: [enemyCardId, "red", enemyCardIndex, "", null],
                     });
                 }, 3000);
 
