@@ -16,7 +16,7 @@ function GameContent() {
   const bgmRef = useRef(loadSound("bgm"));
 
   useEffect(() => {
-    playLoadedSound(bgmRef.current, isSoundEnabled);
+    playLoadedSound(bgmRef.current, isSoundEnabled, true);
   }, [isSoundEnabled, isGameActive])
 
   useEffect(() => {
@@ -48,7 +48,7 @@ function GameContent() {
     if (toggle === false) {
       stopLoadedSound(bgmRef.current, isSoundEnabled);
     } else {
-      playLoadedSound(bgmRef.current, isSoundEnabled);
+      playLoadedSound(bgmRef.current, isSoundEnabled, true);
     }
 
     dispatch({ type: "SET_IS_SOUND_ENABLED", payload: toggle });
