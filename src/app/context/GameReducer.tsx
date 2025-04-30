@@ -72,8 +72,8 @@ export const initialState: GameState = {
     playerHand: [],
     currentPlayerHand: [],
     enemyId: 1,
-    enemyHand: [[1, "red", 0, ""], [1, "red", 1, ""], [1, "red", 2, ""], [1, "red", 3, ""], [1, "red", 4, ""]],
-    currentEnemyHand: [[1, "red", 0, ""], [1, "red", 1, ""], [1, "red", 2, ""], [1, "red", 3, ""], [1, "red", 4, ""]],
+    enemyHand: [[1, "red", 0, "", null], [1, "red", 1, "", null], [1, "red", 2, "", null], [1, "red", 3, "", null], [1, "red", 4, "", null]],
+    currentEnemyHand: [[1, "red", 0, "", null], [1, "red", 1, "", null], [1, "red", 2, "", null], [1, "red", 3, "", null], [1, "red", 4, "", null]],
     lostCards: {},
     winState: null,
     turn: null,
@@ -91,6 +91,6 @@ export const initialState: GameState = {
     slideDirection: null,
     currentPages: { "players": 1, "cards": 1 },
     rules: ["open", "same", "plus"],
-    tradeRule: "all",
+    tradeRule: "direct",
     elements: null,
 };
