@@ -18,7 +18,7 @@ const EnemySelectionDialog = () => {
         dispatch({ type: "SET_ENEMY_ID", payload: enemyId });
 
         if (!(enemyId in players)) return;
-        const enemy = players[enemyId];
+        const enemy = players[enemyId - 1];
         const ruleSet = enemy.rules;
 
         if (ruleSet && ruleSet in ruleSets) {
