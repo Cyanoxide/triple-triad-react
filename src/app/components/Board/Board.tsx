@@ -220,7 +220,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             if (!adjacentValues) continue;
 
             const { attackingValue, defendingValue, opposingRow, opposingCol, isOpponent } = adjacentValues;
-            if (!attackingValue || !defendingValue || opposingRow == null || opposingCol == null || !isOpponent) continue;
+            if (attackingValue === undefined || defendingValue === undefined || opposingRow == null || opposingCol == null || !isOpponent) continue;
             if (attackingValue <= defendingValue) continue;
             cardFlips.push({ position: [opposingRow, opposingCol], action: (combo) ? "combo" : "flipped" });
         }
