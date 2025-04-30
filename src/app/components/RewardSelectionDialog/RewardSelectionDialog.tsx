@@ -33,6 +33,16 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     const [winningScore] = scoreSorted;
     const scoreDifference = winningScore - 5;
 
+    const determineFlippedCards = () => {
+        const boardCards: CardType[] = board.flat().filter((cell): cell is CardType => cell !== null);
+        const flippedCards = boardCards.filter(card =>
+            card[1] === winState && card[4] !== winState
+        );
+
+        return flippedCards;
+    }
+    const flippedCards = determineFlippedCards();
+
     let winAmount = 0;
     switch (tradeRule) {
         case "one":
@@ -44,8 +54,10 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             break;
 
         case "diff":
-        case "direct":
             winAmount = scoreDifference;
+            break;
+        case "direct":
+            winAmount = flippedCards.length;
             break;
     }
 
@@ -110,10 +122,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         let availableCards: RewardType[] = ((winState === "red") ? [...enemyRewardSelection] : [...playerRewardSelection]);
 
         if (tradeRule === "direct") {
-            const boardCards: CardType[] = board.flat().filter((cell): cell is CardType => cell !== null);
-            const flippedCards = boardCards.filter(card =>
-                card[1] === winState && card[4] !== winState
-            );
+            const flippedCards = determineFlippedCards();
 
             const mappedFlippedCards = flippedCards.map(([id, player, position]) => ({ id, player, position }));
             availableCards = availableCards.filter(availableCard =>
