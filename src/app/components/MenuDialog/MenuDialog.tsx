@@ -6,7 +6,7 @@ import textToSprite from '../../utils/textToSprite';
 import rulesList from "../../../data/rules.json";
 
 const MenuDialog = () => {
-    const { isMenuOpen, isSoundEnabled, rules, tradeRules, dispatch } = useGameContext();
+    const { isMenuOpen, isSoundEnabled, rules, tradeRule, dispatch } = useGameContext();
 
     const handlePlayClick = () => {
         dispatch({ type: "SET_IS_MENU_OPEN", payload: false });
@@ -32,11 +32,7 @@ const MenuDialog = () => {
                         <li key={index}><span>{textToSprite(`• ${rulesList.rules[rule as keyof typeof rulesList.rules]}`)}</span></li>
                     ))}
                 </ul>
-                <ul>
-                    {tradeRules && tradeRules.map((rule: string, index) => (
-                        <li key={index}><span>{textToSprite(`• Trade Rule: ${rulesList.tradeRules[rule as keyof typeof rulesList.tradeRules]}`)}</span></li>
-                    ))}
-                </ul>
+                <p>{textToSprite(`• Trade Rule: ${(tradeRule) ? rulesList.tradeRules[tradeRule as keyof typeof rulesList.tradeRules] : "None"}`)}</p>
                 <div className="flex flex-col items-center">
                     <button className="relative" onClick={handlePlayClick} onMouseEnter={handleMouseEnter}>{textToSprite("Play")}</button>
                     <button className="relative" onClick={handleQuitClick} onMouseEnter={handleMouseEnter}>{textToSprite("Quit")}</button>

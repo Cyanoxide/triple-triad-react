@@ -1,5 +1,5 @@
 import cards from "../../data/cards.json";
-import { BoardType, AiMethodType, PlayerType } from "../context/GameTypes";
+import { CardType, BoardType, AiMethodType, PlayerType } from "../context/GameTypes";
 
 const difficultySettings = {
     beginner: 10,
@@ -7,7 +7,7 @@ const difficultySettings = {
     advanced: 2,
 }
 
-export function getEnemyMove(boardState: BoardType, enemyHand: number[], method: AiMethodType, elements: Record<string, string> | null) {
+export function getEnemyMove(boardState: BoardType, enemyHand: CardType[], method: AiMethodType, elements: Record<string, string> | null) {
     const availablePositions = boardState
         .map((row, rowIndex) =>
             row.map((cell, colIndex) => (!cell ? { row: rowIndex, col: colIndex } : null))
@@ -29,7 +29,7 @@ export function getEnemyMove(boardState: BoardType, enemyHand: number[], method:
     const possibleMoves = [];
 
     for (const { row, col } of availablePositions) {
-        for (const [index, cardId] of enemyHand.entries()) {
+        for (const [index, card] of enemyHand.entries()) {
             const competingCardMap = {
                 top: "bottom",
                 right: "left",
@@ -45,7 +45,9 @@ export function getEnemyMove(boardState: BoardType, enemyHand: number[], method:
             };
 
             const flips: { row: number; col: number; player: PlayerType }[] = [];
-            const activeCard = cards.find(card => card.id === cardId);
+
+            const cardId = Array.isArray(card) ? card[0] : null;
+            const activeCard = cards.find(currentCard => currentCard.id === cardId);
             if (!activeCard) continue;
             let totalOpenValue = 0;
             let openSideCount = 0;
@@ -86,7 +88,7 @@ export function getEnemyMove(boardState: BoardType, enemyHand: number[], method:
 
             possibleMoves.push({
                 enemyCardIndex: index,
-                enemyCard: activeCard.id,
+                enemyCardId: activeCard.id,
                 enemyPosition: { row, col },
                 flips: flips.length,
                 openStrength: totalOpenValue / openSideCount,
@@ -105,7 +107,7 @@ export function getEnemyMove(boardState: BoardType, enemyHand: number[], method:
     const topChoices = sortedMoves.slice(0, difficultySettings[method]);
     const chosenMove = topChoices[Math.floor(Math.random() * topChoices.length)];
 
-    const { enemyCardIndex, enemyPosition, enemyCard } = chosenMove;
-    return { enemyCardIndex, enemyCard, enemyPosition };
+    const { enemyCardIndex, enemyPosition, enemyCardId } = chosenMove;
+    return { enemyCardIndex, enemyCardId, enemyPosition };
 
 }

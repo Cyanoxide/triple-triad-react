@@ -1,5 +1,7 @@
-import cards from '../../data/cards.json';
-import players from '../../data/players.json';
+import cards from "../../data/cards.json";
+import players from "../../data/players.json";
+import { generateCardsFromIds } from "../utils/general";
+
 
 export const setAiPlayerCards = (playerId: number, lostCards: Record<number, number>) => {
     const currentHand: number[] = [];
@@ -26,5 +28,6 @@ export const setAiPlayerCards = (playerId: number, lostCards: Record<number, num
         currentHand.push(selectedCard.id);
     }
 
-    return currentHand.sort(() => Math.random() - 0.5);
+    const sortedHand = currentHand.sort(() => Math.random() - 0.5)
+    return generateCardsFromIds(sortedHand);
 };

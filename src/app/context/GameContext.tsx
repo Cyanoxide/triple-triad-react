@@ -8,7 +8,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(gameReducer, initialState);
 
     useEffect(() => {
-        if (typeof window === 'undefined') return;
+        if (typeof window === "undefined") return;
 
         const storedCardsJSON = localStorage.getItem("playerCards");
         if (storedCardsJSON) {

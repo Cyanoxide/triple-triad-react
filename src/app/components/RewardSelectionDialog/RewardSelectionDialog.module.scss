@@ -16,32 +16,49 @@
 
     .cell {
         width: 128px;
+        height: 163px;
     }
 
     [data-selected][data-confirmed] {
-        &[data-selected=true][data-player="blue"] {
+        &[data-player="blue"] {
             animation: card-flip-blue 0.5s ease-in-out forwards;
+
+            &[data-confirmed=true] {
+                z-index: 4;
+                animation: card-preview-blue 5s ease-in-out forwards;
+            }
         }
 
-        &[data-selected=true][data-confirmed=true] {
-            z-index: 4;
-            animation: card-preview-blue 5s ease-in-out forwards;
-        }
+
     }
 
-    [data-enemy-selected] {
-        &[data-enemy-selected=true][data-player="red"] {
-            z-index: 4;
-            transform-style: preserve-3d;
-            animation: card-flip-red 0.5s ease-in-out forwards, card-preview-red 5s ease-in-out 0.5s forwards;
+    [data-enemy-selected][data-confirmed] {
+        &[data-player="red"] {
+            animation: card-flip-red 0.5s ease-in-out forwards;
 
+            &[data-confirmed=true] {
+                z-index: 4;
+                animation: card-preview-red 5s ease-in-out 0.5s forwards;
+
+            }
         }
+
     }
 }
 
 .rewardSelectionDialog {
     @extend .dialog;
     position: relative;
+
+    &[data-animation]:not([data-animation=""]) {
+        &[data-player="red"] {
+            animation: red-reward-label 2.5s forwards 0s ease-in-out;
+        }
+
+        &[data-player="blue"] {
+            animation: blue-reward-label 2s forwards 0s ease-in-out;
+        }
+    }
 }
 
 .dialogContainer {
@@ -136,5 +153,33 @@
     100% {
         transform: rotate3d(0, 1, 0, 1turn) scale(1);
         background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
+    }
+}
+
+@keyframes red-reward-label {
+    0% {
+        transform: translateY(3000px);
+    }
+
+    70% {
+        transform: translateY(3000px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes blue-reward-label {
+    0% {
+        transform: translateY(-3000px);
+    }
+
+    70% {
+        transform: translateY(-3000px);
+    }
+
+    100% {
+        transform: translateY(0);
     }
 }

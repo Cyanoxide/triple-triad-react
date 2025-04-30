@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from './RewardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
-import { PlayerType } from "../../context/GameTypes";
+import { PlayerType, CardType } from "../../context/GameTypes";
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
@@ -15,184 +15,274 @@ interface RewardSelectionDialogProps {
 }
 
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
-    const { playerCards, playerHand, enemyId, enemyHand, lostCards, selectedReward, winState, isSoundEnabled, dispatch } = useGameContext();
+    const { playerCards, playerHand, enemyId, enemyHand, lostCards, winState, score, tradeRule, isSoundEnabled, board, dispatch } = useGameContext();
 
-    const winAmount = 1;
+    type RewardType = { id: number; level: number, player: PlayerType, position: number }
 
-    const [rewardCards, setRewardCards] = useState<{ id: number; level: number, player: PlayerType }[]>(enemyHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "red" })));
-    const [enemyRewardCards, setEnemyRewardCards] = useState<{ id: number; level: number, player: PlayerType }[]>(playerHand.map((card) => ({ id: card, level: cards.find(currentCard => currentCard.id === card)?.level ?? 0, player: "blue" })));
+    const isManualSelect = (winState === "blue" && ["one", "diff"].includes(tradeRule as string));
 
-    const updatedPlayerCards = { ...playerCards };
-    const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+    const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card, index) => ({ id: +card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "red", position: index })));
+    const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card, index) => ({ id: +card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "blue", position: index })));
 
-    useEffect(() => {
-        if (winAmount > 0 && winState === "red" && selectedReward === null) {
-            const updatedPlayerCardsCopy = { ...updatedPlayerCards };
+    const [isSelectionConfirmed, setIsSelectionConfirmed] = useState(false);
+    const [selectedRewards, setSelectedRewards] = useState<RewardType[]>([]);
+    const [selectedReward, setSelectedReward] = useState<RewardType>();
+    const [confirmedCards, setConfirmedCards] = useState<RewardType[]>([]);
 
-            setEnemyRewardCards((prevCards) => {
-                if (prevCards.length === 0 || Object.keys(playerCards).length <= 5) return prevCards;
+    const scoreSorted = score.sort((a, b) => b - a);
+    const [winningScore] = scoreSorted;
+    const scoreDifference = winningScore - 5;
 
-                const maxLevel = Math.max(...prevCards.map((card) => card.level));
-                const highestLevelCards = prevCards.filter((card) => card.level === maxLevel);
-                const selectedCard = highestLevelCards[Math.floor(Math.random() * highestLevelCards.length)];
+    const determineFlippedCards = () => {
+        const boardCards: CardType[] = board.flat().filter((cell): cell is CardType => cell !== null);
+        const flippedCards = boardCards.filter(card =>
+            card[1] === winState && card[4] !== winState
+        );
 
-                if (updatedPlayerCardsCopy[selectedCard.id] > 1) {
-                    updatedPlayerCardsCopy[selectedCard.id]--;
-                } else {
-                    delete updatedPlayerCardsCopy[selectedCard.id];
-                }
+        return flippedCards;
+    }
+    const flippedCards = determineFlippedCards();
 
-                setSelectedCardId(selectedCard.id);
+    let winAmount = 0;
+    switch (tradeRule) {
+        case "one":
+            winAmount = 1;
+            break;
 
-                playSound("flip", isSoundEnabled);
-                setTimeout(() => {
-                    playSound("place", isSoundEnabled);
-                }, 5000);
+        case "all":
+            winAmount = 5;
+            break;
 
-                const cardIndex = prevCards.findIndex((card) => card.id === selectedCard.id);
-                return prevCards.map((card, index) => ({
-                    ...card,
-                    player: (card.id === selectedCard.id && index === cardIndex) ? "red" : "blue",
-                }));
-            });
-
-            setTimeout(() => {
-                stopLoadedSound(bgm, isSoundEnabled);
-                dispatch({ type: "RESET_GAME" });
-                dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCardsCopy });
-
-                if (typeof window !== "undefined") {
-                    localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCardsCopy));
-                }
-            }, 7000);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (selectedCardId !== null) {
-            dispatch({ type: "SET_SELECTED_REWARD", payload: selectedCardId });
-        }
-
-        if (winState === "red") {
-            const currentLostCards = { ...lostCards };
-            if (selectedCardId) currentLostCards[enemyId] = selectedCardId;
-
-            dispatch({ type: "SET_LOST_CARDS", payload: currentLostCards });
-            localStorage.setItem("lostCards", JSON.stringify(currentLostCards));
-        }
-    }, [selectedCardId]);
+        case "diff":
+            winAmount = scoreDifference;
+            break;
+        case "direct":
+            winAmount = flippedCards.length;
+            break;
+    }
 
 
-    const handleSelectReward = (id: number) => {
+    const handleSelectReward = (id: number, player: PlayerType, position: number) => {
+        if (player === winState || !isManualSelect) return;
         playSound("flip", isSoundEnabled);
-        if (winAmount > 0 && winState === "blue" && selectedReward === null) {
-            setRewardCards((prevCards) =>
+        if (winAmount > 0 && winState === "blue" && selectedRewards.length < winAmount) {
+            const currentSelectedRewards = [...selectedRewards];
+            const cardData = cards.find(card => card.id === id);
+            if (!cardData) return;
+
+            currentSelectedRewards.push({ id, level: cardData.level, player: winState, position });
+
+            setPlayerRewardSelection((prevCards) =>
                 prevCards.map((card) =>
-                    (card.id === Number(id)) ? { ...card, player: "blue" } : { ...card, player: "red" }
+                    (card.id === Number(id)) ? { ...card, player: "blue" } : { ...card }
                 )
             );
 
-            dispatch({ type: "SET_SELECTED_REWARD", payload: id })
+            setSelectedRewards(currentSelectedRewards);
         }
     };
-
-    const [isRewardConfirmed, setIsRewardConfirmed] = useState(false);
-
     const handleConfirmation = () => {
-        if (!selectedReward) return;
+        if (selectedRewards.length < winAmount) return;
         playSound("select", isSoundEnabled);
 
-        setTimeout(() => {
-            playSound("success", isSoundEnabled);
-        }, 2500);
 
-        const updatedPlayerCards = { ...playerCards };
-
-        if (selectedReward in updatedPlayerCards) updatedPlayerCards[selectedReward]++
-        else updatedPlayerCards[selectedReward] = 1;
-
-        setIsRewardConfirmed(true);
-
-        const currentLostCards = { ...lostCards };
-        if (currentLostCards[enemyId] === selectedReward) {
-            delete currentLostCards[enemyId]
-        }
-
-        dispatch({ type: "SET_LOST_CARDS", payload: currentLostCards });
-        localStorage.setItem("lostCards", JSON.stringify(currentLostCards));
-
-        setTimeout(() => {
-            stopLoadedSound(victorySound, isSoundEnabled);
-
-
-            dispatch({ type: "RESET_GAME" });
-            dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
-            if (typeof window !== 'undefined') {
-                localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
-            }
-        }, 5000);
+        setIsSelectionConfirmed(true);
     }
 
     const handleDenial = () => {
         playSound("back", isSoundEnabled);
-        setRewardCards((prevCards) =>
+        setPlayerRewardSelection((prevCards) =>
             prevCards.map((card) => ({
                 ...card,
                 player: "red"
             }))
         );
 
-        dispatch({ type: "SET_SELECTED_REWARD", payload: null })
+        setSelectedRewards([]);
     }
 
-    const [hoveredReward, setHoveredReward] = useState<number | undefined>(undefined);
+    const [hoveredReward, setHoveredReward] = useState<RewardType | undefined>(undefined);
 
-    const handleMouseEnter = (cardId: number) => {
-        if (winState === "blue" && !isRewardConfirmed) playSound("select", isSoundEnabled);
-        setHoveredReward(cardId);
+    const handleMouseEnter = (id: number, position: number) => {
+        if (winState === "blue" && !isSelectionConfirmed) playSound("select", isSoundEnabled);
+        const cardData = cards.find(card => card.id === id);
+        if (!cardData) return;
+
+        setHoveredReward({ id, level: cardData.level, player: (winState === "red") ? "blue" : "red", position });
     }
 
     const handleMouseLeave = () => {
         setHoveredReward(undefined);
     }
 
+
+    const autoSelectRewards = (method: "best" | "sequential") => {
+        const selectedRewards: RewardType[] = [];
+        let selectedReward: RewardType | undefined;
+        let availableCards: RewardType[] = ((winState === "red") ? [...enemyRewardSelection] : [...playerRewardSelection]);
+
+        if (tradeRule === "direct") {
+            const flippedCards = determineFlippedCards();
+
+            const mappedFlippedCards = flippedCards.map(([id, player, position]) => ({ id, player, position }));
+            availableCards = availableCards.filter(availableCard =>
+                mappedFlippedCards.some(flippedCard => flippedCard.id === +availableCard.id)
+            );
+        }
+
+        while (winAmount) {
+            if (method === "best") {
+                const maxLevel = Math.max(...availableCards.map((card) => card.level));
+                const highestLevelCards = availableCards.filter((card) => card.level === maxLevel);
+                selectedReward = highestLevelCards[Math.floor(Math.random() * highestLevelCards.length)];
+
+                selectedRewards.push(selectedReward);
+            } else if (method === "sequential") {
+                selectedReward = availableCards.shift();
+                if (!selectedReward) continue;
+
+                selectedRewards.push(selectedReward);
+            }
+
+            winAmount--;
+        }
+
+        const setRewardSelection = (winState === "red") ? setEnemyRewardSelection : setPlayerRewardSelection;
+
+        setRewardSelection((prevCards) =>
+            prevCards.map((card) =>
+                selectedRewards.some((reward) => reward.id === card.id && reward.position === card.position)
+                    ? { ...card, player: winState as PlayerType }
+                    : { ...card }
+            )
+        );
+
+        return selectedRewards;
+    }
+
+    const areRewardsConfirmed = useRef(false);
+    useEffect(() => {
+        if (areRewardsConfirmed.current || isManualSelect) return;
+
+        const selectionMethod = (["all", "direct"].includes(tradeRule as string) || winState === "blue") ? "sequential" : "best";
+        const autoRewards = autoSelectRewards(selectionMethod);
+        setSelectedRewards(autoRewards);
+        setIsSelectionConfirmed(true);
+
+        playSound("flip", isSoundEnabled);
+
+        areRewardsConfirmed.current = true;
+    }, [winState]);
+
+    const processRewards = () => {
+        const rewardsList = [...selectedRewards];
+        const confirmedList = [...confirmedCards];
+
+        const reward = rewardsList.shift();
+        if (!reward) return;
+
+        const updatedPlayerCards = { ...playerCards };
+        const currentLostCards = { ...lostCards };
+
+        if (winState === "blue") {
+            if (reward.id in updatedPlayerCards) {
+                updatedPlayerCards[reward.id]++
+            } else {
+                updatedPlayerCards[reward.id] = 1;
+            }
+
+            if (currentLostCards[enemyId] === reward.id) {
+                delete currentLostCards[enemyId];
+            }
+        }
+
+        if (winState === "red") {
+            if (reward.id in updatedPlayerCards && updatedPlayerCards[reward.id] > 1) {
+                updatedPlayerCards[reward.id]--;
+            } else {
+                delete updatedPlayerCards[reward.id];
+            }
+
+            currentLostCards[enemyId] = reward.id;
+        }
+
+        dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
+        dispatch({ type: "SET_LOST_CARDS", payload: currentLostCards });
+
+        if (typeof window !== "undefined") {
+            localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
+            localStorage.setItem("lostCards", JSON.stringify(currentLostCards));
+        }
+
+        setSelectedReward(reward);
+        setSelectedRewards(rewardsList);
+
+        setTimeout(() => {
+            playSound((winState === "blue") ? "success" : "place", isSoundEnabled);
+        }, (winState === "blue") ? 2500 : 5000);
+
+        confirmedList.push(reward);
+        setConfirmedCards(confirmedList);
+
+        if (rewardsList.length === 0) {
+            setTimeout(() => {
+                stopLoadedSound(victorySound, isSoundEnabled);
+                stopLoadedSound(bgm, isSoundEnabled);
+
+                dispatch({ type: "RESET_GAME" });
+
+                dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
+                if (typeof window !== "undefined") {
+                    localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
+                }
+            }, 6000);
+        }
+    }
+
+
+    useEffect(() => {
+        if (!isSelectionConfirmed) return;
+        setTimeout(processRewards, (confirmedCards.length) ? 5000 : 1500);
+    }, [isSelectionConfirmed, confirmedCards]);
+
+
     const recentCard = selectedReward || hoveredReward;
-    const recentCardName = cards.find(card => card.id === recentCard)?.name;
-    const selectedRewardName = cards.find(card => card.id === selectedReward)?.name;
+    const recentCardName = recentCard && cards.find(card => card.id === recentCard.id)?.name;
+    const selectedRewardName = selectedReward && cards.find(card => card.id === selectedReward.id)?.name;
 
     const infoMessage = (winState === "red") ? "lost" : "acquired";
 
     return (
-        <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
-            <div className={styles.rewardSelectionDialog} data-dialog="rewardSelectionInfo">
+        <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>{isSelectionConfirmed}
+            <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={winState}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                <h3>{textToSprite((isRewardConfirmed || (winState === "red" && selectedReward)) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`)}</h3>
+                <h3>{textToSprite((isSelectionConfirmed || (winState === "red")) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`)}</h3>
             </div>
 
             <div className="flex justify-center mb-7">
-                {rewardCards.map((card, index) => (
-                    <div className={styles.cell} key={index} onClick={() => handleSelectReward(card.id)}>
-                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id)} onMouseLeave={handleMouseLeave} data-selected={card.id === selectedReward} data-confirmed={isRewardConfirmed} data-index={index} />
+                {playerRewardSelection.map((card, index) => (
+                    <div className={styles.cell} key={index} onClick={() => handleSelectReward(card.id, card.player, card.position)}>
+                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id, index)} onMouseLeave={handleMouseLeave} data-selected={selectedRewards.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
                     </div>
                 ))}
             </div>
 
             <div className="flex justify-center">
-                {enemyRewardCards.map((card, index) => (
+                {enemyRewardSelection.map((card, index) => (
                     <div className={styles.cell} key={index}>
-                        <Card id={card.id} player={card.player} data-enemy-selected={card.id === selectedReward} data-index={index} />
+                        <Card id={card.id} player={card.player} data-enemy-selected={selectedRewards.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
                     </div>
                 ))}
             </div>
 
             <div className={`${styles.dialogContainer} ${recentCardName ? "" : "invisible"}`}>
-                <div className={`${styles.rewardSelectionDialog} ${(isRewardConfirmed || winState !== "blue") ? "invisible" : ""}`} data-dialog="rewardCardNameInfo">
+                <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed || winState !== "blue") ? "invisible" : ""}`} data-dialog="rewardCardNameInfo">
                     <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                    <h3>{textToSprite(recentCardName || "", (recentCard && recentCard == lostCards[enemyId]) ? "yellow" : (recentCard && !(recentCard in playerCards)) ? "blue" : "")}</h3>
+                    <h3>{textToSprite(recentCardName || "", (recentCard && recentCard.id == lostCards[enemyId]) ? "yellow" : (recentCard && !(recentCard.id in playerCards)) ? "blue" : "")}</h3>
                 </div>
             </div>
 
-            {selectedReward && !isRewardConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+            {selectedRewards.length === winAmount && !isSelectionConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
             {winState === "red" && Object.keys(playerCards).length <= 5 &&
                 <SimpleDialog>
                     <div className="mb-2">{textToSprite("Your opponent took pity on you and decided not")}</div>
