@@ -1,6 +1,6 @@
 import cards from "../../data/cards.json";
 import players from "../../data/players.json";
-import { generateCardsFromIds } from "../utils/general"
+import { generateCardsFromIds } from "../utils/general";
 
 
 export const setAiPlayerCards = (playerId: number, lostCards: Record<number, number>) => {

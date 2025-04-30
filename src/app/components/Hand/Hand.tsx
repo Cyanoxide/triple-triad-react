@@ -19,7 +19,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
         playSound("select", isSoundEnabled);
         if (player === "red") return;
 
-        const activeSelection: CardType | null = (selectedCard && card[0] === selectedCard[0]) ? null : [card[0], player, position, ""];
+        const activeSelection: CardType | null = (selectedCard && card[0] === selectedCard[0]) ? null : [card[0], player, position, "", player];
 
         dispatch({
             type: "SET_SELECTED_CARD",

@@ -14,6 +14,8 @@ const EnemySelectionDialog = () => {
 
 
     const hasLostCard = (enemyPlayer: { id: string }) => {
+        if (typeof window === "undefined") return;
+        
         const lostCardsJSON = localStorage.getItem("lostCards");
         const currentLostCards = (lostCardsJSON) ? JSON.parse(lostCardsJSON) : lostCards;
 
