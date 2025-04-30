@@ -16,6 +16,7 @@ function GameContent() {
   const bgmRef = useRef(loadSound("bgm"));
 
   useEffect(() => {
+    if (winState) return;
     playLoadedSound(bgmRef.current, isSoundEnabled, true);
   }, [isSoundEnabled, isGameActive])
 
@@ -47,8 +48,11 @@ function GameContent() {
 
     if (toggle === false) {
       stopLoadedSound(bgmRef.current, isSoundEnabled);
+      stopLoadedSound(victorySoundRef.current, isSoundEnabled);
     } else {
-      playLoadedSound(bgmRef.current, isSoundEnabled, true);
+      if (!winState) {
+        playLoadedSound(bgmRef.current, isSoundEnabled, true);
+      }
     }
 
     dispatch({ type: "SET_IS_SOUND_ENABLED", payload: toggle });
@@ -69,7 +73,7 @@ function GameContent() {
         {winState && !isRewardSelectionOpen && victorySoundRef.current && <WinDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
       </div>
-      <button className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-10" onClick={handleSoundToggle}>{(isSoundEnabled) ? "🔊" : "🔇"}</button>
+      <button className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-50" onClick={handleSoundToggle}>{(isSoundEnabled) ? "🔊" : "🔇"}</button>
       <div id="modal"></div>
     </>
   );
