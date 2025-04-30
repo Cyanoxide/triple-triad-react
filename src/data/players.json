@@ -9,7 +9,8 @@
             2,
             3
         ],
-        "rareCard": null
+        "rareCard": null,
+        "rules": "balamb"
     },
     {
         "id": 2,
@@ -21,7 +22,8 @@
             2,
             3
         ],
-        "rareCard": 81
+        "rareCard": 81,
+        "rules": "balamb"
     },
     {
         "id": 3,
@@ -34,7 +36,8 @@
             3,
             4
         ],
-        "rareCard": 107
+        "rareCard": 107,
+        "rules": "galbadia"
     },
     {
         "id": 4,
@@ -47,7 +50,8 @@
             3,
             4
         ],
-        "rareCard": 86
+        "rareCard": 86,
+        "rules": "timber"
     },
     {
         "id": 5,
@@ -60,7 +64,8 @@
             3,
             5
         ],
-        "rareCard": null
+        "rareCard": null,
+        "rules": "balamb"
     },
     {
         "id": 6,
@@ -72,7 +77,8 @@
             2,
             5
         ],
-        "rareCard": 104
+        "rareCard": 104,
+        "rules": "balamb"
     },
     {
         "id": 7,
@@ -84,7 +90,8 @@
             3,
             4
         ],
-        "rareCard": 98
+        "rareCard": 98,
+        "rules": "dollet"
     },
     {
         "id": 8,
@@ -97,7 +104,8 @@
             4,
             5
         ],
-        "rareCard": 106
+        "rareCard": 106,
+        "rules": "balamb"
     },
     {
         "id": 9,
@@ -111,7 +119,8 @@
             4,
             5
         ],
-        "rareCard": 103
+        "rareCard": 103,
+        "rules": "trabia"
     },
     {
         "id": 10,
@@ -123,7 +132,8 @@
             3,
             4
         ],
-        "rareCard": null
+        "rareCard": null,
+        "rules": "galbadia"
     },
     {
         "id": 11,
@@ -137,7 +147,8 @@
             5,
             6
         ],
-        "rareCard": 83
+        "rareCard": 83,
+        "rules": "fishermansHorizon"
     },
     {
         "id": 12,
@@ -150,7 +161,8 @@
             5,
             6
         ],
-        "rareCard": 105
+        "rareCard": 105,
+        "rules": "fishermansHorizon"
     },
     {
         "id": 13,
@@ -166,7 +178,8 @@
             6,
             7
         ],
-        "rareCard": 85
+        "rareCard": 85,
+        "rules": "fishermansHorizon"
     },
     {
         "id": 14,
@@ -182,7 +195,8 @@
             6,
             7
         ],
-        "rareCard": 101
+        "rareCard": 101,
+        "rules": "galbadia"
     },
     {
         "id": 15,
@@ -194,7 +208,8 @@
             4,
             5
         ],
-        "rareCard": null
+        "rareCard": null,
+        "rules": "centra"
     },
     {
         "id": 16,
@@ -205,7 +220,8 @@
             4,
             5
         ],
-        "rareCard": 93
+        "rareCard": 93,
+        "rules": "balamb"
     },
     {
         "id": 17,
@@ -218,6 +234,7 @@
             6,
             7
         ],
-        "rareCard": null
+        "rareCard": null,
+        "rules": "trabia"
     }
 ]

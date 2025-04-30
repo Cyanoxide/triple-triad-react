@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import styles from './EnemySelection.module.scss';
+import styles from "./EnemySelection.module.scss";
 import { useGameContext } from "../../context/GameContext";
-import players from '../../../data/players.json';
-import DialogPagination from '../DialogPagination/DialogPagination';
+import players from "../../../data/players.json";
+import ruleSets from "../../../data/ruleSets.json";
+import tradeRules from "../../../data/rules.json";
+import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
 
 const EnemySelectionDialog = () => {
@@ -10,7 +12,22 @@ const EnemySelectionDialog = () => {
     const [lostCardMap, setLostCardMap] = useState<{ [id: string]: boolean }>({});
 
     useEffect(() => {
-        dispatch({ type: "SET_ENEMY_ID", payload: currentPages.players });
+        const enemyId = currentPages.players;
+        if (!enemyId) return;
+
+        dispatch({ type: "SET_ENEMY_ID", payload: enemyId });
+
+        if (!(enemyId in players)) return;
+        const enemy = players[enemyId];
+        const ruleSet = enemy.rules;
+
+        if (ruleSet && ruleSet in ruleSets) {
+            dispatch({ type: "SET_RULES", payload: ruleSets[ruleSet as keyof typeof ruleSets] || [] });
+
+            const tradeRuleKeys = Object.keys(tradeRules.tradeRules);
+            dispatch({ type: "SET_TRADE_RULE", payload: tradeRuleKeys[Math.floor(Math.random() * tradeRuleKeys.length)] });
+        }
+
     }, [currentPages.players]);
 
     useEffect(() => {
