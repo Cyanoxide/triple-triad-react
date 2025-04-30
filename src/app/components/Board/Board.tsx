@@ -158,7 +158,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         values.isOpponent = (opposingCard[1] === turn) ? false : true;
 
         const positionStr = String(position);
-        const opposingPositionStr = String(position);
+        const opposingPositionStr = String(opposingPosition);
 
         const activeCardModifier = (elements && positionStr in elements) ? elements[positionStr] === activeCardData?.element ? 1 : -1 : 0;
         const opposingCardModifier = (elements && opposingPositionStr in elements) ? elements[opposingPositionStr] === opposingCardData?.element ? 1 : -1 : 0;
