@@ -32,8 +32,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, score: action.payload };
         case "SET_BOARD":
             return { ...state, board: action.payload };
-        case "SET_SELECTED_CARD":
-            return { ...state, selectedCard: action.payload };
+        case "SET_SELECTED_CARD_ID":
+            return { ...state, selectedCardId: action.payload };
         case "SET_SELECTED_REWARDS":
             return { ...state, selectedRewards: action.payload };
         case "SET_IS_MENU_OPEN":
@@ -66,14 +66,25 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
     }
 };
 
+
+const startingCards = { "1": 1, "2": 1, "3": 1, "4": 1, "5": 1, "6": 1, "7": 1 };
+const placeholderCard = {
+    cardId: 1,
+    uniqueId: null,
+    currentOwner: "red",
+    initialOwner: "red",
+    action: ""
+};
+const placeholderCards = Array(5).fill(placeholderCard);
+
 export const initialState: GameState = {
-    playerCards: { "1": 1, "2": 1, "3": 1, "4": 1, "5": 1, "6": 1, "7": 1 },
+    playerCards: startingCards,
     currentPlayerCards: [],
     playerHand: [],
     currentPlayerHand: [],
     enemyId: 1,
-    enemyHand: [[1, "red", 0, "", null], [1, "red", 1, "", null], [1, "red", 2, "", null], [1, "red", 3, "", null], [1, "red", 4, "", null]],
-    currentEnemyHand: [[1, "red", 0, "", null], [1, "red", 1, "", null], [1, "red", 2, "", null], [1, "red", 3, "", null], [1, "red", 4, "", null]],
+    enemyHand: placeholderCards,
+    currentEnemyHand: placeholderCards,
     lostCards: {},
     winState: null,
     turn: null,
@@ -81,7 +92,7 @@ export const initialState: GameState = {
     turnState: null,
     score: [5, 5],
     board: Array(3).fill(null).map(() => Array(3).fill(null)),
-    selectedCard: null,
+    selectedCardId: null,
     selectedRewards: [],
     isMenuOpen: true,
     isCardSelectionOpen: false,
@@ -90,7 +101,7 @@ export const initialState: GameState = {
     isSoundEnabled: false,
     slideDirection: null,
     currentPages: { "players": 1, "cards": 1 },
-    rules: ["open", "same", "plus"],
-    tradeRule: "direct",
+    rules: ["open"],
+    tradeRule: "one",
     elements: null,
 };

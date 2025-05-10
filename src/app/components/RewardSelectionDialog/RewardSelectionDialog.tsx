@@ -5,7 +5,6 @@ import { PlayerType, CardType } from "../../context/GameTypes";
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
-import SimpleDialog from "../SimpleDialog/SimpleDialog";
 import playSound, { stopLoadedSound } from "../../utils/sounds";
 import textToSprite from "../../utils/textToSprite";
 
@@ -21,8 +20,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     const isManualSelect = (winState === "blue" && ["one", "diff"].includes(tradeRule as string));
 
-    const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card, index) => ({ id: +card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "red", position: index })));
-    const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card, index) => ({ id: +card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "blue", position: index })));
+    const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card, index) => ({ id: card.cardId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "red", position: index })));
+    const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card, index) => ({ id: card.cardId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "blue", position: index })));
 
     const [isSelectionConfirmed, setIsSelectionConfirmed] = useState(false);
     const [selectedRewards, setSelectedRewards] = useState<RewardType[]>([]);
@@ -36,7 +35,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     const determineFlippedCards = () => {
         const boardCards: CardType[] = board.flat().filter((cell): cell is CardType => cell !== null);
         const flippedCards = boardCards.filter(card =>
-            card[1] === winState && card[4] !== winState
+            card.currentOwner === winState && card.initialOwner !== winState
         );
 
         return flippedCards;
@@ -124,9 +123,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         if (tradeRule === "direct") {
             const flippedCards = determineFlippedCards();
 
-            const mappedFlippedCards = flippedCards.map(([id, player, position]) => ({ id, player, position }));
             availableCards = availableCards.filter(availableCard =>
-                mappedFlippedCards.some(flippedCard => flippedCard.id === +availableCard.id)
+                flippedCards.some(flippedCard => flippedCard.cardId === availableCard.id)
             );
         }
 

@@ -83,7 +83,7 @@ const CardSelectionDialog = () => {
         >
             <div className="flex">
                 <Image src="/assets/cardicon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
-                {textToSprite(cardList.find(card => card.id === Number(item.id))?.name || "")}
+                {textToSprite(cardList.find(card => card.id === item.id)?.name || "")}
             </div>
             <div>
                 {textToSprite(String(quantity))}
@@ -142,7 +142,7 @@ const CardSelectionDialog = () => {
                     <h4 className={`${styles.meta} mr-3`} data-sprite="num.">Num.</h4>
                 </div>
                 <DialogPagination items={Object.entries(cards)} itemsPerPage={11} renderItem={([cardId, quantity]: [number, number]) =>
-                    cardContent({ id: cardId, location: '', player: '', additionalDesc: '' }, quantity)} pagination="cards" />
+                    cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity)} pagination="cards" />
 
                 {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
                 <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>

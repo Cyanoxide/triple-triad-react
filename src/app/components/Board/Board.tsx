@@ -20,7 +20,7 @@ interface BoardProps {
 
 const Board: React.FC<BoardProps> = ({ className }) => {
     const debug = false;
-    const { currentPlayerHand, currentEnemyHand, selectedCard, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, winState, dispatch } = useGameContext();
+    const { currentPlayerHand, currentEnemyHand, selectedCardId, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, winState, dispatch } = useGameContext();
     const [sameFlag, setSameFlag] = useState(false);
     const [plusFlag, setPlusFlag] = useState(false);
     const [comboFlag, setComboFlag] = useState(false);
@@ -38,6 +38,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         bottom: "top",
         left: "right",
     } as const;
+
+    const selectedCard = [...currentPlayerHand, ...currentEnemyHand].find(card => card.uniqueId === selectedCardId);
+
+    const isCardOwnedByOpposingPlayer = (card: CardType) => card && card.currentOwner !== turn;
 
     const isOutOfBounds = (position: PositionType) => {
         const [row, col] = position;
@@ -71,20 +75,16 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }, [turn, dispatch, board]);
 
 
-    const grabCardFromHand = useCallback((position: number, player: PlayerType) => {
+    const grabCardFromHand = useCallback((card: CardType, player: PlayerType) => {
         dispatch({ type: "SET_TURN_STATE", payload: "SELECTING_CARD" });
         const isPlayer = player === "blue";
         const cards = isPlayer ? [...currentPlayerHand] : [...currentEnemyHand];
-        const selectedCardId = cards.splice(position, 1);
-
-        if (selectedCardId == undefined) return;
+        const newCards = cards.filter(handCard => handCard !== card);
 
         dispatch({
             type: isPlayer ? "SET_CURRENT_PLAYER_HAND" : "SET_CURRENT_ENEMY_HAND",
-            payload: cards
+            payload: newCards
         });
-
-        return selectedCardId;
     }, [currentEnemyHand, currentPlayerHand, dispatch]);
 
 
@@ -131,15 +131,16 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
         const isActiveOutOfBounds = isOutOfBounds(position);
         const isOpposingOutOfBounds = isOutOfBounds(opposingPosition);
+        const wallCard = { cardId: 110, currentOwner: turn, position: opposingPosition, action: "wall", initialOwner: null };
 
         if (isOpposingOutOfBounds || isActiveOutOfBounds) {
             if (rules && rules.includes("sameWall")) {
                 opposingCard = isOpposingOutOfBounds
-                    ? [110, turn === "red" ? "blue" : "red", opposingPosition, "wall", null] as CardType
+                    ? wallCard
                     : currentBoard[values.opposingRow][values.opposingCol];
 
                 activeCard = isActiveOutOfBounds
-                    ? [110, turn, opposingPosition, "wall", null] as CardType
+                    ? wallCard
                     : currentBoard[row][col];
             } else {
                 return;
@@ -149,13 +150,13 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             activeCard = currentBoard[row][col];
         }
 
-        const activeCardData = cards.find(card => card.id === activeCard?.[0]);
-        const opposingCardData = cards.find(card => card.id === opposingCard?.[0]);
+        const activeCardData = cards.find(card => card.id === activeCard?.cardId);
+        const opposingCardData = cards.find(card => card.id === opposingCard?.cardId);
 
         if (!activeCard || !activeCardData) return;
         if (!opposingCard || !opposingCardData) return;
 
-        values.isOpponent = (opposingCard[1] === turn) ? false : true;
+        values.isOpponent = (opposingCard.currentOwner === turn) ? false : true;
 
         const positionStr = String(position);
         const opposingPositionStr = String(opposingPosition);
@@ -189,7 +190,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
             if (isOpposingOutOfBounds) {
                 if (rules.includes("sameWall")) {
-                    adjacentCard = [110, (turn === "red") ? "blue" : "red", [opposingRow, opposingCol], "wall", null] as CardType;
+                    adjacentCard = { cardId: 110, currentOwner: (turn === "red") ? "blue" : "red" as PlayerType, position: [opposingRow, opposingCol], action: "wall" };
                 } else {
                     continue;
                 }
@@ -201,12 +202,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             adjacentCards[String(position)] = adjacentCard;
             adjacentCount++;
 
-            const cardOwner = adjacentCard[1];
-
-            if (cardOwner !== turn) {
-                hasOpponent = true;
-            }
+            if (adjacentCard.currentOwner !== turn) hasOpponent = true;
         }
+
+        if (adjacentCount >= 2 && hasOpponent) console.log(adjacentCount >= 2 && hasOpponent);
 
         return adjacentCount >= 2 && hasOpponent;
     }
@@ -300,7 +299,6 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }
 
 
-
     const processCardFlips = (position: PositionType, currentBoard: BoardType = board) => {
         const initialFlips = determineRegularCardFlips(position, currentBoard);
         const newBoard = [...currentBoard];
@@ -309,12 +307,21 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             playSound("flip", isSoundEnabled);
             initialFlips.forEach(({ position, action }) => {
                 const [row, col] = position;
+                const card = currentBoard[row][col] as CardType;
 
-                if (currentBoard[row][col] && currentBoard[row][col][1] !== turn) {
-                    newBoard[row][col] = [currentBoard[row][col]![0], turn, [row, col], action, currentBoard[row][col][1]];
+                if (!isCardOwnedByOpposingPlayer(card)) return;
+                const existingCard = currentBoard[row][col];
+
+                newBoard[row][col] = {
+                    cardId: existingCard!.cardId,
+                    currentOwner: turn,
+                    initialOwner: existingCard?.initialOwner,
+                    position: [row, col],
+                    action: action,
                 }
             });
         }
+
 
         if (isEligableforPlusSame(position, currentBoard)) {
             const sameFlips = determineSameCardFlips(position, currentBoard);
@@ -324,11 +331,16 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
                 sameFlips.forEach(({ position, action }) => {
                     const [row, col] = position;
+                    const card = currentBoard[row][col] as CardType;
 
-                    if (isOutOfBounds(position)) return;
-
-                    if (currentBoard[row][col] && currentBoard[row][col][1] !== turn) {
-                        newBoard[row][col] = [currentBoard[row][col][0], turn, [row, col], action, currentBoard[row][col][1]];
+                    if (isOutOfBounds(position) || !isCardOwnedByOpposingPlayer(card)) return;
+                    const existingCard = currentBoard[row][col];
+                    newBoard[row][col] = {
+                        cardId: existingCard!.cardId,
+                        currentOwner: turn,
+                        initialOwner: existingCard?.initialOwner,
+                        position: [row, col],
+                        action: action,
                     }
                 });
 
@@ -347,9 +359,18 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
                 plusFlips.forEach(({ position, action }) => {
                     const [row, col] = position;
+                    const card = currentBoard[row][col] as CardType;
 
-                    if (currentBoard[row][col] && currentBoard[row][col][1] !== turn) {
-                        newBoard[row][col] = [currentBoard[row][col][0], turn, [row, col], action, currentBoard[row][col][1]];
+                    if (!isCardOwnedByOpposingPlayer(card)) return;
+
+                    const existingCard = currentBoard[row][col];
+
+                    newBoard[row][col] = {
+                        cardId: existingCard!.cardId,
+                        currentOwner: turn,
+                        initialOwner: existingCard?.initialOwner,
+                        position: [row, col],
+                        action: action,
                     }
                 });
 
@@ -379,14 +400,19 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }, [sameFlag, plusFlag]);
 
 
-    const placeCard = useCallback((row: number, col: number, cardId: number) => {
+    const placeCard = useCallback((row: number, col: number, card: CardType) => {
         dispatch({ type: "SET_TURN_STATE", payload: "PLACING_CARD" });
         if (board[row][col]) return;
 
         const newBoard = board.map(row => [...row]);
-        newBoard[row][col] = [Number(cardId), turn, [row, col], "placed", turn];
 
-        dispatch({ type: "SET_SELECTED_CARD", payload: null });
+        newBoard[row][col] = {
+            ...card,
+            position: [row, col],
+            action: "placed",
+        }
+
+        dispatch({ type: "SET_SELECTED_CARD_ID", payload: null });
         dispatch({ type: "SET_BOARD", payload: newBoard });
 
         processCardFlips([row, col], newBoard as BoardType);
@@ -394,22 +420,17 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
 
     const handlePlayerBoardSelection = useCallback((rowIndex: number, colIndex: number) => {
-        if (board[rowIndex][colIndex]) return;
+        if (board[rowIndex][colIndex] || !selectedCard || selectedCard.currentOwner !== turn) return;
 
-        if (!selectedCard) return;
-        const [cardId, cardPlayer, position] = selectedCard;
-
-        if (cardPlayer !== turn || typeof position !== "number") return;
-
-        grabCardFromHand(position, turn);
-        placeCard(rowIndex, colIndex, cardId);
+        grabCardFromHand(selectedCard, turn);
+        placeCard(rowIndex, colIndex, selectedCard);
         playSound("place", isSoundEnabled);
         swapTurn();
-    }, [board, selectedCard, turn, grabCardFromHand, placeCard, swapTurn]);
+    }, [board, selectedCardId, turn, grabCardFromHand, placeCard, swapTurn]);
 
 
     const handleMouseEnter = (rowIndex: number, colIndex: number) => {
-        if (!board[rowIndex][colIndex] && !!selectedCard && turn === "blue") {
+        if (!board[rowIndex][colIndex] && !!selectedCardId && turn === "blue") {
             playSound("select", isSoundEnabled);
         }
     }
@@ -419,48 +440,60 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         if (turn === "red" && turnNumber <= ((debug) ? 1 : 9)) {
             const enemyMove = getEnemyMove(board, currentEnemyHand, "advanced", elements);
             if (enemyMove) {
-                const { enemyCardIndex, enemyCardId, enemyPosition } = enemyMove;
+                const { enemyCardId, enemyPosition, uniqueId } = enemyMove;
                 if (!enemyCardId) return;
+
+                const enemyDelay = () => Math.floor(Math.random() * 2000) + 1000;
+                const enemyCard = [...currentEnemyHand].find(card => card.uniqueId === uniqueId);
+
+                if (!enemyCard) return;
 
                 setTimeout(() => {
                     playSound("select", isSoundEnabled);
 
                     dispatch({
-                        type: "SET_SELECTED_CARD",
-                        payload: [enemyCardId, "red", enemyCardIndex, "", null],
-                    });
-                }, 3000);
+                        type: "SET_SELECTED_CARD_ID",
+                        payload: enemyCard.uniqueId,
+                    })
 
-                setTimeout(() => {
-                    grabCardFromHand(enemyCardIndex, "red");
-                    placeCard(enemyPosition.row, enemyPosition.col, enemyCardId);
-                    playSound("place", isSoundEnabled);
-                    swapTurn();
-                }, 4500);
+                    setTimeout(() => {
+                        grabCardFromHand(enemyCard, "red");
+                        placeCard(enemyPosition.row, enemyPosition.col, enemyCard);
+                        playSound("place", isSoundEnabled);
+                        swapTurn();
+                    }, enemyDelay());
+                }, enemyDelay());
             }
         }
     }, [turn]);
 
 
     useEffect(() => {
-        const redScore = board.flat().filter(entry => entry?.[1] === "red").length + currentEnemyHand.length;
-        const blueScore = board.flat().filter(entry => entry?.[1] === "blue").length + currentPlayerHand.length;
+        const redScore = board.flat().filter(card => card?.currentOwner === "red").length + currentEnemyHand.length;
+        const blueScore = board.flat().filter(card => card?.currentOwner === "blue").length + currentPlayerHand.length;
 
         dispatch({ type: "SET_SCORE", payload: [redScore, blueScore] });
 
         setWinState([redScore, blueScore])
     }, [board]);
 
+    const [showStartingPlayerIndicator, setShowStartingPlayerIndicator] = useState(false);
+
 
     useEffect(() => {
         if (!isGameActive) return;
         determineElementalBoardCells();
-    }, [isGameActive]);
+        setShowStartingPlayerIndicator(true);
 
+
+        setTimeout(() => {
+            setShowStartingPlayerIndicator(false);
+        }, 1650);
+    }, [isGameActive]);
 
     return (
         <>
-            {isGameActive && turnNumber === 1 && <Indicator type="STARTING_PLAYER_INDICATOR" />}
+            {showStartingPlayerIndicator && <Indicator type="STARTING_PLAYER_INDICATOR" />}
             <div className={`${styles.board} ${className || ''}`.trim()}>
                 {board.map((row, rowIndex) => (
                     row.map((col, colIndex) => (
@@ -468,27 +501,26 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                             key={`${rowIndex}-${colIndex}`}
                             className={styles.cell}
                             data-position={[rowIndex, colIndex]}
-                            data-selectable={!board[rowIndex][colIndex] && !!selectedCard && turn === "blue"}
+                            data-selectable={!board[rowIndex][colIndex] && turn === "blue" && !!selectedCardId}
                             data-element={(elements && String([rowIndex, colIndex]) in elements) ? elements[String([rowIndex, colIndex])] : null}
                             onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
                             onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}
                         >
                             {col && (() => {
-                                const cardData = cards.find(card => card.id === col[0]);
+                                const cardData = cards.find(card => card.id === col.cardId);
                                 let modifier = 0;
                                 if (elements && String([rowIndex, colIndex]) in elements) {
                                     modifier = (elements[String([rowIndex, colIndex])] === cardData?.element) ? 1 : -1;
                                 }
-                                return cardData && <Card {...cardData} player={col[1]} onBoard={true} data-state={col[3]} data-modifier={modifier} />;
+                                return cardData && <Card {...cardData} player={col.currentOwner as PlayerType} onBoard={true} data-state={col.action} data-modifier={modifier} />;
                             })()}
                             {elements && String([rowIndex, colIndex]) in elements && <div data-element data-sprite={elements[String([rowIndex, colIndex])]}>{elements[String([rowIndex, colIndex])]}</div>}
                         </div>
                     ))
                 ))}
             </div >
-            {turn === "blue" && selectedCard && <div className={styles.selectedCardLabel}><SimpleDialog>{textToSprite(cards.find(card => card.id === +selectedCard[0])?.name || "", undefined, true)}</SimpleDialog></div>}
+            {turn === "blue" && selectedCardId && <div className={styles.selectedCardLabel}><SimpleDialog>{textToSprite(cards.find(card => card.id === selectedCard?.cardId)?.name || "", undefined, true)}</SimpleDialog></div>}
             {!winState && (sameFlag || plusFlag || comboFlag) && <BoardMessage message={(comboFlag) ? "combo" : (sameFlag) ? "same" : "plus"} />}
-
         </>
     );
 };
