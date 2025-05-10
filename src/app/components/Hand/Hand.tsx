@@ -37,7 +37,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
                 {turnNumber < 10 && <Indicator className={(player === turn && turn === player) ? "flex" : "hidden"} type="TURN_INDICATOR" />}
                 <div className={`${styles.hand} flex flex-col ${(isGameActive) ? "justify-end" : "justify-start"}`} data-player={player} data-selectable={player === turn && turn === "blue"}>
                     {cards.map((card, index) => (
-                        <div key={index} className="cell" onClick={() => handleSelectCard(card, player)} onMouseEnter={handleMouseEnter} data-selected={(selectedCardId === card.uniqueId)}>
+                        <div key={index} className="cell" onClick={() => handleSelectCard(card, player)} onMouseEnter={handleMouseEnter} data-selected={(card.uniqueId && selectedCardId === card.uniqueId)}>
                             <Card id={card.cardId} player={card.currentOwner as PlayerType} />
                         </div>
                     ))}
