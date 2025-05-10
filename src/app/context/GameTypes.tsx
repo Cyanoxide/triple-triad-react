@@ -2,7 +2,8 @@ export type PlayerType = "red" | "blue" | null;
 export type CardStateType = string | undefined;
 export type PositionType = [number, number];
 export type DirectionType = "top" | "right" | "bottom" | "left";
-export type CardType = { cardId: number; uniqueId?: string | null; currentOwner?: PlayerType | null, initialOwner?: PlayerType | null, position: number | number[] | null, action?: string | null }
+export type FlipDirectionType = "horizontal" | "vertical";
+export type CardType = { cardId: number; uniqueId?: string | null; currentOwner?: PlayerType | null, initialOwner?: PlayerType | null, position: number | number[] | null, action?: string | null, flipDirection?: FlipDirectionType }
 export type BoardType = (CardType | null)[][];
 export type AiMethodType = "random" | "beginner" | "intermediate" | "advanced";
 

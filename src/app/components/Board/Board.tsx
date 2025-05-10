@@ -5,7 +5,7 @@ import styles from './Board.module.scss';
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import { useGameContext } from "../../context/GameContext";
-import { BoardType, CardType, DirectionType, PlayerType, PositionType } from "../../context/GameTypes";
+import { BoardType, CardType, DirectionType, PlayerType, PositionType, FlipDirectionType } from "../../context/GameTypes";
 import { getEnemyMove } from '../../utils/ai';
 import SimpleDialog from '../SimpleDialog/SimpleDialog';
 import Indicator from '../Indicator/Indicator';
@@ -205,14 +205,12 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             if (adjacentCard.currentOwner !== turn) hasOpponent = true;
         }
 
-        if (adjacentCount >= 2 && hasOpponent) console.log(adjacentCount >= 2 && hasOpponent);
-
         return adjacentCount >= 2 && hasOpponent;
     }
 
 
     const determineRegularCardFlips = (position: PositionType, currentBoard: BoardType = board, combo = false) => {
-        const cardFlips: { position: PositionType; action: string }[] = [];
+        const cardFlips: { position: PositionType; action: string; flipDirection: FlipDirectionType }[] = [];
 
         for (const direction of Object.keys(directions) as DirectionType[]) {
             const adjacentValues = getAdjacentCardValues(position, direction, currentBoard);
@@ -221,7 +219,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             const { attackingValue, defendingValue, opposingRow, opposingCol, isOpponent } = adjacentValues;
             if (attackingValue === undefined || defendingValue === undefined || opposingRow == null || opposingCol == null || !isOpponent) continue;
             if (attackingValue <= defendingValue) continue;
-            cardFlips.push({ position: [opposingRow, opposingCol], action: (combo) ? "combo" : "flipped" });
+            cardFlips.push({ position: [opposingRow, opposingCol], action: (combo) ? "combo" : "flipped", flipDirection: (["top", "bottom"].includes(direction)) ? "vertical" : "horizontal" });
         }
         return cardFlips;
     }
@@ -305,7 +303,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
         if (initialFlips && initialFlips.length > 0) {
             playSound("flip", isSoundEnabled);
-            initialFlips.forEach(({ position, action }) => {
+            initialFlips.forEach(({ position, action, flipDirection }) => {
                 const [row, col] = position;
                 const card = currentBoard[row][col] as CardType;
 
@@ -318,6 +316,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                     initialOwner: existingCard?.initialOwner,
                     position: [row, col],
                     action: action,
+                    flipDirection,
                 }
             });
         }
@@ -512,7 +511,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                                 if (elements && String([rowIndex, colIndex]) in elements) {
                                     modifier = (elements[String([rowIndex, colIndex])] === cardData?.element) ? 1 : -1;
                                 }
-                                return cardData && <Card {...cardData} player={col.currentOwner as PlayerType} onBoard={true} data-state={col.action} data-modifier={modifier} />;
+                                return cardData && <Card {...cardData} player={col.currentOwner as PlayerType} onBoard={true} data-state={col.action} data-flip-direction={col.flipDirection} data-modifier={modifier} />;
                             })()}
                             {elements && String([rowIndex, colIndex]) in elements && <div data-element data-sprite={elements[String([rowIndex, colIndex])]}>{elements[String([rowIndex, colIndex])]}</div>}
                         </div>
