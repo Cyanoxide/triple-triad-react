@@ -3,7 +3,7 @@ import players from "../../data/players.json";
 import { generateCardsFromIds } from "../utils/general";
 
 
-export const setAiPlayerCards = (playerId: number, lostCards: Record<number, number>, playerCards: Record<number, number>) => {
+export const setAiPlayerCards = (playerId: number, lostCards: Record<number, number[]>, playerCards: Record<number, number>) => {
     const currentHand: number[] = [];
     const player = players.find((player) => player.id === playerId);
     if (!player) return;
