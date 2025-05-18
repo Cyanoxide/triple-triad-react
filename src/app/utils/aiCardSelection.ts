@@ -3,7 +3,7 @@ import players from "../../data/players.json";
 import { generateCardsFromIds } from "../utils/general";
 
 
-export const setAiPlayerCards = (playerId: number, lostCards: Record<number, number>) => {
+export const setAiPlayerCards = (playerId: number, lostCards: Record<number, number>, playerCards: Record<number, number>) => {
     const currentHand: number[] = [];
     const player = players.find((player) => player.id === playerId);
     if (!player) return;
@@ -17,7 +17,7 @@ export const setAiPlayerCards = (playerId: number, lostCards: Record<number, num
         currentHand.push(currentLostCards[playerId]);
     }
 
-    if (player.rareCard && (Math.random() < (0.35))) {
+    if (player.rareCard && !Object.keys(playerCards).includes(String(player.rareCard)) && (Math.random() < (0.35))) {
         currentHand.push(player.rareCard);
     }
 

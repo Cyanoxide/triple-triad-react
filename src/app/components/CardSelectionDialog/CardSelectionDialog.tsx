@@ -26,7 +26,7 @@ const CardSelectionDialog = () => {
     const hasPlayedBefore = localStorage.getItem("playerCards");
 
     const gameStart = () => {
-        const enemyCards = setAiPlayerCards(enemyId, lostCards);
+        const enemyCards = setAiPlayerCards(enemyId, lostCards, cards);
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
         dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
         dispatch({ type: "SET_PLAYER_HAND", payload: hand });

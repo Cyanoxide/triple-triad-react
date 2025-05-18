@@ -8,7 +8,7 @@ import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
 
 const EnemySelectionDialog = () => {
-    const { isMenuOpen, currentPages, slideDirection, lostCards, dispatch } = useGameContext();
+    const { isMenuOpen, currentPages, slideDirection, lostCards, playerCards, dispatch } = useGameContext();
     const [lostCardMap, setLostCardMap] = useState<{ [id: string]: boolean }>({});
 
     useEffect(() => {
@@ -50,7 +50,7 @@ const EnemySelectionDialog = () => {
 
         if (lostCardMap[item.id]) {
             color = "yellow";
-        } else if (item.rareCard) {
+        } else if (item.rareCard && !Object.keys(playerCards).includes(String(item.rareCard))) {
             color = "blue";
         }
 
