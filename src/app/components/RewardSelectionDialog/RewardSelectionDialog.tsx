@@ -222,8 +222,9 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
                 updatedPlayerCards[reward.id] = 1;
             }
 
-            if (currentLostCards[enemyId] === reward.id) {
-                delete currentLostCards[enemyId];
+            const lostCardIndex: number = currentLostCards[enemyId].indexOf(reward.id);
+            if (lostCardIndex !== -1) {
+                currentLostCards[enemyId].splice(lostCardIndex, 1);
             }
         } else if (rewardsList.lost.length) {
             setRewardType("lost");
@@ -236,7 +237,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
                 delete updatedPlayerCards[reward.id];
             }
 
-            currentLostCards[enemyId] = reward.id;
+            currentLostCards[enemyId].push(reward.id);
         }
         if (!reward) return;
 

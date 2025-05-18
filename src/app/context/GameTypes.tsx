@@ -15,7 +15,7 @@ export interface GameState {
     enemyId: number;
     enemyHand: CardType[];
     currentEnemyHand: CardType[];
-    lostCards: Record<number, number>,
+    lostCards: Record<number, number[]>,
     winState: PlayerType | "draw";
     turn: PlayerType | null;
     turnNumber: number;
@@ -44,7 +44,7 @@ export type GameAction =
     | { type: "SET_ENEMY_ID"; payload: number }
     | { type: "SET_ENEMY_HAND"; payload: CardType[] }
     | { type: "SET_CURRENT_ENEMY_HAND"; payload: CardType[] }
-    | { type: "SET_LOST_CARDS"; payload: Record<number, number> }
+    | { type: "SET_LOST_CARDS"; payload: Record<number, number[]> }
     | { type: "SET_WIN_STATE"; payload: PlayerType | "draw" }
     | { type: "SET_TURN"; payload: PlayerType }
     | { type: "INCREMENT_TURN" }
