@@ -15,7 +15,7 @@ export const setAiPlayerCards = (playerId: number, lostCards: Record<number, num
 
     const playerLostCards = currentLostCards[playerId];
 
-    if (currentLostCards && playerLostCards && (Math.random() < (0.35))) {
+    if (currentLostCards && playerLostCards?.length && (Math.random() < (0.35))) {
         const randomLostCard = playerLostCards[Math.floor(Math.random() * playerLostCards.length)];
         currentHand.push(randomLostCard);
     }

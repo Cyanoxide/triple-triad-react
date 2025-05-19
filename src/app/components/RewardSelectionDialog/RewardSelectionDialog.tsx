@@ -210,9 +210,11 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         const updatedPlayerCards = { ...playerCards };
         const currentLostCards = { ...lostCards };
         let reward = null;
+        let playerWinState: "won" | "lost" | null = null;
 
         if (rewardsList.won.length) {
-            setRewardType("won");
+            playerWinState = "won";
+
             reward = rewardsList.won.shift();
             if (!reward) return;
 
@@ -228,7 +230,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
                 }
             }
         } else if (rewardsList.lost.length) {
-            setRewardType("lost");
+            playerWinState = "lost";
             reward = rewardsList.lost.shift();
             if (!reward) return;
 
@@ -243,6 +245,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         }
         if (!reward) return;
 
+        setRewardType(playerWinState);
         dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
         dispatch({ type: "SET_LOST_CARDS", payload: currentLostCards });
 
@@ -255,8 +258,12 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         setSelectedRewards(rewardsList);
 
         setTimeout(() => {
-            playSound((rewardType === "won") ? "success" : "place", isSoundEnabled);
-        }, (rewardType === "won") ? 2500 : 5000);
+            playSound("place", isSoundEnabled);
+        }, (playerWinState === "lost") ? 500 : 0);
+
+        setTimeout(() => {
+            playSound((playerWinState === "won") ? "success" : "place", isSoundEnabled);
+        }, (playerWinState === "lost") ? 5000 : 4500);
 
         confirmedList.push(reward);
         setConfirmedCards(confirmedList);
