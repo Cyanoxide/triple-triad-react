@@ -221,10 +221,11 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             } else {
                 updatedPlayerCards[reward.id] = 1;
             }
-
-            const lostCardIndex: number = currentLostCards[enemyId].indexOf(reward.id);
-            if (lostCardIndex !== -1) {
-                currentLostCards[enemyId].splice(lostCardIndex, 1);
+            if (currentLostCards[enemyId]) {
+                const lostCardIndex: number = currentLostCards[enemyId].indexOf(reward.id);
+                if (lostCardIndex !== -1) {
+                    currentLostCards[enemyId].splice(lostCardIndex, 1);
+                }
             }
         } else if (rewardsList.lost.length) {
             setRewardType("lost");
@@ -237,6 +238,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
                 delete updatedPlayerCards[reward.id];
             }
 
+            if (!currentLostCards[enemyId]) currentLostCards[enemyId] = [];
             currentLostCards[enemyId].push(reward.id);
         }
         if (!reward) return;
@@ -305,7 +307,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             <div className={`${styles.dialogContainer} ${recentCardName ? "" : "invisible"}`}>
                 <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed || winState !== "blue") ? "invisible" : ""}`} data-dialog="rewardCardNameInfo">
                     <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                    <h3>{textToSprite(recentCardName || "", (recentCard && lostCards[enemyId].includes(recentCard.id)) ? "yellow" : (recentCard && !(recentCard.id in playerCards)) ? "blue" : "")}</h3>
+                    <h3>{textToSprite(recentCardName || "", (recentCard && lostCards[enemyId] && lostCards[enemyId].includes(recentCard.id)) ? "yellow" : (recentCard && !(recentCard.id in playerCards)) ? "blue" : "")}</h3>
                 </div>
             </div>
 

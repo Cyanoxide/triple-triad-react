@@ -38,7 +38,7 @@ const EnemySelectionDialog = () => {
 
         const map: { [id: string]: boolean } = {};
         for (const playerId in currentLostCards) {
-            if (currentLostCards[playerId]) {
+            if (currentLostCards[playerId].length) {
                 map[playerId] = true;
             }
         }

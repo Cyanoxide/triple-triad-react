@@ -13,7 +13,7 @@ export const setAiPlayerCards = (playerId: number, lostCards: Record<number, num
     const lostCardsJSON = localStorage.getItem("lostCards");
     const currentLostCards = lostCardsJSON ? JSON.parse(lostCardsJSON) : lostCards;
 
-    const playerLostCards = currentLostCards[playerId] || [];
+    const playerLostCards = currentLostCards[playerId];
 
     if (currentLostCards && playerLostCards && (Math.random() < (0.35))) {
         const randomLostCard = playerLostCards[Math.floor(Math.random() * playerLostCards.length)];
