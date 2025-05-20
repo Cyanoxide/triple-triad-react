@@ -5,7 +5,6 @@ import { PlayerType, CardType } from "../../context/GameTypes";
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
-import SimpleDialog from "../SimpleDialog/SimpleDialog";
 import playSound, { stopLoadedSound } from "../../utils/sounds";
 import textToSprite from "../../utils/textToSprite";
 
@@ -17,17 +16,18 @@ interface RewardSelectionDialogProps {
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
     const { playerCards, playerHand, enemyId, enemyHand, lostCards, winState, score, tradeRule, isSoundEnabled, board, dispatch } = useGameContext();
 
-    type RewardType = { id: number; level: number, player: PlayerType, position: number }
+    type RewardType = { id: number; uniqueId: string | null | undefined, level: number, player: PlayerType, position: number }
 
     const isManualSelect = (winState === "blue" && ["one", "diff"].includes(tradeRule as string));
 
-    const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card, index) => ({ id: +card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "red", position: index })));
-    const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card, index) => ({ id: +card[0], level: cards.find(currentCard => card && currentCard.id === card[0])?.level ?? 0, player: "blue", position: index })));
+    const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card, index) => ({ id: card.cardId, uniqueId: card.uniqueId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "red", position: index })));
+    const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card, index) => ({ id: card.cardId, uniqueId: card.uniqueId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "blue", position: index })));
 
     const [isSelectionConfirmed, setIsSelectionConfirmed] = useState(false);
-    const [selectedRewards, setSelectedRewards] = useState<RewardType[]>([]);
+    const [selectedRewards, setSelectedRewards] = useState<Record<'won' | 'lost', RewardType[]>>({ "won": [], "lost": [] });
     const [selectedReward, setSelectedReward] = useState<RewardType>();
     const [confirmedCards, setConfirmedCards] = useState<RewardType[]>([]);
+    const [rewardType, setRewardType] = useState<"won" | "lost" | null>(null);
 
     const scoreSorted = score.sort((a, b) => b - a);
     const [winningScore] = scoreSorted;
@@ -35,9 +35,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     const determineFlippedCards = () => {
         const boardCards: CardType[] = board.flat().filter((cell): cell is CardType => cell !== null);
-        const flippedCards = boardCards.filter(card =>
-            card[1] === winState && card[4] !== winState
-        );
+        const flippedCards = boardCards.filter(card => card.initialOwner !== card.currentOwner);
 
         return flippedCards;
     }
@@ -56,25 +54,38 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         case "diff":
             winAmount = scoreDifference;
             break;
-        case "direct":
-            winAmount = flippedCards.length;
-            break;
+    }
+
+    const resetGame = (updatedPlayerCards: Record<number, number>) => {
+        stopLoadedSound(victorySound, isSoundEnabled);
+        stopLoadedSound(bgm, isSoundEnabled);
+
+        dispatch({ type: "RESET_GAME" });
+
+        dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
+        if (typeof window !== "undefined") {
+            localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
+        }
     }
 
 
-    const handleSelectReward = (id: number, player: PlayerType, position: number) => {
-        if (player === winState || !isManualSelect) return;
+    const handleSelectReward = (card: RewardType, position: number) => {
+        if (!card || card.player === winState || !isManualSelect) return;
         playSound("flip", isSoundEnabled);
-        if (winAmount > 0 && winState === "blue" && selectedRewards.length < winAmount) {
-            const currentSelectedRewards = [...selectedRewards];
-            const cardData = cards.find(card => card.id === id);
-            if (!cardData) return;
+        if (winAmount > 0 && winState === "blue" && selectedRewards.won.length < winAmount) {
+            const currentSelectedRewards = { ...selectedRewards };
 
-            currentSelectedRewards.push({ id, level: cardData.level, player: winState, position });
+            currentSelectedRewards.won.push({
+                id: card.id,
+                uniqueId: card.uniqueId,
+                level: cards.find(currentCard => card && currentCard.id === card.id)?.level ?? 0,
+                player: "blue",
+                position,
+            });
 
             setPlayerRewardSelection((prevCards) =>
-                prevCards.map((card) =>
-                    (card.id === Number(id)) ? { ...card, player: "blue" } : { ...card }
+                prevCards.map((reward) =>
+                    (reward.id === card.id) ? { ...reward, player: "blue" } : { ...reward }
                 )
             );
 
@@ -82,7 +93,9 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         }
     };
     const handleConfirmation = () => {
-        if (selectedRewards.length < winAmount) return;
+        if (selectedRewards.won.length < winAmount) return;
+
+        if (selectedRewards.won.length === 0) resetGame(playerCards);
         playSound("select", isSoundEnabled);
 
 
@@ -98,7 +111,10 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             }))
         );
 
-        setSelectedRewards([]);
+        const currentSelectedRewards = { ...selectedRewards };
+        currentSelectedRewards.won = [];
+
+        setSelectedRewards(currentSelectedRewards);
     }
 
     const [hoveredReward, setHoveredReward] = useState<RewardType | undefined>(undefined);
@@ -108,7 +124,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         const cardData = cards.find(card => card.id === id);
         if (!cardData) return;
 
-        setHoveredReward({ id, level: cardData.level, player: (winState === "red") ? "blue" : "red", position });
+        setHoveredReward({ id, uniqueId: null, level: cardData.level, player: (winState === "red") ? "blue" : "red", position });
     }
 
     const handleMouseLeave = () => {
@@ -117,47 +133,60 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
 
     const autoSelectRewards = (method: "best" | "sequential") => {
-        const selectedRewards: RewardType[] = [];
-        let selectedReward: RewardType | undefined;
-        let availableCards: RewardType[] = ((winState === "red") ? [...enemyRewardSelection] : [...playerRewardSelection]);
+        const selectedCards: Record<'won' | 'lost', RewardType[]> = {
+            "won": [],
+            "lost": [],
+        };
+
+        let selectedCard: RewardType | undefined;
+        const selectedCardsKey = (winState === "red") ? "lost" : "won";
 
         if (tradeRule === "direct") {
-            const flippedCards = determineFlippedCards();
-
-            const mappedFlippedCards = flippedCards.map(([id, player, position]) => ({ id, player, position }));
-            availableCards = availableCards.filter(availableCard =>
-                mappedFlippedCards.some(flippedCard => flippedCard.id === +availableCard.id)
+            selectedCards.won = [...playerRewardSelection].filter(handCard =>
+                flippedCards.some(flippedCard =>
+                    handCard.player !== flippedCard.currentOwner && handCard.id === flippedCard.cardId
+                )
             );
-        }
 
-        while (winAmount) {
-            if (method === "best") {
-                const maxLevel = Math.max(...availableCards.map((card) => card.level));
-                const highestLevelCards = availableCards.filter((card) => card.level === maxLevel);
-                selectedReward = highestLevelCards[Math.floor(Math.random() * highestLevelCards.length)];
+            selectedCards.lost = [...enemyRewardSelection].filter(handCard =>
+                flippedCards.some(flippedCard =>
+                    handCard.player !== flippedCard.currentOwner && handCard.id === flippedCard.cardId
+                )
+            );
+        } else {
+            const availableCards: RewardType[] = ((winState === "red") ? [...enemyRewardSelection] : [...playerRewardSelection]);
 
-                selectedRewards.push(selectedReward);
-            } else if (method === "sequential") {
-                selectedReward = availableCards.shift();
-                if (!selectedReward) continue;
+            while (winAmount) {
+                if (method === "best") {
+                    const maxLevel = Math.max(...availableCards.map((card) => card.level));
+                    const highestLevelCards = availableCards.filter((card) => card.level === maxLevel);
+                    selectedCard = highestLevelCards[Math.floor(Math.random() * highestLevelCards.length)];
+                    selectedCards[selectedCardsKey].push(selectedCard);
+                } else if (method === "sequential") {
+                    selectedCard = availableCards.shift();
+                    if (selectedCard) selectedCards[selectedCardsKey].push(selectedCard);
+                }
 
-                selectedRewards.push(selectedReward);
+                winAmount--;
             }
-
-            winAmount--;
         }
 
-        const setRewardSelection = (winState === "red") ? setEnemyRewardSelection : setPlayerRewardSelection;
-
-        setRewardSelection((prevCards) =>
+        setPlayerRewardSelection((prevCards) =>
             prevCards.map((card) =>
-                selectedRewards.some((reward) => reward.id === card.id && reward.position === card.position)
-                    ? { ...card, player: winState as PlayerType }
+                selectedCards.won.some((reward) => reward.id === card.id && reward.position === card.position)
+                    ? { ...card, player: "blue" }
+                    : { ...card }
+            )
+        );
+        setEnemyRewardSelection((prevCards) =>
+            prevCards.map((card) =>
+                selectedCards.lost.some((reward) => reward.id === card.id && reward.position === card.position)
+                    ? { ...card, player: "red" }
                     : { ...card }
             )
         );
 
-        return selectedRewards;
+        return selectedCards;
     }
 
     const areRewardsConfirmed = useRef(false);
@@ -175,37 +204,48 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     }, [winState]);
 
     const processRewards = () => {
-        const rewardsList = [...selectedRewards];
+        const rewardsList = { ...selectedRewards };
         const confirmedList = [...confirmedCards];
-
-        const reward = rewardsList.shift();
-        if (!reward) return;
 
         const updatedPlayerCards = { ...playerCards };
         const currentLostCards = { ...lostCards };
+        let reward = null;
+        let playerWinState: "won" | "lost" | null = null;
 
-        if (winState === "blue") {
+        if (rewardsList.won.length) {
+            playerWinState = "won";
+
+            reward = rewardsList.won.shift();
+            if (!reward) return;
+
             if (reward.id in updatedPlayerCards) {
                 updatedPlayerCards[reward.id]++
             } else {
                 updatedPlayerCards[reward.id] = 1;
             }
-
-            if (currentLostCards[enemyId] === reward.id) {
-                delete currentLostCards[enemyId];
+            if (currentLostCards[enemyId]) {
+                const lostCardIndex: number = currentLostCards[enemyId].indexOf(reward.id);
+                if (lostCardIndex !== -1) {
+                    currentLostCards[enemyId].splice(lostCardIndex, 1);
+                }
             }
-        }
+        } else if (rewardsList.lost.length) {
+            playerWinState = "lost";
+            reward = rewardsList.lost.shift();
+            if (!reward) return;
 
-        if (winState === "red") {
             if (reward.id in updatedPlayerCards && updatedPlayerCards[reward.id] > 1) {
                 updatedPlayerCards[reward.id]--;
             } else {
                 delete updatedPlayerCards[reward.id];
             }
 
-            currentLostCards[enemyId] = reward.id;
+            if (!currentLostCards[enemyId]) currentLostCards[enemyId] = [];
+            currentLostCards[enemyId].push(reward.id);
         }
+        if (!reward) return;
 
+        setRewardType(playerWinState);
         dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
         dispatch({ type: "SET_LOST_CARDS", payload: currentLostCards });
 
@@ -218,23 +258,19 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         setSelectedRewards(rewardsList);
 
         setTimeout(() => {
-            playSound((winState === "blue") ? "success" : "place", isSoundEnabled);
-        }, (winState === "blue") ? 2500 : 5000);
+            playSound("place", isSoundEnabled);
+        }, (playerWinState === "lost") ? 500 : 0);
+
+        setTimeout(() => {
+            playSound((playerWinState === "won") ? "success" : "place", isSoundEnabled);
+        }, (playerWinState === "lost") ? 5000 : 4500);
 
         confirmedList.push(reward);
         setConfirmedCards(confirmedList);
 
-        if (rewardsList.length === 0) {
+        if (!rewardsList.won.length && !rewardsList.lost.length) {
             setTimeout(() => {
-                stopLoadedSound(victorySound, isSoundEnabled);
-                stopLoadedSound(bgm, isSoundEnabled);
-
-                dispatch({ type: "RESET_GAME" });
-
-                dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
-                if (typeof window !== "undefined") {
-                    localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
-                }
+                resetGame(updatedPlayerCards);
             }, 6000);
         }
     }
@@ -250,7 +286,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     const recentCardName = recentCard && cards.find(card => card.id === recentCard.id)?.name;
     const selectedRewardName = selectedReward && cards.find(card => card.id === selectedReward.id)?.name;
 
-    const infoMessage = (winState === "red") ? "lost" : "acquired";
+    const infoMessage = (rewardType === "lost") ? "lost" : "acquired";
 
     return (
         <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>{isSelectionConfirmed}
@@ -261,8 +297,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
             <div className="flex justify-center mb-7">
                 {playerRewardSelection.map((card, index) => (
-                    <div className={styles.cell} key={index} onClick={() => handleSelectReward(card.id, card.player, card.position)}>
-                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id, index)} onMouseLeave={handleMouseLeave} data-selected={selectedRewards.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
+                    <div className={styles.cell} key={index} onClick={() => handleSelectReward(card, card.position)}>
+                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id, index)} onMouseLeave={handleMouseLeave} data-selected={selectedRewards.won.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
                     </div>
                 ))}
             </div>
@@ -270,7 +306,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             <div className="flex justify-center">
                 {enemyRewardSelection.map((card, index) => (
                     <div className={styles.cell} key={index}>
-                        <Card id={card.id} player={card.player} data-enemy-selected={selectedRewards.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
+                        <Card id={card.id} player={card.player} data-enemy-selected={selectedRewards.lost.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
                     </div>
                 ))}
             </div>
@@ -278,17 +314,11 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             <div className={`${styles.dialogContainer} ${recentCardName ? "" : "invisible"}`}>
                 <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed || winState !== "blue") ? "invisible" : ""}`} data-dialog="rewardCardNameInfo">
                     <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                    <h3>{textToSprite(recentCardName || "", (recentCard && recentCard.id == lostCards[enemyId]) ? "yellow" : (recentCard && !(recentCard.id in playerCards)) ? "blue" : "")}</h3>
+                    <h3>{textToSprite(recentCardName || "", (recentCard && lostCards[enemyId] && lostCards[enemyId].includes(recentCard.id)) ? "yellow" : (recentCard && !(recentCard.id in playerCards)) ? "blue" : "")}</h3>
                 </div>
             </div>
 
-            {selectedRewards.length === winAmount && !isSelectionConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
-            {winState === "red" && Object.keys(playerCards).length <= 5 &&
-                <SimpleDialog>
-                    <div className="mb-2">{textToSprite("Your opponent took pity on you and decided not")}</div>
-                    <div className="mb-2">{textToSprite("to take any of your remaining cards.")}</div>
-                </SimpleDialog>
-            }
+            {selectedRewards.won.length === winAmount && !isSelectionConfirmed && winState === "blue" && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
         </div>
     );
 };

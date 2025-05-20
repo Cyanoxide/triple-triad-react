@@ -29,7 +29,7 @@ export function getEnemyMove(boardState: BoardType, enemyHand: CardType[], metho
     const possibleMoves = [];
 
     for (const { row, col } of availablePositions) {
-        for (const [index, card] of enemyHand.entries()) {
+        for (const card of enemyHand.values()) {
             const competingCardMap = {
                 top: "bottom",
                 right: "left",
@@ -45,9 +45,8 @@ export function getEnemyMove(boardState: BoardType, enemyHand: CardType[], metho
             };
 
             const flips: { row: number; col: number; player: PlayerType }[] = [];
+            const activeCard = cards.find(currentCard => currentCard.id === card.cardId);
 
-            const cardId = Array.isArray(card) ? card[0] : null;
-            const activeCard = cards.find(currentCard => currentCard.id === cardId);
             if (!activeCard) continue;
             let totalOpenValue = 0;
             let openSideCount = 0;
@@ -64,10 +63,9 @@ export function getEnemyMove(boardState: BoardType, enemyHand: CardType[], metho
                     continue;
                 }
 
-                const [competingCardId, competingCardOwner] = competingCardData;
-                if (competingCardOwner === "red") continue;
+                if (competingCardData.currentOwner === "red") continue;
 
-                const competingCard = cards.find(card => card.id === competingCardId);
+                const competingCard = cards.find(card => card.id === competingCardData.cardId);
                 if (competingCard) {
 
                     let activeCardModifier = 0
@@ -87,7 +85,8 @@ export function getEnemyMove(boardState: BoardType, enemyHand: CardType[], metho
             }
 
             possibleMoves.push({
-                enemyCardIndex: index,
+                uniqueId: card.uniqueId,
+                enemyCardIndex: card.position,
                 enemyCardId: activeCard.id,
                 enemyPosition: { row, col },
                 flips: flips.length,
@@ -107,7 +106,7 @@ export function getEnemyMove(boardState: BoardType, enemyHand: CardType[], metho
     const topChoices = sortedMoves.slice(0, difficultySettings[method]);
     const chosenMove = topChoices[Math.floor(Math.random() * topChoices.length)];
 
-    const { enemyCardIndex, enemyPosition, enemyCardId } = chosenMove;
-    return { enemyCardIndex, enemyCardId, enemyPosition };
+    const { enemyCardIndex, enemyPosition, enemyCardId, uniqueId } = chosenMove;
+    return { enemyCardIndex, enemyCardId, enemyPosition, uniqueId };
 
 }

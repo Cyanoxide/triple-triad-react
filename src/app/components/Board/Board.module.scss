@@ -167,11 +167,19 @@
     [data-player=red][data-state="plus"] {
         transform-style: preserve-3d;
         animation: card-flip-red 0.4s ease-in-out 0.2s forwards;
+
+        &[data-flip-direction="vertical"] {
+            animation-name: card-flip-vertical-red;
+        }
     }
 
     [data-player=red][data-state="combo"] {
         transform-style: preserve-3d;
         animation: card-flip-red 0.4s ease-in-out 0.5s forwards;
+
+        &[data-flip-direction="vertical"] {
+            animation-name: card-flip-vertical-red;
+        }
     }
 
     [data-player=blue][data-state="flipped"],
@@ -179,11 +187,19 @@
     [data-player=blue][data-state="plus"] {
         transform-style: preserve-3d;
         animation: card-flip-blue 0.4s ease-in-out 0.2s forwards;
+
+        &[data-flip-direction="vertical"] {
+            animation-name: card-flip-vertical-blue;
+        }
     }
 
     [data-player=blue][data-state="combo"] {
         transform-style: preserve-3d;
         animation: card-flip-blue 0.4s ease-in-out 0.5s forwards;
+
+        &[data-flip-direction="vertical"] {
+            animation-name: card-flip-vertical-blue;
+        }
     }
 }
 
@@ -219,6 +235,32 @@
 
     100% {
         transform: rotate3d(0, 1, 0, 1turn) scale(1);
+        background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
+    }
+}
+
+@keyframes card-flip-vertical-blue {
+    50% {
+        transform: rotate3d(1, 0, 0, 0.5turn) scale(1.2);
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+        z-index: 3;
+    }
+
+    100% {
+        transform: rotate3d(1, 0, 0, 1turn) scale(1);
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+    }
+}
+
+@keyframes card-flip-vertical-red {
+    50% {
+        transform: rotate3d(1, 0, 0, 0.5turn) scale(1.2);
+        background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
+        z-index: 3;
+    }
+
+    100% {
+        transform: rotate3d(1, 0, 0, 1turn) scale(1);
         background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
     }
 }

@@ -23,8 +23,8 @@ const WinDialog: React.FC<WinDialogProps> = ({ victorySound, bgm }) => {
     const getCardIdsFromBoard = (player: PlayerType) => {
         return board
             .flatMap(row => row)
-            .filter(cell => cell !== null && cell[1] === player)
-            .map(cell => cell![0]);
+            .filter(cell => cell !== null && cell.currentOwner === player)
+            .map(cell => cell!.cardId);
     };
 
     useEffect(() => {

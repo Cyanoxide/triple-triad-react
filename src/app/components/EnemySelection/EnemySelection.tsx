@@ -8,7 +8,7 @@ import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
 
 const EnemySelectionDialog = () => {
-    const { isMenuOpen, currentPages, slideDirection, lostCards, dispatch } = useGameContext();
+    const { isMenuOpen, currentPages, slideDirection, lostCards, playerCards, dispatch } = useGameContext();
     const [lostCardMap, setLostCardMap] = useState<{ [id: string]: boolean }>({});
 
     useEffect(() => {
@@ -18,7 +18,7 @@ const EnemySelectionDialog = () => {
         dispatch({ type: "SET_ENEMY_ID", payload: enemyId });
 
         if (!(enemyId in players)) return;
-        const enemy = players[enemyId];
+        const enemy = players[enemyId - 1];
         const ruleSet = enemy.rules;
 
         if (ruleSet && ruleSet in ruleSets) {
@@ -38,7 +38,7 @@ const EnemySelectionDialog = () => {
 
         const map: { [id: string]: boolean } = {};
         for (const playerId in currentLostCards) {
-            if (currentLostCards[playerId]) {
+            if (currentLostCards[playerId].length) {
                 map[playerId] = true;
             }
         }
@@ -50,7 +50,7 @@ const EnemySelectionDialog = () => {
 
         if (lostCardMap[item.id]) {
             color = "yellow";
-        } else if (item.rareCard) {
+        } else if (item.rareCard && !Object.keys(playerCards).includes(String(item.rareCard))) {
             color = "blue";
         }
 
