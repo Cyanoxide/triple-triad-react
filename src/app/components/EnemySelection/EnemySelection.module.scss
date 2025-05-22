@@ -3,10 +3,11 @@
 .enemySelectionDialog {
     @extend .dialog;
     position: absolute;
-    top: calc(50% + 230px);
+    top: calc(50% + 249px);
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 250px;
+    width: 380px;
+    height: 77px;
 
     h3,
     p {
