@@ -100,7 +100,7 @@ export const initialState: GameState = {
     isGameActive: false,
     isSoundEnabled: false,
     slideDirection: null,
-    currentPages: { "players": 1, "cards": 1 },
+    currentPages: { "players": 1, "cards": 1, "locations": 1 },
     rules: ["open"],
     tradeRule: "one",
     elements: null,

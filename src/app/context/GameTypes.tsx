@@ -29,7 +29,7 @@ export interface GameState {
     isRewardSelectionOpen: boolean;
     isGameActive: boolean;
     isSoundEnabled: boolean;
-    slideDirection: "prev" | "next" | null;
+    slideDirection: [string, "prev" | "next"] | null;
     currentPages: Record<string, number>;
     rules: string[] | null;
     tradeRule: string | null;
@@ -60,7 +60,7 @@ export type GameAction =
     | { type: "SET_IS_GAME_ACTIVE"; payload: boolean }
     | { type: "SET_IS_SOUND_ENABLED"; payload: boolean }
     | { type: "SET_CURRENT_PAGES"; payload: Record<string, number> }
-    | { type: "SET_SLIDE_DIRECTION"; payload: "prev" | "next" | null }
+    | { type: "SET_SLIDE_DIRECTION"; payload: [string, "prev" | "next"] | null }
     | { type: "SET_RULES"; payload: string[] | null }
     | { type: "SET_TRADE_RULE"; payload: string | null }
     | { type: "SET_ELEMENTS"; payload: Record<string, string> | null; }
