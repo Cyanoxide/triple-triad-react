@@ -391,7 +391,7 @@
     },
     {
         "id": 30,
-        "active": false,
+        "active": true,
         "location": "Balamb Town",
         "player": "Student skipping class",
         "additionalDesc": "(Random) Docks",

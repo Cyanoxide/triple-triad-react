@@ -12,20 +12,15 @@ const EnemySelectionDialog = () => {
     const { isMenuOpen, currentPages, slideDirection, lostCards, playerCards, dispatch } = useGameContext();
     const [lostCardMap, setLostCardMap] = useState<{ [id: string]: boolean }>({});
 
+    const filteredPlayers = players.filter(player => player.location === locations[currentPages.locations - 1].location && player.active);
+
     useEffect(() => {
+        const enemy = filteredPlayers[currentPages.players - 1];
+        if (!enemy) return;
+        dispatch({ type: "SET_ENEMY_ID", payload: enemy.id });
 
-        const filteredPlayers = players.filter(player => player.location === locations[currentPages.locations - 1].location && player.active)
-        const enemyId = filteredPlayers[currentPages.players]?.id;
-        if (!enemyId) return;
-
-        dispatch({ type: "SET_ENEMY_ID", payload: enemyId });
-
-        if (!(enemyId in players)) return;
-        const enemy = players[enemyId - 1];
-        const ruleSet = enemy.rules;
-
-        if (ruleSet && ruleSet in ruleSets) {
-            dispatch({ type: "SET_RULES", payload: ruleSets[ruleSet as keyof typeof ruleSets] || [] });
+        if (enemy.rules in ruleSets) {
+            dispatch({ type: "SET_RULES", payload: ruleSets[enemy.rules as keyof typeof ruleSets] || [] });
 
             const tradeRuleKeys = Object.keys(tradeRules.tradeRules);
             dispatch({ type: "SET_TRADE_RULE", payload: tradeRuleKeys[Math.floor(Math.random() * tradeRuleKeys.length)] });
@@ -68,7 +63,7 @@ const EnemySelectionDialog = () => {
     return (
         <div className={`${styles.enemySelectionDialog} ${isMenuOpen ? "" : "hidden"} top-[80%]`}>
             <h4 className={styles.meta} data-sprite="players">Players</h4>
-            <DialogPagination items={players.filter(player => player.location === locations[currentPages.locations - 1].location && player.active)} itemsPerPage={1} renderItem={playerContent} pagination="players" />
+            <DialogPagination items={filteredPlayers} itemsPerPage={1} renderItem={playerContent} pagination="players" />
         </div>
     );
 };
