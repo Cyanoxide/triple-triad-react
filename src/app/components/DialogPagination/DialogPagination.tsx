@@ -31,7 +31,7 @@ const DialogPagination = <T,>({ items, itemsPerPage = 1, renderItem, pagination 
 
     const handlePreviousClick = () => {
         playSound("place", isSoundEnabled);
-        dispatch({ type: "SET_SLIDE_DIRECTION", payload: "prev" });
+        dispatch({ type: "SET_SLIDE_DIRECTION", payload: [pagination, "prev"] });
 
         const previous = (currentPage === 1) ? pages : currentPage - 1;
         const allPages = { ...currentPages };
@@ -42,7 +42,7 @@ const DialogPagination = <T,>({ items, itemsPerPage = 1, renderItem, pagination 
 
     const handleNextClick = () => {
         playSound("place", isSoundEnabled);
-        dispatch({ type: "SET_SLIDE_DIRECTION", payload: "next" });
+        dispatch({ type: "SET_SLIDE_DIRECTION", payload: [pagination, "next"] });
 
         const next = (currentPage === pages) ? 1 : currentPage + 1;
         const allPages = { ...currentPages };

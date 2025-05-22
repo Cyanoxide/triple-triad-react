@@ -1,13 +1,13 @@
 @use "../../styles/dialog.module.scss";
 
-.enemySelectionDialog {
+.locationSelectionDialog {
     @extend .dialog;
     position: absolute;
-    top: calc(50% + 249px);
+    top: calc(50% + 178px);
     left: 50%;
     transform: translate(-50%, -50%);
     width: 380px;
-    height: 77px;
+    height: 54px;
 
     h3,
     p {

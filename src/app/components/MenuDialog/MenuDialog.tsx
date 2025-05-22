@@ -1,6 +1,7 @@
 import styles from './MenuDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import playSound from "../../utils/sounds";
+import LocationSelectionDialog from '../LocationSelection/LocationSelection';
 import EnemySelectionDialog from '../EnemySelection/EnemySelection';
 import textToSprite from '../../utils/textToSprite';
 import rulesList from "../../../data/rules.json";
@@ -37,7 +38,8 @@ const MenuDialog = () => {
                     <button className="relative" onClick={handlePlayClick} onMouseEnter={handleMouseEnter}>{textToSprite("Play")}</button>
                     <button className="relative" onClick={handleQuitClick} onMouseEnter={handleMouseEnter}>{textToSprite("Quit")}</button>
                 </div>
-            </div >
+            </div>
+            <LocationSelectionDialog />
             <EnemySelectionDialog />
         </>
     );

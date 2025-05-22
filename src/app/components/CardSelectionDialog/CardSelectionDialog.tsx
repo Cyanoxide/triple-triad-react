@@ -79,7 +79,7 @@ const CardSelectionDialog = () => {
             onClick={() => handleCardSelection(item.id, quantity)}
             onMouseEnter={() => handleCardHover(item.id)}
             className={`${styles.cardListItem} flex justify-between ${quantity ? "cursor-pointer" : "opacity-50"}`}
-            data-slide-direction={slideDirection}
+            data-slide-direction={(slideDirection && slideDirection[0] === "cards") ? slideDirection[1] : null}
         >
             <div className="flex">
                 <Image src="/assets/cardicon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
