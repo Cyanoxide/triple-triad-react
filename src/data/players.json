@@ -1,9 +1,10 @@
 [
     {
         "id": 1,
+        "active": false,
         "location": "Balamb Garden",
-        "player": "Guy on Bench",
-        "additionalDesc": "Right Main Hall",
+        "player": "Guy on bench",
+        "additionalDesc": "(Random) Right Main Hall",
         "cards": [
             1,
             2,
@@ -14,6 +15,7 @@
     },
     {
         "id": 2,
+        "active": true,
         "location": "Balamb Garden",
         "player": "Running Boy",
         "additionalDesc": "Boy running in Main Hall",
@@ -27,34 +29,34 @@
     },
     {
         "id": 3,
-        "location": "Deling City",
-        "player": "General Caraway",
-        "additionalDesc": "Caraway's Mansion",
+        "active": true,
+        "location": "Balamb Garden",
+        "player": "Trepe Groupie #1",
+        "additionalDesc": "Cafetaria, guy in the back",
         "cards": [
-            1,
             2,
-            3,
-            4
+            5
         ],
-        "rareCard": 107,
-        "rules": "galbadia"
+        "rareCard": 104,
+        "rules": "balamb"
     },
     {
         "id": 4,
-        "location": "Timber",
-        "player": "Pub Owner",
-        "additionalDesc": "Timber Pub, upper right",
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Friend Trepe Groupie #1",
+        "additionalDesc": "Cafetaria, guy in the front",
         "cards": [
             1,
             2,
-            3,
-            4
+            3
         ],
-        "rareCard": 86,
-        "rules": "timber"
+        "rareCard": null,
+        "rules": "balamb"
     },
     {
         "id": 5,
+        "active": true,
         "location": "Balamb Garden",
         "player": "Gatekeeper",
         "additionalDesc": "Gate Reception",
@@ -69,12 +71,13 @@
     },
     {
         "id": 6,
+        "active": false,
         "location": "Balamb Garden",
-        "player": "Trepe Groupie #1",
-        "additionalDesc": "Cafeteria, guy in the back",
+        "player": "Trepe Groupie #2",
+        "additionalDesc": "2nd Floor Classroom",
         "cards": [
             1,
-            2,
+            3,
             5
         ],
         "rareCard": 104,
@@ -82,20 +85,207 @@
     },
     {
         "id": 7,
-        "location": "Dollet",
-        "player": "Pub Owner",
-        "additionalDesc": "Private Room",
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Trepe Groupie #3",
+        "additionalDesc": "2nd Floor Classroom",
+        "cards": [
+            1,
+            2,
+            4,
+            5
+        ],
+        "rareCard": 104,
+        "rules": "balamb"
+    },
+    {
+        "id": 8,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Cafetaria Lady",
+        "additionalDesc": "Cafetaria behind counter",
+        "cards": [
+            1,
+            2,
+            4,
+            5
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 9,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Walking Student Girl",
+        "additionalDesc": "(Random) Hall to Library",
         "cards": [
             1,
             3,
             4
         ],
-        "rareCard": 98,
-        "rules": "dollet"
+        "rareCard": null,
+        "rules": "balamb"
     },
     {
-        "id": 8,
-        "location": "Balamb",
+        "id": 10,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Dark Skinned Student",
+        "additionalDesc": "(Random) Hall to Library",
+        "cards": [
+            1,
+            4
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 11,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Library Girl w/Pigtail",
+        "additionalDesc": "Library, behind counter",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 12,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Male Student in blue",
+        "additionalDesc": "Library, middle of room",
+        "cards": [
+            1,
+            3,
+            4,
+            5
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 13,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Sitting Student",
+        "additionalDesc": "Library, Esuna Draw Screen",
+        "cards": [
+            2,
+            3,
+            4
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 14,
+        "active": true,
+        "location": "Balamb Garden",
+        "player": "Talking Student Girl",
+        "additionalDesc": "Library Reading Room",
+        "cards": [
+            1,
+            2,
+            3,
+            4,
+            5
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 15,
+        "active": true,
+        "location": "Balamb Garden",
+        "player": "Boy in Infirmary Hall",
+        "additionalDesc": "(Random) Hallway to Infirmary",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 16,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Blonde Girl in Main Hall",
+        "additionalDesc": "(Random) Main Hall",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 17,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Girl with short pants",
+        "additionalDesc": "(Random) Main Hall",
+        "cards": [
+            1,
+            2
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 18,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "3 Girls Group",
+        "additionalDesc": "Hallway to Dormitory",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 19,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "White Male Student",
+        "additionalDesc": "2nd Floor Hallway to Class",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 20,
+        "active": false,
+        "location": "Balamb Garden",
+        "player": "Right Girl Talking",
+        "additionalDesc": "2nd Floor Hallway to Class",
+        "cards": [
+            1,
+            3,
+            4
+        ],
+        "rareCard": null,
+        "rules": "balamb"
+    },
+    {
+        "id": 23,
+        "active": true,
+        "location": "Balamb Town",
         "player": "Ma Dincht",
         "additionalDesc": "Zell's House",
         "cards": [
@@ -105,13 +295,89 @@
             5
         ],
         "rareCard": 106,
-        "rules": "balamb"
+        "rules": "balamb",
+        "notes": "After SeeD Exam. Must have Zell in Party."
     },
     {
-        "id": 9,
-        "location": "Trabia Garden",
-        "player": "Selpie's Friend",
-        "additionalDesc": "By the fountain",
+        "id": 24,
+        "active": false,
+        "location": "Balamb Town",
+        "player": "Girl in a band",
+        "additionalDesc": "Entrance Screen (Disc 1)",
+        "cards": [
+            1,
+            3,
+            4
+        ],
+        "rareCard": null,
+        "rules": "balamb",
+        "notes": ""
+    },
+    {
+        "id": 25,
+        "active": true,
+        "location": "Balamb Town",
+        "player": "Station Conductor",
+        "additionalDesc": "Entrance of the Station",
+        "cards": [
+            1,
+            2
+        ],
+        "rareCard": null,
+        "rules": "balamb",
+        "notes": ""
+    },
+    {
+        "id": 26,
+        "active": true,
+        "location": "Balamb Town",
+        "player": "Galbadian Soldier",
+        "additionalDesc": "Docks",
+        "cards": [
+            1,
+            2,
+            4,
+            5
+        ],
+        "rareCard": null,
+        "rules": "balamb",
+        "notes": "Only during Balamb Lockdown."
+    },
+    {
+        "id": 27,
+        "active": true,
+        "location": "Balamb Town",
+        "player": "Hotel Owner",
+        "additionalDesc": "In front of the Hotel",
+        "cards": [
+            4,
+            5
+        ],
+        "rareCard": 48,
+        "rules": "balamb",
+        "notes": ""
+    },
+    {
+        "id": 28,
+        "active": false,
+        "location": "Balamb Town",
+        "player": "Hotel Owner's Daughter",
+        "additionalDesc": "Old Man's House or in front of Hotel",
+        "cards": [
+            1,
+            3,
+            4
+        ],
+        "rareCard": 48,
+        "rules": "balamb",
+        "notes": "Must clear the Big Bad Rascal quest during Balamb's Lockdown."
+    },
+    {
+        "id": 29,
+        "active": false,
+        "location": "Balamb Town",
+        "player": "Girl with dog",
+        "additionalDesc": "(Random) Docks",
         "cards": [
             1,
             2,
@@ -119,11 +385,168 @@
             4,
             5
         ],
-        "rareCard": 103,
-        "rules": "trabia"
+        "rareCard": null,
+        "rules": "balamb",
+        "notes": ""
     },
     {
-        "id": 10,
+        "id": 30,
+        "active": false,
+        "location": "Balamb Town",
+        "player": "Student skipping class",
+        "additionalDesc": "(Random) Docks",
+        "cards": [
+            3,
+            4,
+            5
+        ],
+        "rareCard": null,
+        "rules": "none",
+        "notes": "Uses his own rule-set (No Rules) which can clear the Balamb Region of all rules."
+    },
+    {
+        "id": 31,
+        "active": false,
+        "location": "Balamb Town",
+        "player": "Chef with red shirt",
+        "additionalDesc": "Docks (After Lockdown)",
+        "cards": [
+            1,
+            2,
+            4,
+            5
+        ],
+        "rareCard": null,
+        "rules": "balamb",
+        "notes": ""
+    },
+    {
+        "id": 32,
+        "active": false,
+        "location": "Balamb Town",
+        "player": "Big Bad Rascal",
+        "additionalDesc": "Dincht Living Room (Events)",
+        "cards": [],
+        "rareCard": null,
+        "rules": "balamb",
+        "notes": ""
+    },
+    {
+        "id": 33,
+        "active": false,
+        "location": "Balamb Town",
+        "player": "Girl sitting",
+        "additionalDesc": "Entrance Station",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "balamb",
+        "notes": ""
+    },
+    {
+        "id": 34,
+        "active": false,
+        "location": "Timber",
+        "player": "Left Guard",
+        "additionalDesc": "Town Entrance after fighting soldiers",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 35,
+        "active": true,
+        "location": "Timber",
+        "player": "Cat Loving Girl",
+        "additionalDesc": "In the street near the Hotel",
+        "cards": [
+            1,
+            2
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 36,
+        "active": false,
+        "location": "Timber",
+        "player": "Girl looking at Models",
+        "additionalDesc": "In the Hotel",
+        "cards": [
+            4
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 37,
+        "active": false,
+        "location": "Timber",
+        "player": "Guy who likes Girls",
+        "additionalDesc": "(Random) Overpass",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 38,
+        "active": true,
+        "location": "Timber",
+        "player": "Guy in White",
+        "additionalDesc": "(Random) Galbadia Station",
+        "cards": [
+            1,
+            3
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 39,
+        "active": true,
+        "location": "Timber",
+        "player": "Old Lady",
+        "additionalDesc": "Pet Shop Screen",
+        "cards": [
+            1,
+            3
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 40,
+        "active": false,
+        "location": "Timber",
+        "player": "Dark Woman/White Bikini",
+        "additionalDesc": "City Square Timber Maniacs",
+        "cards": [
+            1
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 41,
+        "active": false,
         "location": "Timber",
         "player": "Couple on Bench",
         "additionalDesc": "Intersection to Pub & Station",
@@ -133,56 +556,333 @@
             4
         ],
         "rareCard": null,
-        "rules": "galbadia"
+        "rules": "galbadia",
+        "notes": ""
     },
     {
-        "id": 11,
-        "location": "Fisherman's Horizon",
-        "player": "Mayor Dobe",
-        "additionalDesc": "Mayor's House, Upstairs",
+        "id": 42,
+        "active": false,
+        "location": "Timber",
+        "player": "Boy on Station Bridge",
+        "additionalDesc": "Eastern Station Bridge",
+        "cards": [
+            1
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 43,
+        "active": true,
+        "location": "Timber",
+        "player": "Woman (Train Expert)",
+        "additionalDesc": "Eastern Station",
+        "cards": [
+            1,
+            4
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 44,
+        "active": false,
+        "location": "Timber",
+        "player": "Depressed Woman at Home",
+        "additionalDesc": "Old Man's (Owl Tears) House",
+        "cards": [
+            1,
+            2
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 45,
+        "active": true,
+        "location": "Timber",
+        "player": "Pub Owner",
+        "additionalDesc": "Timber Pub, upper right",
+        "cards": [
+            1,
+            3,
+            4
+        ],
+        "rareCard": 96,
+        "rules": "galbadia",
+        "notes": "Doomtrain can only be won after giving the Queen of Cards the Alexander Card."
+    },
+    {
+        "id": 46,
+        "active": false,
+        "location": "Timber",
+        "player": "Drunkard",
+        "additionalDesc": "Back Alley",
         "cards": [
             1,
             2,
-            4,
-            5,
-            6
+            3
         ],
-        "rareCard": 83,
-        "rules": "fishermansHorizon"
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
     },
     {
-        "id": 12,
-        "location": "Fisherman's Horizon",
-        "player": "Flo",
-        "additionalDesc": "Mayor's House, Upstairs",
+        "id": 47,
+        "active": false,
+        "location": "Timber",
+        "player": "Guard at TV Station path",
+        "additionalDesc": "After TV Station Events",
+        "cards": [
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 48,
+        "active": true,
+        "location": "Dollet",
+        "player": "Car Rental Woman",
+        "additionalDesc": "Entrance Screen",
+        "cards": [
+            4
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 49,
+        "active": false,
+        "location": "Dollet",
+        "player": "Girl near Wheelchair Man",
+        "additionalDesc": "Harbor (come from above)",
         "cards": [
             1,
-            2,
-            5,
-            6
+            3
         ],
-        "rareCard": 105,
-        "rules": "fishermansHorizon"
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
     },
     {
-        "id": 13,
-        "location": "Fisherman's Horizon",
-        "player": "Martine",
-        "additionalDesc": "Right from Mayor's House",
+        "id": 50,
+        "active": true,
+        "location": "Dollet",
+        "player": "Emo Kid in Green Jacket",
+        "additionalDesc": "Harbor (come from below)",
+        "cards": [
+            1,
+            3,
+            4
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 51,
+        "active": false,
+        "location": "Dollet",
+        "player": "Man with Blue Sleeves",
+        "additionalDesc": "Screen with stairs to beach",
+        "cards": [
+            3
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 52,
+        "active": false,
+        "location": "Dollet",
+        "player": "Girl at the beach",
+        "additionalDesc": "Lapin Beach",
+        "cards": [
+            1,
+            2
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 53,
+        "active": false,
+        "location": "Dollet",
+        "player": "Son of Queen of Cards",
+        "additionalDesc": "CQ's Father Artist's House",
         "cards": [
             1,
             2,
             3,
-            4,
-            5,
-            6,
-            7
+            4
         ],
-        "rareCard": 85,
-        "rules": "fishermansHorizon"
+        "rareCard": [
+            81,
+            87,
+            82,
+            95,
+            98
+        ],
+        "rules": "dollet",
+        "notes": "Can win these cards back after losing them to the Card Queen."
     },
     {
-        "id": 14,
+        "id": 54,
+        "active": false,
+        "location": "Dollet",
+        "player": "Woman near Pub",
+        "additionalDesc": "Near the Shining Bomber Pub",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 55,
+        "active": false,
+        "location": "Dollet",
+        "player": "Pub's Waiter",
+        "additionalDesc": "Challenge him behind counter",
+        "cards": [
+            2
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 56,
+        "active": true,
+        "location": "Dollet",
+        "player": "Old Man in Pub",
+        "additionalDesc": "2nd Floor Pub",
+        "cards": [
+            2,
+            3,
+            4
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 57,
+        "active": true,
+        "location": "Dollet",
+        "player": "Pub's Owner",
+        "additionalDesc": "Private Room",
+        "cards": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "rareCard": 86,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 58,
+        "active": false,
+        "location": "Dollet",
+        "player": "Shopping Lady in Yellow",
+        "additionalDesc": "Walking in Nautilus Street",
+        "cards": [
+            1
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 59,
+        "active": false,
+        "location": "Dollet",
+        "player": "Old Man at Townsquare",
+        "additionalDesc": "Townsquare",
+        "cards": [
+            1,
+            3
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 60,
+        "active": false,
+        "location": "Dollet",
+        "player": "Hotel Girl",
+        "additionalDesc": "Dollet Hotel Main Hall",
+        "cards": [
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "dollet",
+        "notes": ""
+    },
+    {
+        "id": 61,
+        "active": true,
+        "location": "Deling City",
+        "player": "Travelling Lady from FH",
+        "additionalDesc": "Across the street of Hotel",
+        "cards": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 62,
+        "active": true,
+        "location": "Deling City",
+        "player": "Hotel Waitress",
+        "additionalDesc": "Hotel Restaurant",
+        "cards": [
+            1
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 63,
+        "active": false,
+        "location": "Deling City",
+        "player": "Person near General Shop",
+        "additionalDesc": "In the street with Shops",
+        "cards": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 64,
+        "active": true,
         "location": "Deling City",
         "player": "Man in Black",
         "additionalDesc": "Across the Junk Shop",
@@ -196,10 +896,289 @@
             7
         ],
         "rareCard": 101,
-        "rules": "galbadia"
+        "rules": "galbadia",
+        "notes": "Kiros can only be won if you've already given the MiniMog Card to the Queen of Cards."
     },
     {
-        "id": 15,
+        "id": 65,
+        "active": false,
+        "location": "Deling City",
+        "player": "Old Woman",
+        "additionalDesc": "Street near Main Gate",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 66,
+        "active": false,
+        "location": "Deling City",
+        "player": "Old Man",
+        "additionalDesc": "On Bench, Street as above",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 67,
+        "active": true,
+        "location": "Deling City",
+        "player": "General Caraway",
+        "additionalDesc": "Caraway's Mansion",
+        "cards": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "rareCard": 107,
+        "rules": "galbadia",
+        "notes": "Rinoa will only be played if you first lose the Ifrit Card to Caraway. He'll instantly lose the card to Martine, who can be found on the right side of the FH Mayor's House."
+    },
+    {
+        "id": 68,
+        "active": false,
+        "location": "Deling City",
+        "player": "Train Conductor",
+        "additionalDesc": "City Train Station",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 69,
+        "active": false,
+        "location": "Deling City",
+        "player": "Walking Woman",
+        "additionalDesc": "Other street near Main Gate",
+        "cards": [
+            1,
+            2
+        ],
+        "rareCard": null,
+        "rules": "galbadia",
+        "notes": ""
+    },
+    {
+        "id": 70,
+        "active": true,
+        "location": "Fisherman's Horizon",
+        "player": "Familiar Face #3",
+        "additionalDesc": "Nearby elevator going up",
+        "cards": [
+            1,
+            4,
+            5,
+            6
+        ],
+        "rareCard": null,
+        "rules": "fh",
+        "notes": ""
+    },
+    {
+        "id": 71,
+        "active": true,
+        "location": "Fisherman's Horizon",
+        "player": "Martine",
+        "additionalDesc": "Right from Mayor's House",
+        "cards": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ],
+        "rareCard": 85,
+        "rules": "fh",
+        "notes": "Ifrit can be won back from Martine after losing it to Caraway in Deling City."
+    },
+    {
+        "id": 72,
+        "active": true,
+        "location": "Fisherman's Horizon",
+        "player": "Flo (Mayor's Wife)",
+        "additionalDesc": "Mayor's House, Upstairs",
+        "cards": [
+            1,
+            2,
+            5,
+            6
+        ],
+        "rareCard": 105,
+        "rules": "fh",
+        "notes": "Irvine can only be won if you've given the Queen of Cards the Sacred Card."
+    },
+    {
+        "id": 73,
+        "active": true,
+        "location": "Fisherman's Horizon",
+        "player": "Mayor Dobe",
+        "additionalDesc": "Mayor's House, Upstairs",
+        "cards": [
+            1,
+            2,
+            4,
+            5,
+            6
+        ],
+        "rareCard": 83,
+        "rules": "fh",
+        "notes": ""
+    },
+    {
+        "id": 74,
+        "active": false,
+        "location": "Fisherman's Horizon",
+        "player": "Kid at Town Square",
+        "additionalDesc": "Town Square near Station",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "fh",
+        "notes": ""
+    },
+    {
+        "id": 75,
+        "active": true,
+        "location": "Fisherman's Horizon",
+        "player": "Grease Monkey",
+        "additionalDesc": "Grease Monkey's House",
+        "cards": [
+            1,
+            2,
+            4,
+            6
+        ],
+        "rareCard": null,
+        "rules": "fh",
+        "notes": ""
+    },
+    {
+        "id": 76,
+        "active": false,
+        "location": "Fisherman's Horizon",
+        "player": "Master Fisherman",
+        "additionalDesc": "Crane (1st visit only)",
+        "cards": [],
+        "rareCard": null,
+        "rules": "fh",
+        "notes": ""
+    },
+    {
+        "id": 77,
+        "active": true,
+        "location": "Winhill",
+        "player": "Student Mercenary",
+        "additionalDesc": "Nearby southern exit",
+        "cards": [
+            1,
+            2,
+            3,
+            5
+        ],
+        "rareCard": null,
+        "rules": "centra",
+        "notes": ""
+    },
+    {
+        "id": 78,
+        "active": true,
+        "location": "Winhill",
+        "player": "Shop Owner",
+        "additionalDesc": "Shop at southern exit",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "centra",
+        "notes": ""
+    },
+    {
+        "id": 79,
+        "active": false,
+        "location": "Winhill",
+        "player": "Hotel Owner",
+        "additionalDesc": "In the Hotel",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "centra",
+        "notes": ""
+    },
+    {
+        "id": 80,
+        "active": false,
+        "location": "Winhill",
+        "player": "Old Man in Residence",
+        "additionalDesc": "Residence in southern part",
+        "cards": [
+            1,
+            4,
+            5
+        ],
+        "rareCard": null,
+        "rules": "centra",
+        "notes": ""
+    },
+    {
+        "id": 81,
+        "active": false,
+        "location": "Winhill",
+        "player": "Man on bench",
+        "additionalDesc": "Bench on North Town Square",
+        "cards": [
+            1,
+            3,
+            5
+        ],
+        "rareCard": null,
+        "rules": "centra",
+        "notes": ""
+    },
+    {
+        "id": 82,
+        "active": false,
+        "location": "Winhill",
+        "player": "Playing Girl",
+        "additionalDesc": "North Town Square",
+        "cards": [
+            1,
+            2,
+            3,
+            4
+        ],
+        "rareCard": null,
+        "rules": "centra",
+        "notes": ""
+    },
+    {
+        "id": 83,
+        "active": true,
         "location": "Winhill",
         "player": "Mansion Owner",
         "additionalDesc": "Man on the stairs in Mansion",
@@ -209,24 +1188,263 @@
             5
         ],
         "rareCard": null,
-        "rules": "centra"
+        "rules": "centra",
+        "notes": ""
     },
     {
-        "id": 16,
-        "location": "Balamb",
-        "player": "Hotel Owner",
-        "additionalDesc": "In front of the Hotel",
+        "id": 84,
+        "active": false,
+        "location": "Winhill",
+        "player": "Blonde Woman",
+        "additionalDesc": "At former Raine's House",
         "cards": [
+            1,
+            3,
+            4
+        ],
+        "rareCard": null,
+        "rules": "centra",
+        "notes": ""
+    },
+    {
+        "id": 85,
+        "active": false,
+        "location": "Trabia Garden",
+        "player": "Student in green",
+        "additionalDesc": "Path near entrance",
+        "cards": [
+            1,
+            2,
+            3,
+            5
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 86,
+        "active": true,
+        "location": "Trabia Garden",
+        "player": "Selphie's Friend",
+        "additionalDesc": "Fountain Screen after flashback event",
+        "cards": [
+            1,
+            2,
+            3,
             4,
             5
         ],
-        "rareCard": 93,
-        "rules": "balamb"
+        "rareCard": 103,
+        "rules": "trabia",
+        "notes": ""
     },
     {
-        "id": 17,
+        "id": 87,
+        "active": true,
+        "location": "Trabia Garden",
+        "player": "Trabian Faculty",
+        "additionalDesc": "Fountain Screen (upper-right)",
+        "cards": [
+            1,
+            2,
+            3,
+            5
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 88,
+        "active": false,
+        "location": "Trabia Garden",
+        "player": "Girl Student",
+        "additionalDesc": "Garage Screen",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 89,
+        "active": false,
+        "location": "Trabia Garden",
+        "player": "Sitting Guy",
+        "additionalDesc": "Garage Screen",
+        "cards": [
+            1,
+            2,
+            3
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 90,
+        "active": false,
+        "location": "Trabia Garden",
+        "player": "Girl with book",
+        "additionalDesc": "Classroom/Monitor Screen",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 91,
+        "active": true,
+        "location": "Trabia Garden",
+        "player": "Mechanic",
+        "additionalDesc": "Monitor Screen",
+        "cards": [
+            3,
+            4,
+            5
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 92,
+        "active": true,
+        "location": "Trabia Garden",
+        "player": "Basketball Freak",
+        "additionalDesc": "Stage/Rocket Screen",
+        "cards": [
+            2,
+            3,
+            5
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 93,
+        "active": false,
+        "location": "Trabia Garden",
+        "player": "Student near rocket",
+        "additionalDesc": "Stage/Rocket Screen",
+        "cards": [
+            1,
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 94,
+        "active": false,
+        "location": "Trabia Garden",
+        "player": "Boy at Basketball Court",
+        "additionalDesc": "Basketball Court after the flashback",
+        "cards": [
+            2,
+            4
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 95,
+        "active": false,
+        "location": "Trabia Garden",
+        "player": "Girl in Bikini",
+        "additionalDesc": "Basketball Court after the flashback",
+        "cards": [
+            1,
+            3,
+            5
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 96,
+        "active": false,
         "location": "Shumi Village",
-        "player": "Shumi Elder",
+        "player": "Left Shumi",
+        "additionalDesc": "Entrance Guarding Draw Point",
+        "cards": [
+            1,
+            2,
+            5,
+            6
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 97,
+        "active": false,
+        "location": "Shumi Village",
+        "player": "Middle Shumi",
+        "additionalDesc": "Entrance Guarding Draw Point",
+        "cards": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 98,
+        "active": false,
+        "location": "Shumi Village",
+        "player": "Right Shumi",
+        "additionalDesc": "Entrance Guarding Draw Point",
+        "cards": [
+            1,
+            2,
+            4,
+            6
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 99,
+        "active": false,
+        "location": "Shumi Village",
+        "player": "Shumi at a table",
+        "additionalDesc": "First Underground Screen",
+        "cards": [
+            1,
+            2,
+            5,
+            6
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 100,
+        "active": true,
+        "location": "Shumi Village",
+        "player": "Elder",
         "additionalDesc": "Elder's House",
         "cards": [
             2,
@@ -235,6 +1453,329 @@
             7
         ],
         "rareCard": null,
-        "rules": "trabia"
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 101,
+        "active": true,
+        "location": "Shumi Village",
+        "player": "Elder's Assistant",
+        "additionalDesc": "Elder's House",
+        "cards": [
+            1,
+            2,
+            4,
+            6,
+            7
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 102,
+        "active": true,
+        "location": "Shumi Village",
+        "player": "Artisan",
+        "additionalDesc": "Artisan's House",
+        "cards": [
+            1,
+            2,
+            6,
+            7
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 103,
+        "active": false,
+        "location": "Shumi Village",
+        "player": "Busy Working Shumi",
+        "additionalDesc": "Sculptor's Workplace",
+        "cards": [
+            4,
+            5,
+            6
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 104,
+        "active": true,
+        "location": "Shumi Village",
+        "player": "Sculptor",
+        "additionalDesc": "Sculptor's Workplace",
+        "cards": [
+            3,
+            4,
+            5
+        ],
+        "rareCard": null,
+        "rules": "trabia",
+        "notes": ""
+    },
+    {
+        "id": 105,
+        "active": false,
+        "location": "Shumi Village",
+        "player": "Master Fisherman",
+        "additionalDesc": "Pond",
+        "cards": [],
+        "rareCard": null,
+        "rules": "fh",
+        "notes": "Only during Shumi Village Quest and uses FH rules"
+    },
+    {
+        "id": 106,
+        "active": false,
+        "location": "Ragnarok",
+        "player": "Joker",
+        "cards": [
+            1,
+            2,
+            3,
+            6,
+            7
+        ],
+        "rareCard": "Any",
+        "rules": "centra",
+        "notes": "Always present in Disc 4 Ragnarok"
+    },
+    {
+        "id": 107,
+        "active": false,
+        "location": "Ragnarok",
+        "player": "Jack",
+        "cards": [
+            3,
+            4,
+            6
+        ],
+        "rareCard": "Any",
+        "rules": "balamb",
+        "notes": "Present only if CC-Group Quest completed"
+    },
+    {
+        "id": 108,
+        "active": false,
+        "location": "Ragnarok",
+        "player": "Club",
+        "cards": [
+            3,
+            5,
+            6
+        ],
+        "rareCard": "Any",
+        "rules": "dollet",
+        "notes": "Present only if CC-Group Quest completed"
+    },
+    {
+        "id": 109,
+        "active": false,
+        "location": "Ragnarok",
+        "player": "Right Diamond",
+        "cards": [
+            3,
+            4,
+            5,
+            7
+        ],
+        "rareCard": "Any",
+        "rules": "trabia",
+        "notes": "Present only if CC-Group Quest completed"
+    },
+    {
+        "id": 110,
+        "active": false,
+        "location": "Ragnarok",
+        "player": "Left Diamond",
+        "cards": [
+            3,
+            4,
+            5,
+            7
+        ],
+        "rareCard": "Any",
+        "rules": "trabia",
+        "notes": "Can use any rare card, present only if CC-Group Quest completed"
+    },
+    {
+        "id": 111,
+        "active": false,
+        "location": "Ragnarok",
+        "player": "Spade",
+        "cards": [
+            1,
+            2,
+            3,
+            6,
+            7
+        ],
+        "rareCard": "Any",
+        "rules": "esthar",
+        "notes": "Present only if CC-Group Quest completed"
+    },
+    {
+        "id": 112,
+        "active": false,
+        "location": "Ragnarok",
+        "player": "Heart",
+        "cards": [
+            3,
+            5,
+            6,
+            7
+        ],
+        "rareCard": "Any",
+        "rules": "fh",
+        "notes": "Present only if CC-Group Quest completed"
+    },
+    {
+        "id": 113,
+        "active": false,
+        "location": "Ragnarok",
+        "player": "King",
+        "cards": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ],
+        "rareCard": "Any",
+        "rules": "lunar",
+        "notes": "Present only if Quistis is in the party, Disc 4 Ragnarok"
+    },
+    {
+        "id": 114,
+        "active": false,
+        "location": "Escape Pod Crash Site (Southeast of Esthar)",
+        "player": "Queen of Cards",
+        "cards": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+        ],
+        "rareCard": [
+            "Kiros",
+            "Irvine",
+            "Chubby Chocobo",
+            "Doomtrain",
+            "Phoenix"
+        ],
+        "rules": "any",
+        "notes": "The Queen of Cards will be at the escape pod crash site, which is invisibly located at the southeast of the Esthar continent."
+    },
+    {
+        "id": 115,
+        "active": true,
+        "location": "Lunar Base",
+        "player": "Medical Staff",
+        "additionalDesc": "Medical Room",
+        "cards": [
+            1,
+            2,
+            6
+        ],
+        "rareCard": null,
+        "rules": "lunar",
+        "notes": ""
+    },
+    {
+        "id": 116,
+        "active": true,
+        "location": "Lunar Base",
+        "player": "Ellone",
+        "additionalDesc": "Residential Zone",
+        "cards": [
+            1,
+            2,
+            4,
+            3,
+            5,
+            6
+        ],
+        "rareCard": "Laguna",
+        "rules": "lunar",
+        "notes": ""
+    },
+    {
+        "id": 117,
+        "active": true,
+        "location": "Lunar Base",
+        "player": "Operator",
+        "additionalDesc": "Control Room",
+        "cards": [
+            1,
+            2,
+            4,
+            5,
+            6
+        ],
+        "rareCard": null,
+        "rules": "lunar",
+        "notes": ""
+    },
+    {
+        "id": 118,
+        "active": true,
+        "location": "Lunar Base",
+        "player": "Piet",
+        "additionalDesc": "Control Room & Tear's Point",
+        "cards": [
+            1,
+            2,
+            6
+        ],
+        "rareCard": 95,
+        "rules": "lunar",
+        "notes": ""
+    },
+    {
+        "id": 119,
+        "active": true,
+        "location": "Edea's House",
+        "player": "Cid",
+        "additionalDesc": "Backyard",
+        "cards": [
+            1,
+            2,
+            3,
+            5,
+            6,
+            7
+        ],
+        "rareCard": null,
+        "rules": "centra",
+        "notes": ""
+    },
+    {
+        "id": 120,
+        "active": true,
+        "location": "Edea's House",
+        "player": "Edea",
+        "additionalDesc": "Backyard",
+        "cards": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ],
+        "rareCard": 108,
+        "rules": "centra",
+        "notes": ""
     }
 ]
