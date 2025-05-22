@@ -275,7 +275,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         if (!rewardsList.won.length && !rewardsList.lost.length) {
             setTimeout(() => {
                 resetGame(updatedPlayerCards);
-            }, 6000);
+            }, 4500);
         }
     }
 
