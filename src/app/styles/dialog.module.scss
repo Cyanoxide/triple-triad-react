@@ -113,13 +113,18 @@
         }
 
         &[data-sprite="players"] {
-            width: 50px;
+            width: 49px;
             background-position: -99px -13px;
         }
 
         &[data-sprite="choice"] {
-            width: 40px;
-            background-position: -150px -13px;
+            width: 38px;
+            background-position: -148px -13px;
+        }
+
+        &[data-sprite="location"] {
+            width: 53px;
+            background-position: -187px -13px;
         }
     }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import styles from "./EnemySelection.module.scss";
 import { useGameContext } from "../../context/GameContext";
+import locations from "../../../data/locations.json";
 import players from "../../../data/players.json";
 import ruleSets from "../../../data/ruleSets.json";
 import tradeRules from "../../../data/rules.json";
@@ -12,7 +13,9 @@ const EnemySelectionDialog = () => {
     const [lostCardMap, setLostCardMap] = useState<{ [id: string]: boolean }>({});
 
     useEffect(() => {
-        const enemyId = currentPages.players;
+
+        const filteredPlayers = players.filter(player => player.location === locations[currentPages.locations - 1].location && player.active)
+        const enemyId = filteredPlayers[currentPages.players]?.id;
         if (!enemyId) return;
 
         dispatch({ type: "SET_ENEMY_ID", payload: enemyId });
@@ -28,7 +31,7 @@ const EnemySelectionDialog = () => {
             dispatch({ type: "SET_TRADE_RULE", payload: tradeRuleKeys[Math.floor(Math.random() * tradeRuleKeys.length)] });
         }
 
-    }, [currentPages.players]);
+    }, [currentPages.players, currentPages.locations]);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -55,10 +58,9 @@ const EnemySelectionDialog = () => {
         }
 
         return (
-            <div key={item.id} data-slide-direction={slideDirection}>
-                <p className="opacity-50">{textToSprite(item.location, undefined, true)}</p>
+            <div key={item.id} data-slide-direction={(slideDirection && ["players", "locations"].includes(slideDirection[0])) ? slideDirection[1] : null}>
                 <p>{textToSprite(item.player, color, true)}</p>
-                {/* <p className="italic">{textToSprite(item.additionalDesc)}</p> */}
+                <p className="opacity-50">{textToSprite(item.additionalDesc, "white", true)}</p>
             </div>
         );
     };
@@ -66,7 +68,7 @@ const EnemySelectionDialog = () => {
     return (
         <div className={`${styles.enemySelectionDialog} ${isMenuOpen ? "" : "hidden"} top-[80%]`}>
             <h4 className={styles.meta} data-sprite="players">Players</h4>
-            <DialogPagination items={players} itemsPerPage={1} renderItem={playerContent} pagination="players" />
+            <DialogPagination items={players.filter(player => player.location === locations[currentPages.locations - 1].location && player.active)} itemsPerPage={1} renderItem={playerContent} pagination="players" />
         </div>
     );
 };
