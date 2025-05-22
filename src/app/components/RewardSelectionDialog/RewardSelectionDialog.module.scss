@@ -25,7 +25,7 @@
 
             &[data-confirmed=true] {
                 z-index: 4;
-                animation: card-preview-blue 5s ease-in-out forwards;
+                animation: card-preview-blue 3s ease-in-out forwards;
             }
         }
 
@@ -38,7 +38,7 @@
 
             &[data-confirmed=true] {
                 z-index: 4;
-                animation: card-preview-red 5s ease-in-out 0.5s forwards;
+                animation: card-preview-red 3s ease-in-out 0.5s forwards;
 
             }
         }
@@ -52,11 +52,11 @@
 
     &[data-animation]:not([data-animation=""]) {
         &[data-player="red"] {
-            animation: red-reward-label 2.5s forwards 0s ease-in-out;
+            animation: red-reward-label 1.6s forwards 0s ease-in-out;
         }
 
         &[data-player="blue"] {
-            animation: blue-reward-label 2s forwards 0s ease-in-out;
+            animation: blue-reward-label 1.2s forwards 0s ease-in-out;
         }
     }
 }
@@ -68,6 +68,7 @@
 @keyframes card-preview-blue {
     0% {
         transform: translateY(0);
+        z-index: 1;
     }
 
     30% {
@@ -82,9 +83,10 @@
         transform: translateY(80px)translateX(-50%)scale(1.5);
         left: 50%;
         position: absolute;
+        z-index: 3;
     }
 
-    90% {
+    80% {
         transform: translateY(80px)translateX(-50%)scale(1.5);
         left: 50%;
         position: absolute;
@@ -100,6 +102,7 @@
 @keyframes card-preview-red {
     0% {
         transform: translateY(0);
+        z-index: 0;
     }
 
     30% {
@@ -114,9 +117,10 @@
         transform: translateY(-113px)translateX(-50%)scale(1.5);
         left: 50%;
         position: absolute;
+        z-index: 3;
     }
 
-    90% {
+    80% {
         transform: translateY(-113px)translateX(-50%)scale(1.5);
         left: 50%;
         position: absolute;

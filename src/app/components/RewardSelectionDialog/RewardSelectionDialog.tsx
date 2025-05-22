@@ -263,10 +263,14 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
         setTimeout(() => {
             playSound((playerWinState === "won") ? "success" : "place", isSoundEnabled);
-        }, (playerWinState === "lost") ? 5000 : 4500);
+        }, (playerWinState === "lost") ? 3000 : 2500);
 
         confirmedList.push(reward);
         setConfirmedCards(confirmedList);
+
+        setTimeout(() => {
+            setSelectedReward(undefined);
+        }, 2800);
 
         if (!rewardsList.won.length && !rewardsList.lost.length) {
             setTimeout(() => {
@@ -278,7 +282,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     useEffect(() => {
         if (!isSelectionConfirmed) return;
-        setTimeout(processRewards, (confirmedCards.length) ? 5000 : 1500);
+        setTimeout(processRewards, (confirmedCards.length) ? 3000 : 1500);
     }, [isSelectionConfirmed, confirmedCards]);
 
 
@@ -289,7 +293,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     const infoMessage = (rewardType === "lost") ? "lost" : "acquired";
 
     return (
-        <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>{isSelectionConfirmed}
+        <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
             <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={winState}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
                 <h3>{textToSprite((isSelectionConfirmed || (winState === "red")) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`)}</h3>
