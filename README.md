@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Triple Triad (React)
 
-## Getting Started
+This project is my best attempt at an authentic browser-based recreation of the Triple Triad minigame from *Final Fantasy VIII* on the PS1 using **React** and **Typescript**.
 
-First, run the development server:
+
+
+## Features
+
+- All Triple Triad card rules and trade rules from the original game are present.  
+- Your card collection is preserved between sessions.  
+- Certain players, denoted with blue text, have a chance to play their rare card like in the original game. They will then stop playing their rare card if you win it from them.  
+- If you lose cards to an opponent, they have a chance to play one of your lost cards so you can win it back. These lost cards are also preserved between sessions. Players that hold lost cards are denoted with yellow text.  
+- All 110 original cards have been set up, though not all rare cards are currently available as not all players are included in the current build and some cards in the original are acquired outside of trading.  
+
+
+
+## Roadmap
+
+Here are some goals I will look to implement in the future:
+
+- A full roster of NPC players from the original game.  
+- A Card gallery that matches the style of the Card menu in FF8's main menu.  
+- Keyboard Support.  
+- Trade Rule Decay that matches the behaviour of the original.  
+- Implementing the Queen of Cards, her mechanics and questline.  
+- Implementing the CC Group and questline.  
+
+
+
+## Live Demo
+
+[https://triple-triad-react.onrender.com/](https://triple-triad-react.onrender.com/)
+
+
+
+## Local Installation
 
 ```bash
+git clone https://github.com/Cyanoxide/triple-triad-react.git
+cd triple-triad-react
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## Support & Contribution
 
-To learn more about Next.js, take a look at the following resources:
+Currently, the best way you can help support this project is to help me document all the card-playing NPCs and what level of cards they play. The current most comprehensive list is in [AbsoluteSteve's GameFAQs guide](https://gamefaqs.gamespot.com/ps/197343-final-fantasy-viii/faqs/51741). I've used data from that guide and my own findings to make this [editable spreadsheet](https://docs.google.com/spreadsheets/d/19fW1F9t6nEP1TcZr8_We9l8kGpV_lPRxv_ZUyLwCO_0/edit?usp=sharing). Feel free to add to it.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Alternatively, you can support me by just sharing the project or donating here: [https://ko-fi.com/cyanoxide](https://ko-fi.com/cyanoxide)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Special Thanks
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Sprites: Ultimecia (spriters-resource)  
+- Card Player Data: AbsoluteSteve (GameFAQs)  
+- Reward Screen Background Accent: Hikashi (Qhimm)
