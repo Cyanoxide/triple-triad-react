@@ -25,7 +25,9 @@ export const setAiPlayerCards = (playerId: number, lostCards: Record<number, num
     }
 
     while (currentHand.length < 5) {
-        const selectedCard = cardPool.find(card => card.id === Math.floor(Math.random() * (cardPool.length)));
+        const randomCardIndex = Math.floor(Math.random() * cardPool.length);
+        const selectedCard = cardPool[randomCardIndex];
+
         if (!selectedCard || currentHand.includes(selectedCard.id)) continue;
 
         currentHand.push(selectedCard.id);
