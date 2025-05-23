@@ -3,7 +3,6 @@
 This project is my best attempt at an authentic browser-based recreation of the Triple Triad minigame from *Final Fantasy VIII* on the PS1 using **React** and **Typescript**.
 
 
-
 ## Features
 
 - All Triple Triad card rules and trade rules from the original game are present.  
@@ -28,6 +27,8 @@ Here are some goals I will look to implement in the future:
 
 
 ## Live Demo
+
+[![Alt text](https://img.youtube.com/vi/d1T0MAIpkwA/maxresdefault.jpg)](https://www.youtube.com/watch?v=d1T0MAIpkwA)
 
 [https://triple-triad-react.onrender.com/](https://triple-triad-react.onrender.com/)
 
