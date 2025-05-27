@@ -48,7 +48,7 @@ const EnemySelectionDialog = () => {
 
         if (lostCardMap[item.id]) {
             color = "yellow";
-        } else if (item.rareCard && !Object.keys(playerCards).includes(String(item.rareCard))) {
+        } else if (item.rareCard && (!Object.keys(playerCards).includes(String(item.rareCard)) || playerCards[item.rareCard] === 0)) {
             color = "blue";
         }
 

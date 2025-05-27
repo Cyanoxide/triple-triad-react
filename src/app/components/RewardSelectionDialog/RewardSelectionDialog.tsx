@@ -63,6 +63,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         dispatch({ type: "RESET_GAME" });
 
         dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
+        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: updatedPlayerCards });
         if (typeof window !== "undefined") {
             localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
         }
@@ -315,7 +316,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             <div className={`${styles.dialogContainer} ${recentCardName ? "" : "invisible"}`}>
                 <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed || winState !== "blue") ? "invisible" : ""}`} data-dialog="rewardCardNameInfo">
                     <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                    <h3>{textToSprite(recentCardName || "", (recentCard && lostCards[enemyId] && lostCards[enemyId].includes(recentCard.id)) ? "yellow" : (recentCard && !(recentCard.id in playerCards)) ? "blue" : "")}</h3>
+                    <h3>{textToSprite(recentCardName || "", (recentCard && lostCards[enemyId] && lostCards[enemyId].includes(recentCard.id)) ? "yellow" : (recentCard && (!(recentCard.id in playerCards) || playerCards[recentCard.id] === 0) ? "blue" : ""))}</h3>
                 </div>
             </div>
 
