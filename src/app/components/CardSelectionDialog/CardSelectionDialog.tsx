@@ -168,7 +168,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                 <DialogPagination items={Object.entries(cards)} itemsPerPage={11} renderItem={([cardId, quantity]: [number, number]) =>
                     cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity)} pagination={pagination} />
 
-                {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+                {currentPlayerHand.length === 5 && !isCardGalleryOpen && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
                 {showPreview && previewCardId && <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
                     <Card id={previewCardId} player="blue" />
                 </div>}
