@@ -219,8 +219,12 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             reward = rewardsList.won.shift();
             if (!reward) return;
 
+            console.log(reward.id, updatedPlayerCards)
+
             if (reward.id in updatedPlayerCards) {
                 updatedPlayerCards[reward.id]++
+            } else {
+                updatedPlayerCards[reward.id] = 1;
             }
 
             if (currentLostCards[enemyId]) {
