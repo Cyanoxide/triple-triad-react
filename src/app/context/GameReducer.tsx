@@ -10,6 +10,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, playerHand: action.payload };
         case "SET_CURRENT_PLAYER_HAND":
             return { ...state, currentPlayerHand: action.payload };
+        case "SET_PREVIEW_CARD_ID":
+            return { ...state, previewCardId: action.payload };
         case "SET_ENEMY_ID":
             return { ...state, enemyId: action.payload };
         case "SET_ENEMY_HAND":
@@ -82,6 +84,7 @@ const placeholderCards = Array(5).fill(placeholderCard);
 export const initialState: GameState = {
     playerCards: startingCards,
     currentPlayerCards: [],
+    previewCardId: null,
     playerHand: [],
     currentPlayerHand: [],
     enemyId: 1,

@@ -40,7 +40,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }, [state.turn, state.isGameActive]);
 
     useEffect(() => {
-        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: state.playerCards });
+        const currentPlayerCards = Object.fromEntries(
+            Object.entries(state.playerCards).filter(([, quantity]) => quantity !== 0)
+        ) as Record<number, number>;
+        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: currentPlayerCards });
     }, [state.isCardSelectionOpen, state.playerCards])
 
     return (

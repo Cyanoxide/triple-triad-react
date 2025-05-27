@@ -10,6 +10,7 @@ export type AiMethodType = "random" | "beginner" | "intermediate" | "advanced";
 export interface GameState {
     playerCards: Record<number, number>;
     currentPlayerCards: Record<number, number>;
+    previewCardId: number | null;
     playerHand: CardType[];
     currentPlayerHand: CardType[];
     enemyId: number;
@@ -40,6 +41,7 @@ export interface GameState {
 export type GameAction =
     | { type: "SET_PLAYER_CARDS"; payload: Record<number, number> }
     | { type: "SET_CURRENT_PLAYER_CARDS"; payload: Record<number, number> }
+    | { type: "SET_PREVIEW_CARD_ID"; payload: number | null }
     | { type: "SET_PLAYER_HAND"; payload: CardType[] }
     | { type: "SET_CURRENT_PLAYER_HAND"; payload: CardType[] }
     | { type: "SET_ENEMY_ID"; payload: number }
