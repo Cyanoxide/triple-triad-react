@@ -10,6 +10,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, playerHand: action.payload };
         case "SET_CURRENT_PLAYER_HAND":
             return { ...state, currentPlayerHand: action.payload };
+        case "SET_PREVIEW_CARD_ID":
+            return { ...state, previewCardId: action.payload };
         case "SET_ENEMY_ID":
             return { ...state, enemyId: action.payload };
         case "SET_ENEMY_HAND":
@@ -40,6 +42,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, isMenuOpen: action.payload };
         case "SET_IS_CARD_SELECTION_OPEN":
             return { ...state, isCardSelectionOpen: action.payload };
+        case "SET_IS_CARD_GALLERY_OPEN":
+            return { ...state, isCardGalleryOpen: action.payload };
         case "SET_IS_REWARD_SELECTION_OPEN":
             return { ...state, isRewardSelectionOpen: action.payload };
         case "SET_IS_GAME_ACTIVE":
@@ -80,6 +84,7 @@ const placeholderCards = Array(5).fill(placeholderCard);
 export const initialState: GameState = {
     playerCards: startingCards,
     currentPlayerCards: [],
+    previewCardId: null,
     playerHand: [],
     currentPlayerHand: [],
     enemyId: 1,
@@ -96,11 +101,12 @@ export const initialState: GameState = {
     selectedRewards: [],
     isMenuOpen: true,
     isCardSelectionOpen: false,
+    isCardGalleryOpen: false,
     isRewardSelectionOpen: false,
     isGameActive: false,
     isSoundEnabled: false,
     slideDirection: null,
-    currentPages: { "players": 1, "cards": 1, "locations": 1 },
+    currentPages: { "players": 1, "cards": 1, "locations": 1, "cardGallery": 1 },
     rules: ["open"],
     tradeRule: "one",
     elements: null,

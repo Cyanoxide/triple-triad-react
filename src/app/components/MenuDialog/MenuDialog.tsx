@@ -39,7 +39,7 @@ const MenuDialog = () => {
                     <button className="relative" onClick={handleQuitClick} onMouseEnter={handleMouseEnter}>{textToSprite("Quit")}</button>
                 </div>
             </div>
-            <LocationSelectionDialog />
+            <LocationSelectionDialog/>
             <EnemySelectionDialog />
         </>
     );

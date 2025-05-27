@@ -1,11 +1,18 @@
 import React, { ReactNode } from 'react';
 import styles from './SimpleDialog.module.scss';
 
-const SimpleDialog = ({ children }: { children: ReactNode }) => {
+interface BoardProps {
+    className?: string;
+    children: ReactNode;
+    metaTitle?: string | null;
+    dialog?: string;
+}
+
+const SimpleDialog: React.FC<BoardProps> = ({ className, children, metaTitle = "info.", dialog = "simple", ...props }) => {
 
     return (
-        <div className={`${styles.simpleDialog} absolute`} data-dialog="simple">
-            <h4 className={styles.meta} data-sprite="info.">Info.</h4>
+        <div className={`${styles.simpleDialog} ${className} absolute`} data-dialog={dialog} {...props}>
+            {metaTitle && <h4 className={styles.meta} data-sprite={metaTitle}>{metaTitle}</h4>}
             {children}
         </div>
     );

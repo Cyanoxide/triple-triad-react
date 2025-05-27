@@ -1,0 +1,58 @@
+.cardGalleryContainer {
+    width: 100%;
+    height: 100%;
+    background: #000000dd;
+    z-index: 5;
+    position: fixed;
+    left: 0;
+
+    &>div {
+        width: calc(100% - 10rem);
+        max-width: 700px;
+    }
+}
+
+.currentPageTitle {
+    top: 0;
+    left: 0;
+    transform: none;
+    position: relative;
+    min-width: 0;
+    width: 80%;
+}
+
+.galleryTitle {
+    top: 0;
+    left: 0;
+    transform: none;
+    position: relative;
+    width: 20%;
+    min-width: 0;
+}
+
+.selectedCardMeta {
+    left: 0;
+    top: 0;
+    transform: none;
+    position: relative;
+    min-width: 0;
+    width: 100%;
+}
+
+.cardDetails {
+    top: 0;
+    left: 0;
+    transform: none;
+    position: relative;
+    min-width: 0;
+    width: 100%;
+}
+
+.cardStatistics {
+    top: 0;
+    left: 0;
+    transform: none;
+    position: relative;
+    min-width: 0;
+    width: 100%;
+}

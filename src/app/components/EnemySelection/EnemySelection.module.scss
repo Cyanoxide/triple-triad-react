@@ -7,10 +7,14 @@
     left: 50%;
     transform: translate(-50%, -50%);
     width: 380px;
-    height: 77px;
+    height: 70px;
 
     h3,
     p {
         text-align: center;
+    }
+
+    &>div {
+        margin-top: -5px;
     }
 }

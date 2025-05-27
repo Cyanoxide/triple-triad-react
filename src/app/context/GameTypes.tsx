@@ -10,6 +10,7 @@ export type AiMethodType = "random" | "beginner" | "intermediate" | "advanced";
 export interface GameState {
     playerCards: Record<number, number>;
     currentPlayerCards: Record<number, number>;
+    previewCardId: number | null;
     playerHand: CardType[];
     currentPlayerHand: CardType[];
     enemyId: number;
@@ -26,6 +27,7 @@ export interface GameState {
     selectedRewards: (number | null)[];
     isMenuOpen: boolean;
     isCardSelectionOpen: boolean;
+    isCardGalleryOpen: boolean;
     isRewardSelectionOpen: boolean;
     isGameActive: boolean;
     isSoundEnabled: boolean;
@@ -39,6 +41,7 @@ export interface GameState {
 export type GameAction =
     | { type: "SET_PLAYER_CARDS"; payload: Record<number, number> }
     | { type: "SET_CURRENT_PLAYER_CARDS"; payload: Record<number, number> }
+    | { type: "SET_PREVIEW_CARD_ID"; payload: number | null }
     | { type: "SET_PLAYER_HAND"; payload: CardType[] }
     | { type: "SET_CURRENT_PLAYER_HAND"; payload: CardType[] }
     | { type: "SET_ENEMY_ID"; payload: number }
@@ -56,6 +59,7 @@ export type GameAction =
     | { type: "SET_SELECTED_REWARDS"; payload: (number | null)[] }
     | { type: "SET_IS_MENU_OPEN"; payload: boolean }
     | { type: "SET_IS_CARD_SELECTION_OPEN"; payload: boolean }
+    | { type: "SET_IS_CARD_GALLERY_OPEN"; payload: boolean }
     | { type: "SET_IS_REWARD_SELECTION_OPEN"; payload: boolean }
     | { type: "SET_IS_GAME_ACTIVE"; payload: boolean }
     | { type: "SET_IS_SOUND_ENABLED"; payload: boolean }

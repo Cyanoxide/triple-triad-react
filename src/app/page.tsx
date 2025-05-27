@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import Board from "./components/Board/Board";
 import Hand from "./components/Hand/Hand";
 import MenuDialog from "./components/MenuDialog/MenuDialog";
@@ -9,11 +9,16 @@ import CardSelectionDialog from "./components/CardSelectionDialog/CardSelectionD
 import RewardSelectionDialog from "./components/RewardSelectionDialog/RewardSelectionDialog";
 import { GameProvider, useGameContext } from "./context/GameContext";
 import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/sounds";
+import CardGallery from "./components/CardGallery/CardGallery";
+import Image from "next/image";
+import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
+import textToSprite from "./utils/textToSprite";
 
 function GameContent() {
-  const { isMenuOpen, isCardSelectionOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, dispatch } = useGameContext();
+  const { isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, dispatch } = useGameContext();
   const victorySoundRef = useRef(loadSound("victory"));
   const bgmRef = useRef(loadSound("bgm"));
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
   useEffect(() => {
     if (winState) return;
@@ -58,9 +63,21 @@ function GameContent() {
     dispatch({ type: "SET_IS_SOUND_ENABLED", payload: toggle });
   }
 
+  const handleToggleCardGallery = () => {
+    playSound("select", isSoundEnabled);
+    dispatch({ type: "SET_IS_CARD_GALLERY_OPEN", payload: !isCardGalleryOpen });
+    currentPages.cardGallery = 1;
+  }
+
+  const handleToggleOptions = () => {
+    playSound("select", isSoundEnabled);
+    setIsOptionsOpen(!isOptionsOpen);
+  }
+
   return (
     <>
       <div id="app" className="max-w-4xl w-full h-full m-auto relative">
+        {isCardGalleryOpen && <CardGallery />}
         <div>
           {isMenuOpen && <MenuDialog />}
           {isCardSelectionOpen && <CardSelectionDialog />}
@@ -73,7 +90,22 @@ function GameContent() {
         {winState && !isRewardSelectionOpen && victorySoundRef.current && <WinDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
       </div>
-      <button className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-50" onClick={handleSoundToggle}>{(isSoundEnabled) ? "🔊" : "🔇"}</button>
+
+      <div className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-50 flex items-center">
+        <SimpleDialog metaTitle={null} dialog="options" data-expanded={isOptionsOpen}>
+          <div className="flex items-center h-full">
+            <Image src="/assets/menu-expand.png?v=1" onClick={handleToggleOptions} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" />
+            <Image src="/assets/cardicon.png" onClick={handleToggleCardGallery} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" data-selected={isCardGalleryOpen} />
+            <div onClick={handleSoundToggle} className="flex items-center m-0">
+              <span className="ml-3 mr-3">{textToSprite("Sound")}</span>
+              <div className="flex items-center">
+                <span className={`${(!isSoundEnabled) ? "opacity-50" : ""} mr-3`}>{textToSprite("ON")}</span>
+                <span className={`${(isSoundEnabled) ? "opacity-50" : ""} mr-3`}>{textToSprite("OFF")}</span>
+              </div>
+            </div>
+          </div>
+        </SimpleDialog>
+      </div>
       <div id="modal"></div>
     </>
   );

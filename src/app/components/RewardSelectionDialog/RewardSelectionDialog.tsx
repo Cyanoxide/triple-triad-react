@@ -220,9 +220,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
             if (reward.id in updatedPlayerCards) {
                 updatedPlayerCards[reward.id]++
-            } else {
-                updatedPlayerCards[reward.id] = 1;
             }
+
             if (currentLostCards[enemyId]) {
                 const lostCardIndex: number = currentLostCards[enemyId].indexOf(reward.id);
                 if (lostCardIndex !== -1) {
@@ -234,10 +233,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             reward = rewardsList.lost.shift();
             if (!reward) return;
 
-            if (reward.id in updatedPlayerCards && updatedPlayerCards[reward.id] > 1) {
+            if (reward.id in updatedPlayerCards && updatedPlayerCards[reward.id] > 0) {
                 updatedPlayerCards[reward.id]--;
-            } else {
-                delete updatedPlayerCards[reward.id];
             }
 
             if (!currentLostCards[enemyId]) currentLostCards[enemyId] = [];
