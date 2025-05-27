@@ -40,6 +40,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, isMenuOpen: action.payload };
         case "SET_IS_CARD_SELECTION_OPEN":
             return { ...state, isCardSelectionOpen: action.payload };
+        case "SET_IS_CARD_GALLERY_OPEN":
+            return { ...state, isCardGalleryOpen: action.payload };
         case "SET_IS_REWARD_SELECTION_OPEN":
             return { ...state, isRewardSelectionOpen: action.payload };
         case "SET_IS_GAME_ACTIVE":
@@ -96,11 +98,12 @@ export const initialState: GameState = {
     selectedRewards: [],
     isMenuOpen: true,
     isCardSelectionOpen: false,
+    isCardGalleryOpen: false,
     isRewardSelectionOpen: false,
     isGameActive: false,
     isSoundEnabled: false,
     slideDirection: null,
-    currentPages: { "players": 1, "cards": 1, "locations": 1 },
+    currentPages: { "players": 1, "cards": 1, "locations": 1, "cardGallery": 1 },
     rules: ["open"],
     tradeRule: "one",
     elements: null,

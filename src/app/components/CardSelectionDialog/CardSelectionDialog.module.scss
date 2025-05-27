@@ -9,6 +9,16 @@
     width: 288px;
     min-height: 300px;
 
+    &[data-dialog="card-gallery"] {
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        height: 100%;
+        width: auto;
+        min-height: 0;
+    }
+
     .cardSelectionPreview {
         left: calc(100% + 32px);
         bottom: 32px;

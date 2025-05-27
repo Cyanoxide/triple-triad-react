@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import Board from "./components/Board/Board";
 import Hand from "./components/Hand/Hand";
 import MenuDialog from "./components/MenuDialog/MenuDialog";
@@ -9,11 +9,16 @@ import CardSelectionDialog from "./components/CardSelectionDialog/CardSelectionD
 import RewardSelectionDialog from "./components/RewardSelectionDialog/RewardSelectionDialog";
 import { GameProvider, useGameContext } from "./context/GameContext";
 import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/sounds";
+import CardGallery from "./components/CardGallery/CardGallery";
+import Image from "next/image";
+import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
+import textToSprite from "./utils/textToSprite";
 
 function GameContent() {
-  const { isMenuOpen, isCardSelectionOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, dispatch } = useGameContext();
+  const { isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, dispatch } = useGameContext();
   const victorySoundRef = useRef(loadSound("victory"));
   const bgmRef = useRef(loadSound("bgm"));
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
   useEffect(() => {
     if (winState) return;
@@ -58,9 +63,21 @@ function GameContent() {
     dispatch({ type: "SET_IS_SOUND_ENABLED", payload: toggle });
   }
 
+  const handleToggleCardGallery = () => {
+    playSound("select", isSoundEnabled);
+    dispatch({ type: "SET_IS_CARD_GALLERY_OPEN", payload: !isCardGalleryOpen });
+    currentPages.cardGallery = 1;
+  }
+
+  const handleToggleOptions = () => {
+    playSound("select", isSoundEnabled);
+    setIsOptionsOpen(!isOptionsOpen);
+  }
+
   return (
     <>
       <div id="app" className="max-w-4xl w-full h-full m-auto relative">
+        {isCardGalleryOpen && <CardGallery />}
         <div>
           {isMenuOpen && <MenuDialog />}
           {isCardSelectionOpen && <CardSelectionDialog />}

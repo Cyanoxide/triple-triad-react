@@ -26,6 +26,7 @@ export interface GameState {
     selectedRewards: (number | null)[];
     isMenuOpen: boolean;
     isCardSelectionOpen: boolean;
+    isCardGalleryOpen: boolean;
     isRewardSelectionOpen: boolean;
     isGameActive: boolean;
     isSoundEnabled: boolean;
@@ -56,6 +57,7 @@ export type GameAction =
     | { type: "SET_SELECTED_REWARDS"; payload: (number | null)[] }
     | { type: "SET_IS_MENU_OPEN"; payload: boolean }
     | { type: "SET_IS_CARD_SELECTION_OPEN"; payload: boolean }
+    | { type: "SET_IS_CARD_GALLERY_OPEN"; payload: boolean }
     | { type: "SET_IS_REWARD_SELECTION_OPEN"; payload: boolean }
     | { type: "SET_IS_GAME_ACTIVE"; payload: boolean }
     | { type: "SET_IS_SOUND_ENABLED"; payload: boolean }

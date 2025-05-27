@@ -13,13 +13,29 @@ import textToSprite from "../../utils/textToSprite";
 import { generateCardFromId } from "../../utils/general";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
 
+interface CardSelectionDialogProps {
+    showPreview?: boolean;
+    showMissingCards?: boolean;
+    modifier?: string;
+    pagination?: string;
+}
 
-const CardSelectionDialog = () => {
-    const { playerCards, currentPlayerCards, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isSoundEnabled, currentPages, slideDirection, rules, dispatch } = useGameContext();
-    const [previewCardId, setPreviewCardId] = useState<number>(0);
+const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview = true, showMissingCards = false, modifier, pagination = "cards" }) => {
+    const { playerCards, currentPlayerCards, previewCardId, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isCardGalleryOpen, isSoundEnabled, currentPages, slideDirection, rules, dispatch } = useGameContext();
 
     const hand: CardType[] = [...currentPlayerHand];
+    const allCards: Record<number, number> = Object.fromEntries(
+        cardList.map(card => [card.id, 0])
+    );
     const cards: Record<number, number> = { ...currentPlayerCards };
+
+    if (showMissingCards) {
+        for (const id of Object.keys(allCards)) {
+            if (!(id in cards)) {
+                cards[Number(id)] = 0;
+            }
+        }
+    }
 
     const cardsTotal = Object.values(playerCards).reduce((acc, quantity) => acc + quantity, 0);
     const [addedStartingCardsFlag, setAddedStartingCardsFlag] = useState(false);
@@ -36,6 +52,8 @@ const CardSelectionDialog = () => {
     }
 
     const handleCardSelection = (cardId: number, quantity: number) => {
+        if (isCardGalleryOpen) return;
+
         if (cards[cardId] > 0 && hand.length < 5) {
             const card = generateCardFromId(cardId, "blue");
             if (card) hand.push(card);
@@ -53,8 +71,12 @@ const CardSelectionDialog = () => {
     }
 
     const handleCardHover = (cardId: number) => {
-        setPreviewCardId(cardId);
+        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: cardId });
         if (currentPlayerHand.length < 5) playSound("select", isSoundEnabled);
+    };
+
+    const handleCardHoverOff = () => {
+        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: null });
     };
 
 
@@ -78,8 +100,10 @@ const CardSelectionDialog = () => {
             key={item.id}
             onClick={() => handleCardSelection(item.id, quantity)}
             onMouseEnter={() => handleCardHover(item.id)}
-            className={`${styles.cardListItem} flex justify-between ${quantity ? "cursor-pointer" : "opacity-50"}`}
-            data-slide-direction={(slideDirection && slideDirection[0] === "cards") ? slideDirection[1] : null}
+            onMouseLeave={() => handleCardHoverOff()}
+            className={`${styles.cardListItem} flex justify-between ${quantity ? "cursor-pointer" : "opacity-50"} ${!(Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "invisible" : ""}`}
+            data-slide-direction={(slideDirection && slideDirection[0] === pagination) ? slideDirection[1] : null}
+            style={isCardGalleryOpen ? { zoom: 1.27 } : undefined}
         >
             <div className="flex">
                 <Image src="/assets/cardicon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
@@ -132,22 +156,22 @@ const CardSelectionDialog = () => {
 
     return (
         <>
-            <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen) ? "" : "hidden"}`} data-dialog="cardSelection">
+            <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen || isCardGalleryOpen) ? "" : "hidden"}`} data-dialog={modifier || "cardSelection"}>
                 <div className="flex justify-between">
                     <h4 className={styles.meta} data-sprite="cards">Cards
                         <span className={`${styles.meta} ml-2 ${(Object.entries(playerCards).length > 1) ? "" : "hidden"}`.trim()} data-sprite="p.">P.
-                            <span className={`${styles.meta} ml-1`} data-sprite={currentPages.cards}>{currentPages.cards}</span>
+                            <span className={`${styles.meta} ml-1`} data-sprite={currentPages[pagination]}>{currentPages[pagination]}</span>
                         </span>
                     </h4>
                     <h4 className={`${styles.meta} mr-3`} data-sprite="num.">Num.</h4>
                 </div>
                 <DialogPagination items={Object.entries(cards)} itemsPerPage={11} renderItem={([cardId, quantity]: [number, number]) =>
-                    cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity)} pagination="cards" />
+                    cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity)} pagination={pagination} />
 
                 {currentPlayerHand.length === 5 && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
-                <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
+                {showPreview && previewCardId && <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
                     <Card id={previewCardId} player="blue" />
-                </div>
+                </div>}
             </div>
             {hasPlayedBefore && addedStartingCardsFlag &&
                 <SimpleDialog>
