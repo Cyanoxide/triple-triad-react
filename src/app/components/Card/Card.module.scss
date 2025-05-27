@@ -68,7 +68,7 @@
         position: absolute;
         top: 0;
         left: 0;
-        background-size: 506px 161px;
+        background-size: 633px 161px;
         backface-visibility: hidden;
     }
 
@@ -89,6 +89,12 @@
     &[data-level="10"] {
         &::after {
             background-position-x: -380px;
+        }
+    }
+
+    &[data-gallery=true] {
+        &::after {
+            background-position-x: -507px;
         }
     }
 }
