@@ -63,6 +63,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         dispatch({ type: "RESET_GAME" });
 
         dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
+        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: updatedPlayerCards });
         if (typeof window !== "undefined") {
             localStorage.setItem("playerCards", JSON.stringify(updatedPlayerCards));
         }
