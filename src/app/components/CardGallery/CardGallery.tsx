@@ -10,7 +10,7 @@ import CardSelectionDialog from "../CardSelectionDialog/CardSelectionDialog";
 import CardValues from "../CardValues/CardValues";
 
 const CardGallery = () => {
-    const { playerCards, currentPlayerCards, previewCardId, currentPages, lostCards } = useGameContext();
+    const { playerCards, currentPlayerCards, previewCardId, currentPages, lostCards, dispatch } = useGameContext();
 
     const previewCardData = cards.find(card => card.id === previewCardId);
     let previewCardLocation;
@@ -31,12 +31,22 @@ const CardGallery = () => {
         total: Object.entries(playerCards).length
     }
 
+    const handleDismissGallery = () => {
+        dispatch({ type: "SET_IS_CARD_GALLERY_OPEN", payload: false });
+    }
+
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && currentPages.cardGallery > 0) {
+            handleDismissGallery();
+        }
+    });
+
     const titleType = currentPages.cardGallery < 6 ? "Monster" : currentPages.cardGallery < 8 ? "Boss" : currentPages.cardGallery < 10 ? "GF" : "Player";
     const currentPageTitle = `Level ${currentPages.cardGallery} ${titleType} Cards`;
 
     return (
-        <div className={`${styles.cardGalleryContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
-            <div className="m-20 relative h-full flex flex-col justify-center">
+        <div className={`${styles.cardGalleryContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`} onClick={handleDismissGallery}>
+            <div className="m-20 relative h-full flex flex-col justify-center" onClick={(e) => e.stopPropagation()}>
                 <div className="flex w-full gap-1 p-1">
                     <SimpleDialog className={styles.currentPageTitle} metaTitle={"help"}><p>{textToSprite(`${currentPageTitle}`)}</p></SimpleDialog>
                     <SimpleDialog className={styles.galleryTitle} metaTitle={null}><p className="flex">{textToSprite("Card")}<span className={(cardTotals.total === 110) ? "" : "hidden"}>⭐️</span></p></SimpleDialog>

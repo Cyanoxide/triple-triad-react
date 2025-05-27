@@ -70,15 +70,12 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
     }
 
-    const handleCardHover = (cardId: number) => {
-        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: cardId });
+    const handleCardHover = (id: number) => {
+        const previewValue = !(Object.keys(playerCards).find(cardId => cardId === String(id))) ? null : id;
+        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: previewValue });
+
         if (currentPlayerHand.length < 5) playSound("select", isSoundEnabled);
     };
-
-    const handleCardHoverOff = () => {
-        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: null });
-    };
-
 
     const handleConfirmation = () => {
         playSound("select", isSoundEnabled);
@@ -100,8 +97,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             key={item.id}
             onClick={() => handleCardSelection(item.id, quantity)}
             onMouseEnter={() => handleCardHover(item.id)}
-            onMouseLeave={() => handleCardHoverOff()}
-            className={`${styles.cardListItem} flex justify-between ${quantity ? "cursor-pointer" : "opacity-50"} ${!(Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "invisible" : ""}`}
+            className={`${styles.cardListItem} flex justify-between ${quantity ? "cursor-pointer" : "opacity-50"} ${!(Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "opacity-0" : ""}`}
             data-slide-direction={(slideDirection && slideDirection[0] === pagination) ? slideDirection[1] : null}
             style={isCardGalleryOpen ? { zoom: 1.27 } : undefined}
         >
