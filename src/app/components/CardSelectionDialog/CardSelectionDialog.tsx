@@ -97,7 +97,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             key={item.id}
             onClick={() => handleCardSelection(item.id, quantity)}
             onMouseEnter={() => handleCardHover(item.id)}
-            className={`${styles.cardListItem} flex justify-between ${quantity ? "cursor-pointer" : "opacity-50"} ${!(Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "opacity-0" : ""}`}
+            className={`${styles.cardListItem} flex justify-between ${!(Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "opacity-0" : ""} ${quantity ? "cursor-pointer" : "opacity-50"}`}
             data-slide-direction={(slideDirection && slideDirection[0] === pagination) ? slideDirection[1] : null}
             style={isCardGalleryOpen ? { zoom: 1.27 } : undefined}
         >
