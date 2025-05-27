@@ -221,6 +221,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
             if (reward.id in updatedPlayerCards) {
                 updatedPlayerCards[reward.id]++
+            } else {
+                updatedPlayerCards[reward.id] = 1;
             }
 
             if (currentLostCards[enemyId]) {
