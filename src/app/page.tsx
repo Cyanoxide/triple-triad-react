@@ -90,7 +90,22 @@ function GameContent() {
         {winState && !isRewardSelectionOpen && victorySoundRef.current && <WinDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
       </div>
-      <button className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-50" onClick={handleSoundToggle}>{(isSoundEnabled) ? "🔊" : "🔇"}</button>
+
+      <div className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-50 flex items-center">
+        <SimpleDialog metaTitle={null} dialog="options" data-expanded={isOptionsOpen}>
+          <div className="flex items-center h-full">
+            <Image src="/assets/menu-expand.png?v=1" onClick={handleToggleOptions} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" />
+            <Image src="/assets/cardicon.png" onClick={handleToggleCardGallery} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" data-selected={isCardGalleryOpen} />
+            <div onClick={handleSoundToggle} className="flex items-center m-0">
+              <span className="ml-3 mr-3">{textToSprite("Sound")}</span>
+              <div className="flex items-center">
+                <span className={`${(!isSoundEnabled) ? "opacity-50" : ""} mr-3`}>{textToSprite("ON")}</span>
+                <span className={`${(isSoundEnabled) ? "opacity-50" : ""} mr-3`}>{textToSprite("OFF")}</span>
+              </div>
+            </div>
+          </div>
+        </SimpleDialog>
+      </div>
       <div id="modal"></div>
     </>
   );
