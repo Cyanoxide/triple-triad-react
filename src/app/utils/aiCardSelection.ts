@@ -29,6 +29,7 @@ export const setAiPlayerCards = (playerId: number, lostCards: Record<number, num
         const selectedCard = cardPool[randomCardIndex];
 
         if (!selectedCard || currentHand.includes(selectedCard.id)) continue;
+        if (selectedCard.id === 48) continue;
 
         currentHand.push(selectedCard.id);
     }
