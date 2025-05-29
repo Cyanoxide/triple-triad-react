@@ -259,7 +259,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
         for (const direction of Object.keys(directions) as DirectionType[]) {
             const adjacentValues = getAdjacentCardValues(position, direction, currentBoard);
-            if (!adjacentValues) continue;
+            if (!adjacentValues || (adjacentValues?.opposingRow != null && adjacentValues.opposingCol != null && isOutOfBounds([adjacentValues.opposingRow, adjacentValues.opposingCol]))) continue;
             const { attackingValue, defendingValue, opposingRow, opposingCol } = adjacentValues;
             if (!attackingValue || !defendingValue || opposingRow == null || opposingCol == null) continue;
 
@@ -305,6 +305,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             playSound("flip", isSoundEnabled);
             initialFlips.forEach(({ position, action, flipDirection }) => {
                 const [row, col] = position;
+
+                if (row == null || col == null || isOutOfBounds(position)) return;
                 const card = currentBoard[row][col] as CardType;
 
                 if (!isCardOwnedByOpposingPlayer(card)) return;
@@ -330,9 +332,11 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
                 sameFlips.forEach(({ position, action }) => {
                     const [row, col] = position;
+
+                    if (row == null || col == null || isOutOfBounds(position)) return;
                     const card = currentBoard[row][col] as CardType;
 
-                    if (isOutOfBounds(position) || !isCardOwnedByOpposingPlayer(card)) return;
+                    if (!isCardOwnedByOpposingPlayer(card)) return;
                     const existingCard = currentBoard[row][col];
                     newBoard[row][col] = {
                         cardId: existingCard!.cardId,
