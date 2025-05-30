@@ -32,6 +32,7 @@ const CardGallery = () => {
     }
 
     const handleDismissGallery = () => {
+        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: null });
         dispatch({ type: "SET_IS_CARD_GALLERY_OPEN", payload: false });
     }
 
