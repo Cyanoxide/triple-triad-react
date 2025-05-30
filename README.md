@@ -9,7 +9,8 @@ This project is my best attempt at an authentic browser-based recreation of the 
 - Your card collection is preserved between sessions.  
 - Certain players, denoted with blue text, have a chance to play their rare card like in the original game. They will then stop playing their rare card if you win it from them.  
 - If you lose cards to an opponent, they have a chance to play one of your lost cards so you can win it back. These lost cards are also preserved between sessions. Players that hold lost cards are denoted with yellow text.  
-- All 110 original cards have been set up, though not all rare cards are currently available as not all players are included in the current build and some cards in the original are acquired outside of trading.  
+- All 110 original cards have been set up, though not all rare cards are currently available as not all players are included in the current build and some cards in the original are acquired outside of trading.
+- A Card gallery that matches the style of the Card menu in FF8's main menu.  
 
 
 
@@ -18,7 +19,6 @@ This project is my best attempt at an authentic browser-based recreation of the 
 Here are some goals I will look to implement in the future:
 
 - A full roster of NPC players from the original game.  
-- A Card gallery that matches the style of the Card menu in FF8's main menu.  
 - Keyboard Support.  
 - Trade Rule Decay that matches the behaviour of the original.  
 - Implementing the Queen of Cards, her mechanics and questline.  
@@ -28,7 +28,7 @@ Here are some goals I will look to implement in the future:
 
 ## Live Demo
 
-[![Alt text](https://img.youtube.com/vi/d1T0MAIpkwA/maxresdefault.jpg)](https://www.youtube.com/watch?v=d1T0MAIpkwA)
+[![Alt text](https://img.youtube.com/vi/tQygSr0QF1o/maxresdefault.jpg)](https://youtu.be/tQygSr0QF1o)
 
 [https://triple-triad-react.onrender.com/](https://triple-triad-react.onrender.com/)
 
