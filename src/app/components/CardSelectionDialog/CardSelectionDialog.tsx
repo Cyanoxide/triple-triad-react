@@ -129,7 +129,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         }
 
 
-        if (cardsTotal < 5) {
+        if (cardsTotal < 5 && !isCardGalleryOpen) {
             const startingCardIds = [1, 2, 3, 4, 5, 6, 7];
 
             const newCards = { ...playerCards };
@@ -170,7 +170,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                     <Card id={previewCardId} player="blue" />
                 </div>}
             </div>
-            {hasPlayedBefore && addedStartingCardsFlag &&
+            {hasPlayedBefore && addedStartingCardsFlag && !isCardGalleryOpen &&
                 <SimpleDialog>
                     <div className="mb-2">{textToSprite("You don't have enough cards to play.")}</div>
                     <div>{textToSprite("Starting cards have been re-added to your deck.")}</div>

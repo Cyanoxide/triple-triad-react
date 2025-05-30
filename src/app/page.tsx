@@ -65,6 +65,7 @@ function GameContent() {
 
   const handleToggleCardGallery = () => {
     playSound("select", isSoundEnabled);
+    dispatch({ type: "SET_PREVIEW_CARD_ID", payload: null });
     dispatch({ type: "SET_IS_CARD_GALLERY_OPEN", payload: !isCardGalleryOpen });
     currentPages.cardGallery = 1;
   }
