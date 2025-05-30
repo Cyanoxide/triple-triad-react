@@ -51,11 +51,11 @@
     position: relative;
 
     &[data-animation]:not([data-animation=""]) {
-        &[data-player="red"] {
+        &[data-reward-type="lost"] {
             animation: red-reward-label 1.6s forwards 0s ease-in-out;
         }
 
-        &[data-player="blue"] {
+        &[data-reward-type="won"] {
             animation: blue-reward-label 1.2s forwards 0s ease-in-out;
         }
     }
