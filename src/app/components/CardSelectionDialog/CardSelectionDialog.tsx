@@ -134,13 +134,14 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
 
             const newCards = { ...playerCards };
             startingCardIds.forEach((cardId) => {
-                if (!(cardId in newCards)) {
-                    newCards[cardId] = 1;
-                }
+                newCards[cardId] = 1;
             });
 
             dispatch({ type: "SET_PLAYER_CARDS", payload: newCards });
             dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: newCards });
+            if (typeof window !== "undefined") {
+                localStorage.setItem("playerCards", JSON.stringify(newCards));
+            }
 
             setAddedStartingCardsFlag(true)
             setTimeout(() => {
