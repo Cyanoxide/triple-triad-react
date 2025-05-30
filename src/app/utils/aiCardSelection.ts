@@ -20,7 +20,7 @@ export const setAiPlayerCards = (playerId: number, lostCards: Record<number, num
         currentHand.push(randomLostCard);
     }
 
-    if (player.rareCard && !Object.keys(playerCards).includes(String(player.rareCard)) && (Math.random() < (0.35))) {
+    if (player.rareCard && !Object.keys(playerCards).includes(String(player.rareCard)) && !Object.entries(lostCards).some(([, cardIds]) => cardIds.includes(+player.rareCard)) && (Math.random() < (0.35))) {
         currentHand.push(+player.rareCard);
     }
 
