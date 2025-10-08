@@ -30,7 +30,7 @@ Here are some goals I will look to implement in the future:
 
 [![Alt text](https://img.youtube.com/vi/tQygSr0QF1o/maxresdefault.jpg)](https://youtu.be/tQygSr0QF1o)
 
-[https://triple-triad-react.onrender.com/](https://triple-triad-react.onrender.com/)
+[https://triple-triad.jamiepates.com/](https://triple-triad.jamiepates.com/)
 
 
 
