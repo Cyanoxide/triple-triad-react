@@ -16,7 +16,7 @@ const WinDialog: React.FC<WinDialogProps> = ({ victorySound, bgm }) => {
     const playerCardsCopy = { ...playerCards };
 
     if (winState === "blue") {
-        stopLoadedSound(bgm, isSoundEnabled);
+        stopLoadedSound(bgm);
         playLoadedSound(victorySound, isSoundEnabled);
     }
 
