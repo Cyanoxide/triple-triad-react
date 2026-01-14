@@ -1,4 +1,3 @@
-import Image from "next/image";
 import styles from './CardGallery.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import Card from '../Card/Card';
@@ -65,7 +64,7 @@ const CardGallery = () => {
                                     <p className="ml-2 mt-2">{textToSprite(previewCardData?.element ? previewCardData.element.charAt(0).toUpperCase() + previewCardData.element.slice(1) : "N/A")}</p>
                                 </div>
                             </div>
-                            {previewCardData && <Card id={previewCardData?.id} player="blue" displayValues={false} /> || <Image src="/assets/cardback.png" alt="Card Back" height={163} width={128} />}
+                            {previewCardData && <Card id={previewCardData?.id} player="blue" displayValues={false} /> || <img src="https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174759/cardback_hpjhta.png" alt="Card Back" height={163} width={128} />}
                         </SimpleDialog>
                         <SimpleDialog className={`${styles.cardStatistics} flex flex-col justify-between`} metaTitle={null}>
                             <p className="flex justify-between"><span>{textToSprite("MONSTER")}</span><span>{textToSprite(`${cardTotals.monster}`)}</span></p>

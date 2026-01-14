@@ -5,15 +5,15 @@
 }
 
 .font.blue .font-glyph {
-    background-image: url("/assets/font-blue-spritesheet.png");
+    background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174757/font-blue-spritesheet_qaf58a.png");
 }
 
 .font.yellow .font-glyph {
-    background-image: url("/assets/font-yellow-spritesheet.png");
+    background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174758/font-yellow-spritesheet_iuh7ri.png");
 }
 
 .font-glyph {
-    background-image: url("/assets/font-white-spritesheet.png");
+    background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174758/font-white-spritesheet_lzljm2.png");
     display: inline-block;
     width: 20px;
     height: 18px;

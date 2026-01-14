@@ -5,7 +5,7 @@
 
     &::before {
         content: "";
-        background-image: url("/assets/balamb.png");
+        background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174755/balamb_gye6tx.png");
         width: 600px;
         height: 600px;
         position: absolute;
@@ -43,27 +43,27 @@
 
 
         &[data-position="1,1"]::before {
-            background-image: url("/assets/slot-center.png");
+            background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174760/slot-center_azcxus.png");
             transform: scale(2.75);
         }
 
         &[data-position="0,0"]::before {
-            background-image: url("/assets/slot-corner.png");
+            background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174760/slot-corner_toggcn.png");
             transform: translate(22%, 16%)scaleX(1.47)scaleY(1.54);
         }
 
         &[data-position="0,2"]::before {
-            background-image: url("/assets/slot-corner.png");
+            background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174760/slot-corner_toggcn.png");
             transform: translate(-22%, 16%)scaleX(-1.47)scaleY(1.54);
         }
 
         &[data-position="2,0"]::before {
-            background-image: url("/assets/slot-corner.png");
+            background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174760/slot-corner_toggcn.png");
             transform: translate(22%, -16%)scaleX(1.47)scaleY(-1.54);
         }
 
         &[data-position="2,2"]::before {
-            background-image: url("/assets/slot-corner.png");
+            background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174760/slot-corner_toggcn.png");
             transform: translate(-22%, -16%)scaleX(-1.47)scaleY(-1.54);
         }
 
@@ -72,7 +72,7 @@
         }
 
         [data-element] {
-            background-image: url("/assets/elements-spritesheet.png");
+            background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174755/elements-spritesheet_cyvswj.png");
             background-size: cover;
             background-repeat: no-repeat;
             text-indent: -10000px;
@@ -122,7 +122,7 @@
         }
 
         [data-state]+[data-sprite] {
-            background-image: url("/assets/multiplier-spritesheet.png");
+            background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174759/multiplier-spritesheet_ot7lgp.png");
             opacity: 1;
             animation: none;
             background-position-x: 0;
@@ -148,7 +148,7 @@
             content: "";
             position: absolute;
             margin-left: 16px;
-            background-image: url("/assets/cursor.png");
+            background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174757/cursor_ujdxmj.png");
             background-size: cover;
             width: 45px;
             height: 28px;
