@@ -15,7 +15,7 @@ import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
 import textToSprite from "./utils/textToSprite";
 
 function GameContent() {
-  const { isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, dispatch } = useGameContext();
+  const { isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
   const victorySoundRef = useRef<HTMLAudioElement | undefined>(undefined);
   const bgmRef = useRef<HTMLAudioElement | undefined>(undefined);
 
@@ -84,6 +84,18 @@ function GameContent() {
     setIsOptionsOpen(!isOptionsOpen);
   }
 
+  const handleToggleScanlines = () => {
+    dispatch({ type: "SET_IS_CRT_EFFECT_ACTIVE", payload: !isCRTEffectActive });
+  }
+
+  useEffect(() => {
+    if (isCRTEffectActive) {
+      document.body.classList.add("crt-effect");
+    } else {
+      document.body.classList.remove("crt-effect");
+    }
+  }, [isCRTEffectActive]);
+
   return (
     <>
       <div id="app" className="max-w-4xl w-full h-full m-auto relative">
@@ -105,6 +117,7 @@ function GameContent() {
         <SimpleDialog metaTitle={null} dialog="options" data-expanded={isOptionsOpen}>
           <div className="flex items-center h-full">
             <Image src="/assets/menu-expand.png?v=1" onClick={handleToggleOptions} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" />
+            <Image src="/assets/screenicon.png" onClick={handleToggleScanlines} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" data-selected={isCardGalleryOpen} />
             <Image src="/assets/cardicon.png" onClick={handleToggleCardGallery} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" data-selected={isCardGalleryOpen} />
             <div onClick={handleSoundToggle} className="flex items-center m-0">
               <span className="ml-3 mr-3">{textToSprite("Sound")}</span>
