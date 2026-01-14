@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useGameContext } from "../../context/GameContext";
 import { PlayerType } from "../../context/GameTypes";
-import Image from "next/image";
 import styles from "./WinDialog.module.scss";
 import { playLoadedSound, stopLoadedSound } from "../../utils/sounds";
 import { generateCardsFromIds } from "../../utils/general";
@@ -57,7 +56,7 @@ const WinDialog: React.FC<WinDialogProps> = ({ victorySound, bgm }) => {
 
 
     return (
-        <Image src="/assets/finishmsg.png" alt="Finish Message" width="500" height="84" className={`${styles.finishMsg}`} data-win-state={winState} />
+        <img src="https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174756/finishmsg_gjhz6e.png" alt="Finish Message" width="500" height="84" className={`${styles.finishMsg}`} data-win-state={winState} />
     );
 };
 

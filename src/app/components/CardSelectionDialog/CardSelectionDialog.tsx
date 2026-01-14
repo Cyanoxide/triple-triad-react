@@ -5,7 +5,6 @@ import { CardType } from "../../context/GameTypes";
 import cardList from "../../../data/cards.json";
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import Card from "../Card/Card";
-import Image from "next/image";
 import playSound from "../../utils/sounds";
 import { setAiPlayerCards } from "../../utils/aiCardSelection";
 import DialogPagination from "../DialogPagination/DialogPagination";
@@ -102,7 +101,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             style={isCardGalleryOpen ? { zoom: 1.27 } : undefined}
         >
             <div className="flex">
-                <Image src="/assets/cardicon.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
+                <img src="https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174757/cardicon_sbsxqu.png" alt="Card Icon" width="18" height="18" className="object-contain mr-3" />
                 {textToSprite(cardList.find(card => card.id === item.id)?.name || "")}
             </div>
             <div>
