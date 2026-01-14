@@ -60,6 +60,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, tradeRule: action.payload };
         case "SET_ELEMENTS":
             return { ...state, elements: action.payload };
+        case "SET_IS_CRT_EFFECT_ACTIVE":
+            return { ...state, isCRTEffectActive: action.payload };
         case "RESET_GAME":
             return {
                 ...initialState,
@@ -110,4 +112,5 @@ export const initialState: GameState = {
     rules: ["open"],
     tradeRule: "one",
     elements: null,
+    isCRTEffectActive: true,
 };
