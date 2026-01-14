@@ -57,8 +57,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     }
 
     const resetGame = (updatedPlayerCards: Record<number, number>) => {
-        stopLoadedSound(victorySound, isSoundEnabled);
-        stopLoadedSound(bgm, isSoundEnabled);
+        stopLoadedSound(victorySound);
+        stopLoadedSound(bgm);
 
         dispatch({ type: "RESET_GAME" });
 

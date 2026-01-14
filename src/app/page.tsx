@@ -10,14 +10,22 @@ import RewardSelectionDialog from "./components/RewardSelectionDialog/RewardSele
 import { GameProvider, useGameContext } from "./context/GameContext";
 import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/sounds";
 import CardGallery from "./components/CardGallery/CardGallery";
-import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
 import textToSprite from "./utils/textToSprite";
 
 function GameContent() {
   const { isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, dispatch } = useGameContext();
-  const victorySoundRef = useRef(loadSound("victory"));
-  const bgmRef = useRef(loadSound("bgm"));
+  const victorySoundRef = useRef<HTMLAudioElement | undefined>(undefined);
+  const bgmRef = useRef<HTMLAudioElement | undefined>(undefined);
+
+  if (!bgmRef.current) {
+    bgmRef.current = loadSound("bgm");
+  }
+
+  if (!victorySoundRef.current) {
+    victorySoundRef.current = loadSound("victory");
+  }
+
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
   useEffect(() => {
@@ -52,8 +60,8 @@ function GameContent() {
     const toggle = (isSoundEnabled === false) ? true : false;
 
     if (toggle === false) {
-      stopLoadedSound(bgmRef.current, isSoundEnabled);
-      stopLoadedSound(victorySoundRef.current, isSoundEnabled);
+      stopLoadedSound(bgmRef.current);
+      stopLoadedSound(victorySoundRef.current);
     } else {
       if (!winState) {
         playLoadedSound(bgmRef.current, isSoundEnabled, true);
