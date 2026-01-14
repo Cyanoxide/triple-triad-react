@@ -9,6 +9,8 @@ import rulesList from "../../../data/rules.json";
 const MenuDialog = () => {
     const { isMenuOpen, isSoundEnabled, rules, tradeRule, dispatch } = useGameContext();
 
+    const ROOT_WEBSITE_URL = "https://www.jamiepates.com";
+
     const handlePlayClick = () => {
         dispatch({ type: "SET_IS_MENU_OPEN", payload: false });
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: true });
@@ -16,6 +18,12 @@ const MenuDialog = () => {
     }
 
     const handleQuitClick = () => {
+        if (ROOT_WEBSITE_URL) {
+            playSound("select", isSoundEnabled);
+            window.location.href = `${ROOT_WEBSITE_URL}/projects`;
+            return;
+        }
+
         playSound("error", isSoundEnabled);
     }
 
@@ -39,7 +47,7 @@ const MenuDialog = () => {
                     <button className="relative" onClick={handleQuitClick} onMouseEnter={handleMouseEnter}>{textToSprite("Quit")}</button>
                 </div>
             </div>
-            <LocationSelectionDialog/>
+            <LocationSelectionDialog />
             <EnemySelectionDialog />
         </>
     );

@@ -36,6 +36,7 @@ export interface GameState {
     rules: string[] | null;
     tradeRule: string | null;
     elements: Record<string, string> | null;
+    isCRTEffectActive: boolean;
 }
 
 export type GameAction =
@@ -68,6 +69,7 @@ export type GameAction =
     | { type: "SET_RULES"; payload: string[] | null }
     | { type: "SET_TRADE_RULE"; payload: string | null }
     | { type: "SET_ELEMENTS"; payload: Record<string, string> | null; }
+    | { type: "SET_IS_CRT_EFFECT_ACTIVE"; payload: boolean; }
     | { type: "RESET_GAME" };
 
 export interface GameContextType extends GameState {

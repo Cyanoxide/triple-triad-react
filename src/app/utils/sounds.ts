@@ -20,18 +20,22 @@ export const loadSound = (sound: sounds) => {
     return new Audio(`${src}${sounds[sound]}`);
 }
 
-export const playLoadedSound = (audio: HTMLAudioElement | undefined, isSoundEnabled: boolean, isloop: boolean = false) => {
+export const playLoadedSound = (audio: HTMLAudioElement | undefined, isSoundEnabled: boolean, isLoop: boolean = false) => {
     if (isSoundEnabled && audio) {
-        if (isloop) audio.loop = true;
+        if (isLoop) audio.loop = true;
+
+        audio.preload = "auto";
         audio.volume = 0.2;
-        audio.play()
+
+        audio.play().catch(console.error);
     }
 }
 
-export const stopLoadedSound = (audio: HTMLAudioElement | undefined, isSoundEnabled: boolean) => {
-    if (isSoundEnabled && audio) {
+export const stopLoadedSound = (audio: HTMLAudioElement | undefined) => {
+    if (audio) {
         audio.pause();
         audio.currentTime = 0;
+        audio.loop = false;
     }
 }
 

@@ -15,9 +15,18 @@ import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
 import textToSprite from "./utils/textToSprite";
 
 function GameContent() {
-  const { isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, dispatch } = useGameContext();
-  const victorySoundRef = useRef(loadSound("victory"));
-  const bgmRef = useRef(loadSound("bgm"));
+  const { isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
+  const victorySoundRef = useRef<HTMLAudioElement | undefined>(undefined);
+  const bgmRef = useRef<HTMLAudioElement | undefined>(undefined);
+
+  if (!bgmRef.current) {
+    bgmRef.current = loadSound("bgm");
+  }
+
+  if (!victorySoundRef.current) {
+    victorySoundRef.current = loadSound("victory");
+  }
+
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
   useEffect(() => {
@@ -52,8 +61,8 @@ function GameContent() {
     const toggle = (isSoundEnabled === false) ? true : false;
 
     if (toggle === false) {
-      stopLoadedSound(bgmRef.current, isSoundEnabled);
-      stopLoadedSound(victorySoundRef.current, isSoundEnabled);
+      stopLoadedSound(bgmRef.current);
+      stopLoadedSound(victorySoundRef.current);
     } else {
       if (!winState) {
         playLoadedSound(bgmRef.current, isSoundEnabled, true);
@@ -74,6 +83,18 @@ function GameContent() {
     playSound("select", isSoundEnabled);
     setIsOptionsOpen(!isOptionsOpen);
   }
+
+  const handleToggleScanlines = () => {
+    dispatch({ type: "SET_IS_CRT_EFFECT_ACTIVE", payload: !isCRTEffectActive });
+  }
+
+  useEffect(() => {
+    if (isCRTEffectActive) {
+      document.body.classList.add("crt-effect");
+    } else {
+      document.body.classList.remove("crt-effect");
+    }
+  }, [isCRTEffectActive]);
 
   return (
     <>

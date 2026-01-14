@@ -24,10 +24,9 @@ body {
   overflow: hidden;
   display: flex;
   height: 100vh;
-  /* animation: jitter 10s ease infinite; */
 }
 
-body::after {
+body.crt-effect::after {
   content: '';
   position: absolute;
   top: 0px;
