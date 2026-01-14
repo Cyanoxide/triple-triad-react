@@ -1,20 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./styles/font.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
   title: "Triple Triad React",
+  description: "Authentic Browser-based Triple Triad Game - This is a React and Typescript based project that I built in early 2025 to authentically recreate the Final Fantasy VII version of the Triple Triad minigame, and make it playable in a web browser with all the various functionalities implemented.",
 };
 
 export default function RootLayout({
