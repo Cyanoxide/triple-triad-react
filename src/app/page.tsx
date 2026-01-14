@@ -10,6 +10,7 @@ import RewardSelectionDialog from "./components/RewardSelectionDialog/RewardSele
 import { GameProvider, useGameContext } from "./context/GameContext";
 import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/sounds";
 import CardGallery from "./components/CardGallery/CardGallery";
+import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
 import textToSprite from "./utils/textToSprite";
 
