@@ -17,6 +17,22 @@
     .cell {
         width: 128px;
         height: 163px;
+        position: relative;
+
+        &[data-focused=true]::after {
+            content: "";
+            position: absolute;
+            left: -22px;
+            top: 50%;
+            margin-top: -14px;
+            background-image: url("/assets/cursor.png");
+            background-size: cover;
+            width: 45px;
+            height: 28px;
+            z-index: 5;
+            image-rendering: pixelated;
+            pointer-events: none;
+        }
     }
 
     [data-selected][data-confirmed] {

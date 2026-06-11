@@ -143,8 +143,8 @@
     }
 
 
-    [data-selectable=true] {
-        &:hover::after {
+    [data-focused=true] {
+        &::after {
             content: "";
             position: absolute;
             margin-left: 16px;

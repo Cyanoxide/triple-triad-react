@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import styles from './Hand.module.scss';
 import Card from '../Card/Card';
 import Indicator from '../Indicator/Indicator';
 import { useGameContext } from "../../context/GameContext";
 import { CardType, PlayerType } from "../../context/GameTypes";
 import playSound from "../../utils/sounds";
+import { gameNav } from "../../hooks/gameNav";
 
 interface HandProps {
     className?: string;
@@ -14,6 +15,7 @@ interface HandProps {
 const Hand: React.FC<HandProps> = ({ className, player }) => {
     const { currentPlayerHand, currentEnemyHand, turn, turnNumber, selectedCardId, score, isMenuOpen, isGameActive, isSoundEnabled, dispatch } = useGameContext();
     const cards = (player === "red") ? currentEnemyHand : currentPlayerHand;
+    const handFocus = useSyncExternalStore(gameNav.subscribe, gameNav.getFocus, () => null);
 
     const handleSelectCard = (card: CardType, player: PlayerType) => {
         playSound("select", isSoundEnabled);
@@ -25,9 +27,9 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
         });
     };
 
-    const handleMouseEnter = () => {
-        if (player === "blue" && turn === "blue") {
-            playSound("select", isSoundEnabled);
+    const handleMouseEnter = (index: number) => {
+        if (player === "blue" && turn === "blue" && isGameActive) {
+            gameNav.actions.focusHand?.(index);
         }
     }
 
@@ -37,7 +39,7 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
                 {turnNumber < 10 && <Indicator className={(player === turn && turn === player) ? "flex" : "hidden"} type="TURN_INDICATOR" />}
                 <div className={`${styles.hand} flex flex-col ${(isGameActive) ? "justify-end" : "justify-start"}`} data-player={player} data-selectable={player === turn && turn === "blue"}>
                     {cards.map((card, index) => (
-                        <div key={index} className="cell" onClick={() => handleSelectCard(card, player)} onMouseEnter={handleMouseEnter} data-selected={(card.uniqueId && selectedCardId === card.uniqueId)}>
+                        <div key={index} className="cell" onClick={() => handleSelectCard(card, player)} onMouseEnter={() => handleMouseEnter(index)} data-selected={(card.uniqueId && selectedCardId === card.uniqueId)} data-focused={handFocus?.player === player && handFocus.index === index}>
                             <Card id={card.cardId} player={card.currentOwner as PlayerType} />
                         </div>
                     ))}

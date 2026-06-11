@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import styles from './DialogPagination.module.scss';
 import { useGameContext } from '../../context/GameContext';
+import { paginationNav } from "../../hooks/paginationNav";
 import playSound from "../../utils/sounds";
 
 interface DialogPaginationProps<T> {
@@ -50,6 +51,12 @@ const DialogPagination = <T,>({ items, itemsPerPage = 1, renderItem, pagination 
         allPages[pagination] = next;
         dispatch({ type: "SET_CURRENT_PAGES", payload: allPages })
     }
+
+    // Expose the page-flip handlers (slide animation + sound included) to keyboard navigation
+    useEffect(() => {
+        paginationNav.register(pagination, { prev: handlePreviousClick, next: handleNextClick });
+        return () => paginationNav.unregister(pagination);
+    });
 
     return (
         <div className={styles.paginationContainer}>

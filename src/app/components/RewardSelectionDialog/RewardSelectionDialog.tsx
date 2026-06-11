@@ -7,6 +7,7 @@ import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import playSound, { stopLoadedSound } from "../../utils/sounds";
 import textToSprite from "../../utils/textToSprite";
+import { useCursorNav, markKeyboardNavigation } from "../../hooks/useCursorNav";
 
 interface RewardSelectionDialogProps {
     victorySound: HTMLAudioElement;
@@ -14,7 +15,7 @@ interface RewardSelectionDialogProps {
 }
 
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
-    const { playerCards, playerHand, enemyId, enemyHand, lostCards, winState, score, tradeRule, isSoundEnabled, board, dispatch } = useGameContext();
+    const { playerCards, playerHand, enemyId, enemyHand, lostCards, winState, score, tradeRule, isSoundEnabled, isCardGalleryOpen, board, dispatch } = useGameContext();
 
     type RewardType = { id: number; uniqueId: string | null | undefined, level: number, player: PlayerType, position: number }
 
@@ -120,17 +121,45 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     const [hoveredReward, setHoveredReward] = useState<RewardType | undefined>(undefined);
 
-    const handleMouseEnter = (id: number, position: number) => {
-        if (winState === "blue" && !isSelectionConfirmed) playSound("select", isSoundEnabled);
+    const setRewardPreview = (id: number, position: number) => {
         const cardData = cards.find(card => card.id === id);
         if (!cardData) return;
 
         setHoveredReward({ id, uniqueId: null, level: cardData.level, player: (winState === "red") ? "blue" : "red", position });
     }
 
-    const handleMouseLeave = () => {
-        setHoveredReward(undefined);
-    }
+    const { focus, isFocused } = useCursorNav({
+        groups: [{ id: "rewards", size: playerRewardSelection.length }],
+        initial: null,
+        fallback: { group: "rewards", index: 0 },
+        enabled: isManualSelect && !isSelectionConfirmed && selectedRewards.won.length < winAmount && !isCardGalleryOpen,
+        resolveMove: (current, dir, { wrap }) => {
+            if ((dir === "left" || dir === "right") && playerRewardSelection.length > 0) {
+                return { group: "rewards", index: wrap(current.index, (dir === "right") ? 1 : -1, playerRewardSelection.length) };
+            }
+            return null;
+        },
+        onFocus: (current) => {
+            const card = playerRewardSelection[current.index];
+            if (card) setRewardPreview(card.id, current.index);
+        },
+        onConfirm: (current) => {
+            const card = playerRewardSelection[current.index];
+            if (!card) return;
+            if (card.player === winState) {
+                playSound("error", isSoundEnabled);
+                return;
+            }
+            if (selectedRewards.won.length === winAmount - 1) {
+                // The final pick opens the confirmation dialog focused on Yes
+                markKeyboardNavigation();
+            }
+            handleSelectReward(card, card.position);
+        },
+        onCancel: () => {
+            if (selectedRewards.won.length > 0) handleDenial();
+        },
+    });
 
 
     const autoSelectRewards = (method: "best" | "sequential") => {
@@ -301,8 +330,8 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
             <div className="flex justify-center mb-7">
                 {playerRewardSelection.map((card, index) => (
-                    <div className={styles.cell} key={index} onClick={() => handleSelectReward(card, card.position)}>
-                        <Card id={card.id} player={card.player} onMouseEnter={() => handleMouseEnter(card.id, index)} onMouseLeave={handleMouseLeave} data-selected={selectedRewards.won.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
+                    <div className={styles.cell} key={index} data-focused={isFocused("rewards", index) && !isSelectionConfirmed && selectedRewards.won.length < winAmount} onClick={() => handleSelectReward(card, card.position)}>
+                        <Card id={card.id} player={card.player} onMouseEnter={() => { if (winState === "blue" && !isSelectionConfirmed) focus({ group: "rewards", index }); }} data-selected={selectedRewards.won.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
                     </div>
                 ))}
             </div>

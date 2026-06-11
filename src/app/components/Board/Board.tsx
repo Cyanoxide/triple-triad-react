@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import styles from './Board.module.scss';
 import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
@@ -13,6 +13,8 @@ import playSound from "../../utils/sounds";
 import textToSprite from '../../utils/textToSprite';
 import elementsList from "../../../data/elements.json";
 import BoardMessage from "../BoardMessage/BoardMessage";
+import { useCursorNav, consumeKeyboardNavIntent } from "../../hooks/useCursorNav";
+import { gameNav } from "../../hooks/gameNav";
 
 interface BoardProps {
     className?: string;
@@ -20,7 +22,7 @@ interface BoardProps {
 
 const Board: React.FC<BoardProps> = ({ className }) => {
     const debug = false;
-    const { currentPlayerHand, currentEnemyHand, selectedCardId, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, winState, dispatch } = useGameContext();
+    const { currentPlayerHand, currentEnemyHand, selectedCardId, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, winState, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, dispatch } = useGameContext();
     const [sameFlag, setSameFlag] = useState(false);
     const [plusFlag, setPlusFlag] = useState(false);
     const [comboFlag, setComboFlag] = useState(false);
@@ -434,9 +436,118 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     const handleMouseEnter = (rowIndex: number, colIndex: number) => {
         if (!board[rowIndex][colIndex] && !!selectedCardId && turn === "blue") {
-            playSound("select", isSoundEnabled);
+            focus({ group: "board", index: rowIndex * 3 + colIndex });
         }
     }
+
+    const lastHandIndexRef = useRef(0);
+    const lastBoardCellRef = useRef<number | null>(null);
+    const posRef = useRef<{ group: string; index: number } | null>(null);
+    // The cell the AI's cursor hovers before it places a card
+    const [aiBoardCell, setAiBoardCell] = useState<number | null>(null);
+
+    const firstPlacementCell = () => {
+        if (lastBoardCellRef.current !== null) {
+            const row = Math.floor(lastBoardCellRef.current / 3);
+            const col = lastBoardCellRef.current % 3;
+            if (!board[row][col]) return lastBoardCellRef.current;
+        }
+        if (!board[1][1]) return 4;
+        for (let index = 0; index < 9; index++) {
+            if (!board[Math.floor(index / 3)][index % 3]) return index;
+        }
+        return 4;
+    };
+
+    const { pos, focus, setPosSilently, isFocused } = useCursorNav({
+        groups: [
+            { id: "hand", size: currentPlayerHand.length },
+            { id: "board", size: 9 },
+        ],
+        initial: null,
+        fallback: { group: "hand", index: 0 },
+        enabled: isGameActive && turn === "blue" && !winState && !isMenuOpen && !isCardSelectionOpen && !isCardGalleryOpen && !isRewardSelectionOpen,
+        resolveMove: (current, dir, { wrap }) => {
+            if (current.group === "hand") {
+                if ((dir === "up" || dir === "down") && currentPlayerHand.length > 0) {
+                    return { group: "hand", index: wrap(current.index, (dir === "down") ? 1 : -1, currentPlayerHand.length) };
+                }
+                return null;
+            }
+            const row = Math.floor(current.index / 3);
+            const col = current.index % 3;
+            const nextRow = (dir === "up") ? (row + 2) % 3 : (dir === "down") ? (row + 1) % 3 : row;
+            const nextCol = (dir === "left") ? (col + 2) % 3 : (dir === "right") ? (col + 1) % 3 : col;
+            return { group: "board", index: nextRow * 3 + nextCol };
+        },
+        onFocus: (current) => {
+            gameNav.setFocus(current.group === "hand" ? { player: "blue", index: current.index } : null);
+        },
+        onConfirm: (current) => {
+            if (current.group === "hand") {
+                const card = currentPlayerHand[current.index];
+                if (!card) return;
+                playSound("select", isSoundEnabled);
+                dispatch({ type: "SET_SELECTED_CARD_ID", payload: card.uniqueId });
+                lastHandIndexRef.current = current.index;
+                gameNav.setFocus(null);
+                setPosSilently({ group: "board", index: firstPlacementCell() });
+                return;
+            }
+            const row = Math.floor(current.index / 3);
+            const col = current.index % 3;
+            if (!board[row][col] && selectedCard && selectedCard.currentOwner === turn) {
+                lastBoardCellRef.current = current.index;
+                handlePlayerBoardSelection(row, col);
+            } else {
+                playSound("error", isSoundEnabled);
+            }
+        },
+        onCancel: () => {
+            if (pos?.group !== "board") return;
+            dispatch({ type: "SET_SELECTED_CARD_ID", payload: null });
+            playSound("back", isSoundEnabled);
+            const index = Math.min(lastHandIndexRef.current, Math.max(0, currentPlayerHand.length - 1));
+            setPosSilently({ group: "hand", index });
+            gameNav.setFocus({ player: "blue", index });
+        },
+    });
+
+    posRef.current = pos;
+
+    // Let mouse hover on blue hand cards move the shared cursor
+    useEffect(() => {
+        gameNav.actions.focusHand = (index) => focus({ group: "hand", index });
+        return () => {
+            gameNav.actions.focusHand = undefined;
+        };
+    }, [focus]);
+
+    // After a placement (or any deselect) the cursor returns to the hand
+    useEffect(() => {
+        if (selectedCardId || pos?.group !== "board") return;
+        if (currentPlayerHand.length === 0) {
+            setPosSilently(null);
+            gameNav.setFocus(null);
+            return;
+        }
+        const index = Math.min(lastHandIndexRef.current, currentPlayerHand.length - 1);
+        setPosSilently({ group: "hand", index });
+        gameNav.setFocus({ player: "blue", index });
+    }, [selectedCardId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Keyboard-started games begin with the cursor on the first hand card
+    useEffect(() => {
+        if (isGameActive) {
+            if (consumeKeyboardNavIntent()) {
+                setPosSilently({ group: "hand", index: 0 });
+                gameNav.setFocus({ player: "blue", index: 0 });
+            }
+        } else {
+            setPosSilently(null);
+            gameNav.setFocus(null);
+        }
+    }, [isGameActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
     useEffect(() => {
@@ -454,16 +565,31 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 setTimeout(() => {
                     playSound("select", isSoundEnabled);
 
+                    // The cursor follows the AI: first onto its chosen hand card
+                    const enemyHandIndex = currentEnemyHand.findIndex(card => card.uniqueId === uniqueId);
+                    gameNav.setFocus({ player: "red", index: Math.max(0, enemyHandIndex) });
+
                     dispatch({
                         type: "SET_SELECTED_CARD_ID",
                         payload: enemyCard.uniqueId,
                     })
 
                     setTimeout(() => {
-                        grabCardFromHand(enemyCard, "red");
-                        placeCard(enemyPosition.row, enemyPosition.col, enemyCard);
-                        playSound("place", isSoundEnabled);
-                        swapTurn();
+                        // ...then onto the target cell, before the card lands
+                        gameNav.setFocus(null);
+                        setAiBoardCell(enemyPosition.row * 3 + enemyPosition.col);
+
+                        setTimeout(() => {
+                            setAiBoardCell(null);
+                            grabCardFromHand(enemyCard, "red");
+                            placeCard(enemyPosition.row, enemyPosition.col, enemyCard);
+                            playSound("place", isSoundEnabled);
+                            swapTurn();
+                            // Hand the cursor back to the player's hand
+                            if (posRef.current?.group === "hand") {
+                                gameNav.setFocus({ player: "blue", index: posRef.current.index });
+                            }
+                        }, 500);
                     }, enemyDelay());
                 }, enemyDelay());
             }
@@ -505,6 +631,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                             className={styles.cell}
                             data-position={[rowIndex, colIndex]}
                             data-selectable={!board[rowIndex][colIndex] && turn === "blue" && !!selectedCardId}
+                            data-focused={isFocused("board", rowIndex * 3 + colIndex) || aiBoardCell === rowIndex * 3 + colIndex}
                             data-element={(elements && String([rowIndex, colIndex]) in elements) ? elements[String([rowIndex, colIndex])] : null}
                             onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
                             onClick={() => handlePlayerBoardSelection(rowIndex, colIndex)}
