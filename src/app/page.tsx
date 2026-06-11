@@ -138,7 +138,7 @@ function GameContent() {
             <Image src="/assets/menu-expand.png?v=1" onClick={handleToggleOptions} onMouseEnter={() => optionsNav.actions.focusOption?.(0)} data-focused={optionsFocus === 0} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" />
             <Image src="/assets/screenicon.png" onClick={handleToggleScanlines} onMouseEnter={() => optionsNav.actions.focusOption?.(1)} data-focused={optionsFocus === 1} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" data-selected={isCardGalleryOpen} />
             <Image src="/assets/cardicon.png" onClick={handleToggleCardGallery} onMouseEnter={() => optionsNav.actions.focusOption?.(2)} data-focused={optionsFocus === 2} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" data-selected={isCardGalleryOpen} />
-            <div onClick={handleSoundToggle} onMouseEnter={() => optionsNav.actions.focusOption?.(3)} data-focused={optionsFocus === 3} className="flex items-center m-0">
+            <div onClick={handleSoundToggle} onMouseEnter={() => optionsNav.actions.focusOption?.(3)} data-focused={optionsFocus === 3} className="flex items-center m-0 h-full">
               <span className="ml-3 mr-3">{textToSprite("Sound")}</span>
               <div className="flex items-center">
                 <span className={`${(!isSoundEnabled) ? "opacity-50" : ""} mr-3`}>{textToSprite("ON")}</span>

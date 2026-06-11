@@ -17,14 +17,15 @@
     .cell {
         width: 128px;
         height: 163px;
-        position: relative;
 
+        // Anchored to the pseudo-element's static flow position (no top/left)
+        // so the cell needs no positioning of its own - the reward animations
+        // rely on the fixed container being the containing block
         &[data-focused=true]::after {
             content: "";
             position: absolute;
-            left: -22px;
-            top: 50%;
-            margin-top: -14px;
+            margin-left: -22px;
+            margin-top: -95px;
             background-image: url("/assets/cursor.png");
             background-size: cover;
             width: 45px;

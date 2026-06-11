@@ -523,7 +523,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         };
     }, [focus]);
 
-    // After a placement (or any deselect) the cursor returns to the hand
+    // After a placement (or any deselect) the cursor returns to the hand;
+    // the visible hand cursor only renders on the player's own turn
     useEffect(() => {
         if (selectedCardId || pos?.group !== "board") return;
         if (currentPlayerHand.length === 0) {
@@ -533,7 +534,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         }
         const index = Math.min(lastHandIndexRef.current, currentPlayerHand.length - 1);
         setPosSilently({ group: "hand", index });
-        gameNav.setFocus({ player: "blue", index });
+        gameNav.setFocus((turn === "blue") ? { player: "blue", index } : null);
     }, [selectedCardId]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Keyboard-started games begin with the cursor on the first hand card
@@ -552,6 +553,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     useEffect(() => {
         if (turn === "red" && turnNumber <= ((debug) ? 1 : 9)) {
+            // The player's cursor hides while the AI takes its turn
+            gameNav.setFocus(null);
             const enemyMove = getEnemyMove(board, currentEnemyHand, "advanced", elements);
             if (enemyMove) {
                 const { enemyCardId, enemyPosition, uniqueId } = enemyMove;
