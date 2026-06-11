@@ -560,41 +560,73 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 const { enemyCardId, enemyPosition, uniqueId } = enemyMove;
                 if (!enemyCardId) return;
 
-                const enemyDelay = () => Math.floor(Math.random() * 2000) + 1000;
                 const enemyCard = [...currentEnemyHand].find(card => card.uniqueId === uniqueId);
 
                 if (!enemyCard) return;
 
+                const targetIndex = Math.max(0, currentEnemyHand.findIndex(card => card.uniqueId === uniqueId));
+                const handSize = currentEnemyHand.length;
+
+                // The AI's cursor starts on its top card and walks down to its
+                // pick, sometimes lingering on a decoy as though changing its mind
+                const walk: number[] = [0];
+                const pushWalk = (from: number, to: number) => {
+                    const step = (to >= from) ? 1 : -1;
+                    for (let i = from + step; (step > 0) ? i <= to : i >= to; i += step) walk.push(i);
+                };
+
+                let decoyIndex: number | null = null;
+                if (handSize > 1 && Math.random() < 0.6) {
+                    const candidates = Array.from({ length: handSize }, (_, index) => index).filter(index => index !== targetIndex && index !== 0);
+                    if (candidates.length) decoyIndex = candidates[Math.floor(Math.random() * candidates.length)];
+                }
+
+                if (decoyIndex !== null) {
+                    pushWalk(0, decoyIndex);
+                    pushWalk(decoyIndex, targetIndex);
+                } else {
+                    pushWalk(0, targetIndex);
+                }
+
+                let delay = Math.floor(Math.random() * 800) + 700;
+                walk.forEach((index) => {
+                    setTimeout(() => {
+                        playSound("select", isSoundEnabled);
+                        gameNav.setFocus({ player: "red", index });
+                    }, delay);
+                    // a longer beat on the decoy card sells the hesitation
+                    delay += (index === decoyIndex)
+                        ? Math.floor(Math.random() * 400) + 550
+                        : Math.floor(Math.random() * 120) + 220;
+                });
+
+                delay += Math.floor(Math.random() * 500) + 400;
                 setTimeout(() => {
-                    playSound("select", isSoundEnabled);
-
-                    // The cursor follows the AI: first onto its chosen hand card
-                    const enemyHandIndex = currentEnemyHand.findIndex(card => card.uniqueId === uniqueId);
-                    gameNav.setFocus({ player: "red", index: Math.max(0, enemyHandIndex) });
-
                     dispatch({
                         type: "SET_SELECTED_CARD_ID",
                         payload: enemyCard.uniqueId,
                     })
+                }, delay);
 
-                    setTimeout(() => {
-                        // ...then onto the target cell, before the card lands
-                        gameNav.setFocus(null);
-                        setAiBoardCell(enemyPosition.row * 3 + enemyPosition.col);
+                delay += Math.floor(Math.random() * 900) + 700;
+                setTimeout(() => {
+                    // ...then onto the target cell, before the card lands
+                    gameNav.setFocus(null);
+                    setAiBoardCell(enemyPosition.row * 3 + enemyPosition.col);
+                }, delay);
 
-                        setTimeout(() => {
-                            setAiBoardCell(null);
-                            grabCardFromHand(enemyCard, "red");
-                            placeCard(enemyPosition.row, enemyPosition.col, enemyCard);
-                            playSound("place", isSoundEnabled);
-                            swapTurn();
-                            // Hand the cursor back to the player's hand
-                            if (posRef.current?.group === "hand") {
-                                gameNav.setFocus({ player: "blue", index: posRef.current.index });
-                            }
-                        }, 500);
-                    }, enemyDelay());
-                }, enemyDelay());
+                delay += 500;
+                setTimeout(() => {
+                    setAiBoardCell(null);
+                    grabCardFromHand(enemyCard, "red");
+                    placeCard(enemyPosition.row, enemyPosition.col, enemyCard);
+                    playSound("place", isSoundEnabled);
+                    swapTurn();
+                    // Hand the cursor back to the player's hand
+                    if (posRef.current?.group === "hand") {
+                        gameNav.setFocus({ player: "blue", index: posRef.current.index });
+                    }
+                }, delay);
             }
         }
     }, [turn]);
