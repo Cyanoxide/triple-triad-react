@@ -24,6 +24,7 @@ body {
   overflow: hidden;
   display: flex;
   height: 100vh;
+  touch-action: manipulation; /* no double-tap zoom; the app scales itself */
 }
 
 body.crt-effect::after {

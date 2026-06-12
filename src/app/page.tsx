@@ -43,17 +43,30 @@ function GameContent() {
         const originalWidth = 950;
         const originalHeight = 750;
 
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
+        // The layout viewport stays stable while pinch-zooming, unlike innerWidth/innerHeight
+        const windowWidth = document.documentElement.clientWidth;
+        const windowHeight = document.documentElement.clientHeight;
 
         const scale = Math.min(windowWidth / originalWidth, windowHeight / originalHeight);
         app.style.zoom = String(scale);
         modal.style.zoom = String(scale);
       }
 
+      // iOS ignores user-scalable=no, so block pinch zoom; the app scales itself anyway
+      const preventGesture = (event: Event) => event.preventDefault();
+
       window.addEventListener('load', scaleApp);
       window.addEventListener('resize', scaleApp);
+      document.addEventListener('gesturestart', preventGesture);
+      document.addEventListener('gesturechange', preventGesture);
       scaleApp();
+
+      return () => {
+        window.removeEventListener('load', scaleApp);
+        window.removeEventListener('resize', scaleApp);
+        document.removeEventListener('gesturestart', preventGesture);
+        document.removeEventListener('gesturechange', preventGesture);
+      };
     }
   }, []);
 
