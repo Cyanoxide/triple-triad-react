@@ -8,7 +8,11 @@ import tradeRules from "../../../data/rules.json";
 import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
 
-const EnemySelectionDialog = () => {
+interface EnemySelectionProps {
+    focused?: boolean;
+}
+
+const EnemySelectionDialog = ({ focused = false }: EnemySelectionProps) => {
     const { isMenuOpen, currentPages, slideDirection, lostCards, playerCards, dispatch } = useGameContext();
     const [lostCardMap, setLostCardMap] = useState<{ [id: string]: boolean }>({});
 
@@ -61,7 +65,7 @@ const EnemySelectionDialog = () => {
     };
 
     return (
-        <div className={`${styles.enemySelectionDialog} ${isMenuOpen ? "" : "hidden"} top-[80%]`}>
+        <div className={`${styles.enemySelectionDialog} ${isMenuOpen ? "" : "hidden"} top-[80%]`} data-focused={focused}>
             <h4 className={styles.meta} data-sprite="players">Players</h4>
             <DialogPagination items={filteredPlayers} itemsPerPage={1} renderItem={playerContent} pagination="players" />
         </div>
