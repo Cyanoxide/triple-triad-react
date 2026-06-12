@@ -18,4 +18,18 @@
     &>div {
         margin-top: -5px;
     }
+
+    &[data-focused=true]::after {
+        content: "";
+        position: absolute;
+        left: 24px;
+        top: 50%;
+        transform: translateY(-50%);
+        background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174757/cursor_ujdxmj.png");
+        background-size: cover;
+        width: 45px;
+        height: 28px;
+        z-index: 4;
+        image-rendering: pixelated;
+    }
 }

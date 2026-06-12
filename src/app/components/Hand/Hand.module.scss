@@ -29,31 +29,23 @@
 
         [data-player] {
             box-shadow: inset 0 0 0 1px #fff;
-
-            &:hover {
-                &::after {
-                    position: absolute;
-                    top: 16px;
-                }
-            }
-
-            &[data-player=blue] {
-                &:hover {
-                    &::after {
-                        content: "";
-                        position: absolute;
-                        left: -36px;
-                        background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174757/cursor_ujdxmj.png");
-                        background-size: cover;
-                        width: 45px;
-                        height: 28px;
-                        margin-top: 50px;
-                        z-index: 4;
-                        image-rendering: pixelated;
-                    }
-                }
-            }
         }
+    }
+
+    // The shared cursor, shown on whichever hand card is focused
+    // (blue via keyboard/hover, red while the AI picks its card)
+    >div[data-focused=true] [data-player]::after {
+        content: "";
+        position: absolute;
+        top: 16px;
+        left: -36px;
+        background-image: url("https://res.cloudinary.com/dnbsag1cp/image/upload/v1759174757/cursor_ujdxmj.png");
+        background-size: cover;
+        width: 45px;
+        height: 28px;
+        margin-top: 50px;
+        z-index: 4;
+        image-rendering: pixelated;
     }
 }
 

@@ -3,18 +3,18 @@ type sounds = "select" | "flip" | "place" | "error" | "spin" | "back" | "success
 export const loadSound = (sound: sounds) => {
     if (typeof window == "undefined") return;
 
-    const src = "/assets/audio/";
+    const src = "https://res.cloudinary.com/dnbsag1cp/video/upload/";
 
     const sounds = {
-        "select": "select.mp3",
-        "flip": "flip.mp3",
-        "place": "place.mp3",
-        "error": "error.mp3",
-        "spin": "spin.mp3",
-        "back": "back.mp3",
-        "success": "success.mp3",
-        "victory": "victory.mp3",
-        "bgm": "bgm.mp3",
+        "select": "v1759174799/select_zkotun.mp3",
+        "flip": "v1759174796/flip_amnd1i.mp3",
+        "place": "v1759174799/place_bafhuu.mp3",
+        "error": "v1759174796/error_xjr7yd.mp3",
+        "spin": "v1759174801/spin_gon09l.mp3",
+        "back": "v1759174795/back_yt82fe.mp3",
+        "success": "v1759174797/success_wlgfy9.mp3",
+        "victory": "v1759174806/victory_hqz8c6.mp3",
+        "bgm": "v1759174807/bgm_f9ep6l.mp3",
     }
 
     return new Audio(`${src}${sounds[sound]}`);

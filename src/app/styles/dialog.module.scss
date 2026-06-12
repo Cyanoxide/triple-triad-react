@@ -14,7 +14,7 @@
         text-align: center;
         text-shadow: 2px 2px 0 #212121;
 
-        &:hover {
+        &[data-focused=true] {
             &::after {
                 content: "";
                 position: absolute;

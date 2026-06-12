@@ -28,7 +28,7 @@
     }
 
     .cardListItem {
-        &:hover {
+        &[data-focused=true] {
             &:before {
                 content: "";
                 position: absolute;

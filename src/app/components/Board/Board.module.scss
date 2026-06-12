@@ -143,8 +143,10 @@
     }
 
 
-    [data-selectable=true] {
-        &:hover::after {
+    // div[data-position] prefix keeps this more specific than the generic
+    // full-size ::before/::after cell overlays above
+    div[data-position][data-focused=true] {
+        &::after {
             content: "";
             position: absolute;
             margin-left: 16px;

@@ -5,7 +5,11 @@ import locations from "../../../data/locations.json";
 import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
 
-const LocationSelectionDialog = () => {
+interface LocationSelectionProps {
+    focused?: boolean;
+}
+
+const LocationSelectionDialog = ({ focused = false }: LocationSelectionProps) => {
     const { isMenuOpen, currentPages, slideDirection, dispatch } = useGameContext();
 
     useEffect(() => {
@@ -28,7 +32,7 @@ const LocationSelectionDialog = () => {
     };
 
     return (
-        <div className={`${styles.locationSelectionDialog} ${isMenuOpen ? "" : "hidden"} top-[80%]`}>
+        <div className={`${styles.locationSelectionDialog} ${isMenuOpen ? "" : "hidden"} top-[80%]`} data-focused={focused}>
             <h4 className={styles.meta} data-sprite="location">Location</h4>
             <DialogPagination items={locations} itemsPerPage={1} renderItem={locationContent} pagination="locations" />
         </div>

@@ -7,9 +7,10 @@ import textToSprite from "../../utils/textToSprite";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
 import CardSelectionDialog from "../CardSelectionDialog/CardSelectionDialog";
 import CardValues from "../CardValues/CardValues";
+import playSound from "../../utils/sounds";
 
 const CardGallery = () => {
-    const { playerCards, currentPlayerCards, previewCardId, currentPages, lostCards, dispatch } = useGameContext();
+    const { playerCards, currentPlayerCards, previewCardId, currentPages, lostCards, isSoundEnabled, dispatch } = useGameContext();
 
     const previewCardData = cards.find(card => card.id === previewCardId);
     let previewCardLocation;
@@ -35,12 +36,6 @@ const CardGallery = () => {
         dispatch({ type: "SET_IS_CARD_GALLERY_OPEN", payload: false });
     }
 
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && currentPages.cardGallery > 0) {
-            handleDismissGallery();
-        }
-    });
-
     const titleType = currentPages.cardGallery < 6 ? "Monster" : currentPages.cardGallery < 8 ? "Boss" : currentPages.cardGallery < 10 ? "GF" : "Player";
     const currentPageTitle = `Level ${currentPages.cardGallery} ${titleType} Cards`;
 
@@ -53,7 +48,7 @@ const CardGallery = () => {
                 </div>
                 <div className="flex justify-between gap-1 my-1">
                     <div className="w-1/2 ml-4">
-                        <CardSelectionDialog showPreview={false} showMissingCards={true} modifier="card-gallery" pagination="cardGallery" />
+                        <CardSelectionDialog showPreview={false} showMissingCards={true} modifier="card-gallery" pagination="cardGallery" onCancel={() => { playSound("back", isSoundEnabled); handleDismissGallery(); }} />
                     </div>
                     <div className="w-1/2 mr-4 flex flex-col gap-1">
                         <SimpleDialog className={`${styles.cardDetails} flex justify-between`} metaTitle={null}>

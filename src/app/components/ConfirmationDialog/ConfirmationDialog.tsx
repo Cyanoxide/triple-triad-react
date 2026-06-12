@@ -2,8 +2,8 @@ import React from 'react';
 import { createPortal } from "react-dom";
 import styles from './ConfirmationDialog.module.scss';
 import { useGameContext } from '../../context/GameContext';
-import playSound from "../../utils/sounds";
 import textToSprite from '../../utils/textToSprite';
+import { useCursorNav, markKeyboardNavigation } from "../../hooks/useCursorNav";
 
 interface MenuProps {
     handleConfirmation: () => void;
@@ -11,11 +11,30 @@ interface MenuProps {
 }
 
 const ConfirmationDialog: React.FC<MenuProps> = ({ handleConfirmation, handleDenial }) => {
-    const { isSoundEnabled } = useGameContext();
+    const { isCardGalleryOpen } = useGameContext();
 
-    const handleMouseEnter = () => {
-        playSound("select", isSoundEnabled);
-    }
+    const { focus, isFocused } = useCursorNav({
+        groups: [{ id: "choice", size: 2 }],
+        initial: null,
+        fallback: { group: "choice", index: 0 },
+        enabled: !isCardGalleryOpen,
+        resolveMove: (current, dir, { wrap }) => {
+            if (dir === "up" || dir === "down") {
+                return { group: "choice", index: wrap(current.index, (dir === "down") ? 1 : -1, 2) };
+            }
+            return null;
+        },
+        onFocus: () => { },
+        onConfirm: (current) => {
+            if (current.index === 0) {
+                markKeyboardNavigation();
+                handleConfirmation();
+            } else {
+                handleDenial();
+            }
+        },
+        onCancel: () => handleDenial(),
+    });
 
     const modalElement = document.getElementById("modal");
 
@@ -27,8 +46,8 @@ const ConfirmationDialog: React.FC<MenuProps> = ({ handleConfirmation, handleDen
                 <h4 className={styles.meta} data-sprite="choice">Choice</h4>
                 <h3 className="text-center">{textToSprite("Are you sure?")}</h3>
                 <div className="flex flex-col items-center">
-                    <button className="relative" onClick={handleConfirmation} onMouseEnter={handleMouseEnter}>{textToSprite("Yes")}</button>
-                    <button className="relative" onClick={handleDenial} onMouseEnter={handleMouseEnter}>{textToSprite("No")}</button>
+                    <button className="relative" data-focused={isFocused("choice", 0)} onClick={handleConfirmation} onMouseEnter={() => focus({ group: "choice", index: 0 })}>{textToSprite("Yes")}</button>
+                    <button className="relative" data-focused={isFocused("choice", 1)} onClick={handleDenial} onMouseEnter={() => focus({ group: "choice", index: 1 })}>{textToSprite("No")}</button>
                 </div>
             </div>
         </div>,

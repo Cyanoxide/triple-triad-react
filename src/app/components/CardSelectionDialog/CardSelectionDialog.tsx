@@ -11,15 +11,20 @@ import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
 import { generateCardFromId } from "../../utils/general";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
+import { useCursorNav, markKeyboardNavigation } from "../../hooks/useCursorNav";
+import { paginationNav } from "../../hooks/paginationNav";
 
 interface CardSelectionDialogProps {
     showPreview?: boolean;
     showMissingCards?: boolean;
     modifier?: string;
     pagination?: string;
+    onCancel?: () => void;
 }
 
-const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview = true, showMissingCards = false, modifier, pagination = "cards" }) => {
+const ITEMS_PER_PAGE = 11;
+
+const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview = true, showMissingCards = false, modifier, pagination = "cards", onCancel }) => {
     const { playerCards, currentPlayerCards, previewCardId, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isCardGalleryOpen, isSoundEnabled, currentPages, slideDirection, rules, dispatch } = useGameContext();
 
     const hand: CardType[] = [...currentPlayerHand];
@@ -69,11 +74,9 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
     }
 
-    const handleCardHover = (id: number) => {
+    const setCardPreview = (id: number) => {
         const previewValue = !(Object.keys(playerCards).find(cardId => cardId === String(id))) ? null : id;
         dispatch({ type: "SET_PREVIEW_CARD_ID", payload: previewValue });
-
-        if (currentPlayerHand.length < 5) playSound("select", isSoundEnabled);
     };
 
     const handleConfirmation = () => {
@@ -91,11 +94,92 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: playerCards });
     }
 
-    const cardContent = (item: { id: number, location: string, player: string, additionalDesc: string }, quantity: number) => (
+    const isGalleryInstance = pagination === "cardGallery";
+    const currentPage = currentPages[pagination];
+    const pageItems = Object.entries(cards).slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+    const isItemUnowned = (index: number) => {
+        const entry = pageItems[index];
+        return !entry || !(Object.keys(playerCards).find(cardId => cardId === entry[0]));
+    };
+
+    const { pos, focus, isFocused } = useCursorNav({
+        groups: [{ id: "list", size: pageItems.length, isDisabled: isGalleryInstance ? isItemUnowned : undefined }],
+        initial: null,
+        fallback: { group: "list", index: 0 },
+        enabled: isGalleryInstance
+            ? isCardGalleryOpen
+            : (isCardSelectionOpen && !isCardGalleryOpen && currentPlayerHand.length < 5),
+        resolveMove: (current, dir, { wrap }) => {
+            if (dir === "left" || dir === "right") {
+                paginationNav.flip(pagination, (dir === "left") ? "prev" : "next");
+                return "handled";
+            }
+            const size = pageItems.length;
+            if (size === 0) return null;
+            const delta = (dir === "down") ? 1 : -1;
+            let index = current.index;
+            for (let step = 0; step < size; step++) {
+                index = wrap(index, delta, size);
+                if (!isGalleryInstance || !isItemUnowned(index)) return { group: "list", index };
+            }
+            return null;
+        },
+        resolvePageJump: (_, dir) => {
+            paginationNav.flip(pagination, (dir === "pageUp") ? "prev" : "next");
+            return "handled";
+        },
+        onFocus: (current) => {
+            const entry = pageItems[current.index];
+            if (entry) setCardPreview(Number(entry[0]));
+        },
+        onConfirm: (current) => {
+            if (isGalleryInstance) return;
+            const entry = pageItems[current.index];
+            if (!entry) return;
+            const [cardId, quantity] = entry;
+            if (currentPlayerHand.length === 4 && cards[Number(cardId)] > 0) {
+                // The 5th pick opens the confirmation dialog focused on Yes
+                markKeyboardNavigation();
+            }
+            handleCardSelection(Number(cardId), quantity);
+        },
+        onCancel: () => {
+            if (isGalleryInstance) {
+                onCancel?.();
+                return;
+            }
+            if (currentPlayerHand.length > 0) {
+                // FF8: cancel takes back the most recently picked card
+                const newHand = [...currentPlayerHand];
+                const removed = newHand.pop();
+                const newCards = { ...currentPlayerCards };
+                if (removed) newCards[removed.cardId] = (newCards[removed.cardId] ?? 0) + 1;
+                score[1] -= 1;
+                playSound("back", isSoundEnabled);
+                dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: newHand });
+                dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: newCards });
+                return;
+            }
+            playSound("back", isSoundEnabled);
+            markKeyboardNavigation();
+            dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
+            dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
+        },
+    });
+
+    // Keep the preview in sync with the card under the cursor after a page flip
+    useEffect(() => {
+        if (!pos || pos.group !== "list") return;
+        const entry = pageItems[Math.min(pos.index, pageItems.length - 1)];
+        if (entry) setCardPreview(Number(entry[0]));
+    }, [currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const cardContent = (item: { id: number, location: string, player: string, additionalDesc: string }, quantity: number, pageIndex: number) => (
         <div
             key={item.id}
             onClick={() => handleCardSelection(item.id, quantity)}
-            onMouseEnter={() => handleCardHover(item.id)}
+            onMouseEnter={() => focus({ group: "list", index: pageIndex })}
+            data-focused={isFocused("list", pageIndex) && (isGalleryInstance || currentPlayerHand.length < 5)}
             className={`${styles.cardListItem} flex justify-between ${!(Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "opacity-0" : quantity ? "cursor-pointer" : "opacity-50"}`}
             data-slide-direction={(slideDirection && slideDirection[0] === pagination) ? slideDirection[1] : null}
             style={isCardGalleryOpen ? { zoom: 1.27 } : undefined}
@@ -161,8 +245,8 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                     </h4>
                     <h4 className={`${styles.meta} mr-3`} data-sprite="num.">Num.</h4>
                 </div>
-                <DialogPagination items={Object.entries(cards)} itemsPerPage={11} renderItem={([cardId, quantity]: [number, number]) =>
-                    cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity)} pagination={pagination} />
+                <DialogPagination items={Object.entries(cards)} itemsPerPage={ITEMS_PER_PAGE} renderItem={([cardId, quantity]: [number, number], globalIndex: unknown) =>
+                    cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity, Number(globalIndex) - (currentPage - 1) * ITEMS_PER_PAGE)} pagination={pagination} />
 
                 {currentPlayerHand.length === 5 && !isCardGalleryOpen && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
                 {showPreview && previewCardId && <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>

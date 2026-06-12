@@ -30,8 +30,13 @@
             }
         }
 
-        &:hover {
+        &:hover,
+        &:has([data-focused="true"]) {
             opacity: 1;
+        }
+
+        [data-focused="true"] {
+            background-color: rgba(0, 0, 0, 0.25);
         }
 
         img {
