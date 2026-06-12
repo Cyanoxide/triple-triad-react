@@ -24,7 +24,14 @@ body {
   overflow: hidden;
   display: flex;
   height: 100vh;
-  touch-action: manipulation; /* no double-tap zoom; the app scales itself */
+}
+
+/* No double-tap or pinch zoom; the app scales itself. Safari only honours
+   touch-action on the element actually touched, so apply it everywhere */
+html,
+body,
+body * {
+  touch-action: manipulation;
 }
 
 body.crt-effect::after {
