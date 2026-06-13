@@ -14,6 +14,13 @@
   }
 }
 
+/* Clamp the document so layout overflow (a WebKit zoom artifact) can never
+   grow the scrollable area and trigger mobile Safari's shrink-to-fit */
+html {
+  overflow: hidden;
+  height: 100%;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
@@ -24,6 +31,14 @@ body {
   overflow: hidden;
   display: flex;
   height: 100vh;
+}
+
+/* No double-tap or pinch zoom; the app scales itself. Safari only honours
+   touch-action on the element actually touched, so apply it everywhere */
+html,
+body,
+body * {
+  touch-action: manipulation;
 }
 
 body.crt-effect::after {
