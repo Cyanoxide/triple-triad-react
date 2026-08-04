@@ -63,8 +63,16 @@ const buffers = new Map<sounds, AudioBuffer>();
 const loading = new Map<sounds, Promise<void>>();
 const lastPlayed = new Map<sounds, number>();
 
-/** Elements whose play() was refused, waiting for a gesture to retry */
+/** Elements whose play() was refused by the autoplay policy, awaiting a gesture */
 const blocked = new Map<HTMLAudioElement, boolean>();
+
+/**
+ * Elements the game stopped on purpose. pause() rejects whatever play() promise
+ * was in flight, and that rejection arrives after the stop has been recorded, so
+ * without this marker a deliberately stopped track puts itself back in the retry
+ * queue and starts again later over whatever is playing by then.
+ */
+const stopped = new WeakSet<HTMLAudioElement>();
 
 const getContext = (): AudioContext | null => {
     if (context || contextUnavailable) return context;
@@ -136,18 +144,31 @@ const startEffect = (name: sounds, isLoop: boolean) => {
 };
 
 /**
- * Starts an element, and remembers it if the browser refuses. A refusal here is
- * almost always the autoplay policy, and the answer is to try again on the next
- * gesture rather than to give up for the session.
+ * Starts an element, and remembers it only if the *autoplay policy* refused it.
+ *
+ * Which rejection it is matters. NotAllowedError means the browser would not
+ * start it without a gesture, and it is worth trying again on the next one.
+ * AbortError means our own pause() interrupted this play — retrying that later
+ * restarts a track the game deliberately stopped, on top of whatever is playing
+ * by then, which is two pieces of music at once.
  */
 const startElement = (audio: HTMLAudioElement, isLoop: boolean) => {
+    stopped.delete(audio);
+
     audio.loop = isLoop;
     audio.preload = "auto";
     audio.volume = VOLUME;
 
+    // Already rolling: play() would resolve without doing anything, and asking
+    // again only creates another promise to mis-handle
+    if (!audio.paused) return;
+
     void audio.play().then(
-        () => blocked.delete(audio),
-        () => { blocked.set(audio, isLoop); },
+        () => { blocked.delete(audio); },
+        (error: unknown) => {
+            const name = (error as DOMException | undefined)?.name;
+            if (name === "NotAllowedError" && !stopped.has(audio)) blocked.set(audio, isLoop);
+        },
     );
 };
 
@@ -172,11 +193,14 @@ const unlock = () => {
         source.start(0);
     }
 
-    // Anything the browser refused before now — the music, most likely — gets
-    // its second chance on the back of this gesture
+    // Anything the autoplay policy refused before now — the music, most likely —
+    // gets its second chance on the back of this gesture. Skip any that has been
+    // stopped or restarted since.
     const waiting = [...blocked.entries()];
     blocked.clear();
-    waiting.forEach(([audio, isLoop]) => startElement(audio, isLoop));
+    waiting.forEach(([audio, isLoop]) => {
+        if (audio.paused && !stopped.has(audio)) startElement(audio, isLoop);
+    });
 };
 
 /**
@@ -225,8 +249,9 @@ export const playLoadedSound = (audio: HTMLAudioElement | undefined, isSoundEnab
 
 export const stopLoadedSound = (audio: HTMLAudioElement | undefined) => {
     if (!audio) return;
-    // Drop any pending retry as well, or a track stopped before the first
-    // gesture would start itself the moment one arrived
+    // Marked as well as removed: pause() below rejects the play() promise that
+    // is still in flight, and that rejection lands after this line
+    stopped.add(audio);
     blocked.delete(audio);
     audio.pause();
     audio.currentTime = 0;
