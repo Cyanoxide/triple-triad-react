@@ -261,6 +261,34 @@ function append(array &$room, string $type, string $by, array $data = []): array
     return $event;
 }
 
+/**
+ * How many moves have been played since the last event of the given kinds.
+ *
+ * Used to tell a genuine transition from a duplicate one. Both clients work out
+ * a draw or a winner at the same moment from the same board, so both would
+ * announce it; announcing is restricted to the host, and this makes the log
+ * reject a second one even if a retry slips through.
+ */
+function movesSinceMarker(array $room, array $markers): int
+{
+    $moves = 0;
+    foreach ($room['events'] as $event) {
+        if (in_array($event['type'], $markers, true)) {
+            $moves = 0;
+        } elseif ($event['type'] === 'move') {
+            $moves++;
+        }
+    }
+    return $moves;
+}
+
+function lastEventType(array $room): ?string
+{
+    $events = $room['events'];
+    $last = end($events);
+    return $last ? $last['type'] : null;
+}
+
 /** What is written to disk. The client keeps the only copy of the real token. */
 function tokenHash(string $token): string
 {
@@ -471,6 +499,16 @@ switch ($action) {
     case 'result':
         withRoom($code, function (array $room) use ($token, $input) {
             $seat = requireSeat($room, $token);
+
+            // The host narrates anything both clients could work out for
+            // themselves, so the log gets one account of it rather than two
+            if ($seat !== 'host') {
+                return [null, ['ok' => false, 'error' => 'The host reports the result.'], 403];
+            }
+            if (lastEventType($room) === 'result') {
+                return [null, ['ok' => true, 'duplicate' => true], 200];
+            }
+
             $room['phase'] = 'rewards';
             append($room, 'result', $seat, [
                 'winner' => $input['winner'] ?? null,
@@ -494,6 +532,38 @@ switch ($action) {
         });
 
     /**
+     * Sudden death: a draw under that rule starts another round, and it repeats
+     * until somebody wins.
+     *
+     * No hands are submitted. Each player's new hand is the cards they own on
+     * the board plus whatever they never played, and both clients already agree
+     * on the board because they replayed the same moves — so each derives its
+     * own. The event is only a marker saying where one round ends and the next
+     * begins.
+     *
+     * Announced by the host alone, and refused unless moves have actually been
+     * played since the last round started. Both clients see the draw in the same
+     * instant, so without that a race would write two rounds into the log and
+     * they would disagree about which one they are in.
+     */
+    case 'sudden':
+        withRoom($code, function (array $room) use ($token) {
+            $seat = requireSeat($room, $token);
+
+            if ($seat !== 'host') {
+                return [null, ['ok' => false, 'error' => 'The host starts a sudden death round.'], 403];
+            }
+            if (movesSinceMarker($room, ['sudden', 'start', 'rematch']) === 0) {
+                return [null, ['ok' => true, 'duplicate' => true], 200];
+            }
+
+            $room['phase'] = 'playing';
+            append($room, 'sudden', $seat);
+
+            return [$room, ['ok' => true, 'room' => publicRoom($room, $seat)], 200];
+        });
+
+    /**
      * A rematch recycles the room rather than opening a new one. The seats and
      * the agreed rules are already there, so there is nothing to negotiate, and
      * it costs no new file and none of the creation allowance.
@@ -506,6 +576,10 @@ switch ($action) {
     case 'rematch':
         withRoom($code, function (array $room) use ($token) {
             $seat = requireSeat($room, $token);
+
+            if (lastEventType($room) === 'rematch') {
+                return [null, ['ok' => true, 'duplicate' => true], 200];
+            }
 
             $room['phase'] = 'hands';
             $room['players']['host']['hand'] = null;
