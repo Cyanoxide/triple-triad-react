@@ -30,9 +30,17 @@ header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
 
 /**
- * Where room files live. Outside the web root, so a room cannot be fetched
- * directly — the codes are short and guessable by design, and the token is what
- * actually protects a seat.
+ * Where room files live: a folder shipped alongside this file, carrying an
+ * .htaccess that denies HTTP access. Room codes are short and guessable by
+ * design, so the files must not be fetchable.
+ *
+ * That .htaccess is a second lock rather than the only one — it does nothing on
+ * nginx, or on Apache with AllowOverride None, and a silent failure there would
+ * expose every room. So tokens are also stored **hashed** (see seatFor): a
+ * leaked room file is embarrassing but not usable.
+ *
+ * Set to an absolute path outside the web root if you would rather not rely on
+ * the deny rule at all.
  */
 const ROOM_DIR = null;
 
@@ -55,10 +63,16 @@ function respond(int $status, array $body): never
 
 function roomDir(): string
 {
-    $dir = ROOM_DIR ?? (sys_get_temp_dir() . '/triple-triad-rooms');
+    $dir = ROOM_DIR ?? (__DIR__ . '/gameSessions');
+
     if (!is_dir($dir)) {
         mkdir($dir, 0700, true);
+        // Recreated rather than assumed: if the folder went missing from an
+        // upload, a bare mkdir would leave rooms sitting in a servable
+        // directory with no deny rule at all
+        @file_put_contents($dir . '/.htaccess', "<IfModule mod_authz_core.c>\n  Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n  Order allow,deny\n  Deny from all\n</IfModule>\n");
     }
+
     return $dir;
 }
 
@@ -165,12 +179,25 @@ function append(array &$room, string $type, string $by, array $data = []): array
     return $event;
 }
 
-/** Which seat this token holds, or null. The token is the whole of the identity. */
+/** What is written to disk. The client keeps the only copy of the real token. */
+function tokenHash(string $token): string
+{
+    return hash('sha256', $token);
+}
+
+/**
+ * Which seat this token holds, or null. The token is the whole of the identity.
+ *
+ * Compared against a stored hash, so a room file that somehow becomes readable
+ * does not hand over the seats with it. hash_equals rather than === so a wrong
+ * token cannot be found by timing the comparison.
+ */
 function seatFor(array $room, ?string $token): ?string
 {
     if (!$token) return null;
     foreach (['host', 'guest'] as $seat) {
-        if (($room['players'][$seat]['token'] ?? null) && hash_equals($room['players'][$seat]['token'], $token)) {
+        $stored = $room['players'][$seat]['token'] ?? null;
+        if ($stored && hash_equals($stored, tokenHash($token))) {
             return $seat;
         }
     }
@@ -240,7 +267,7 @@ switch ($action) {
             'phase' => 'lobby',
             'rules' => $rules,
             'players' => [
-                'host' => ['token' => $hostToken, 'accepted' => true, 'hand' => null, 'seen' => time()],
+                'host' => ['token' => tokenHash($hostToken), 'accepted' => true, 'hand' => null, 'seen' => time()],
                 'guest' => null,
             ],
             'events' => [],
@@ -269,7 +296,7 @@ switch ($action) {
             }
 
             $guestToken = bin2hex(random_bytes(16));
-            $room['players']['guest'] = ['token' => $guestToken, 'accepted' => false, 'hand' => null, 'seen' => time()];
+            $room['players']['guest'] = ['token' => tokenHash($guestToken), 'accepted' => false, 'hand' => null, 'seen' => time()];
 
             return [$room, ['ok' => true, 'token' => $guestToken, 'room' => publicRoom($room, 'guest')], 200];
         });

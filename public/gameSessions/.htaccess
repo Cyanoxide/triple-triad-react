@@ -1,0 +1,19 @@
+# Room files live here. They are written by game.php and must never be
+# served over HTTP: a room records which seat holds which token, and the
+# room codes are short and guessable by design.
+#
+# This is a *second* lock, not the only one. The tokens are stored hashed,
+# so a host that ignores .htaccess — nginx, or Apache with AllowOverride
+# None — leaks nothing usable. Belt and braces, because a silent failure
+# here would otherwise hand out every seat in every game.
+
+# Apache 2.4
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+
+# Apache 2.2
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>
