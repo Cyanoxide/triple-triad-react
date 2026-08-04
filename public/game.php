@@ -47,6 +47,24 @@ const ROOM_DIR = null;
 /** Rooms untouched for this long are swept. A game does not last a day. */
 const ROOM_TTL = 86400;
 
+/**
+ * A hard ceiling on how many rooms may exist at once, and the limit that
+ * actually protects the host.
+ *
+ * The constraint on shared hosting is rarely disk space — a room is about a
+ * kilobyte, so even ten thousand is ten megabytes. It is the **inode quota**:
+ * most accounts get a fixed number of files across the whole account, and
+ * exhausting it breaks everything, not just this. A time-based sweep alone does
+ * not bound that, because it says nothing about how fast rooms can appear.
+ *
+ * So creation fails closed once this is reached. Refusing a new game is a far
+ * better failure than filling the account.
+ */
+const MAX_ROOMS = 500;
+
+/** New rooms allowed from one address per hour, to stop a loop churning them */
+const CREATE_LIMIT = 20;
+
 /** Guards against a runaway client filling the disk */
 const MAX_EVENTS = 500;
 
@@ -140,14 +158,68 @@ function withRoom(string $code, callable $mutate): never
     respond($status, $body);
 }
 
-/** Removes rooms nobody has touched in a day. Cheap, and runs only on create. */
-function sweep(): void
+/**
+ * Removes rooms nobody has touched in a day, and reports what is left.
+ *
+ * Runs on create, which is the only thing that makes the folder grow. Failures
+ * are counted rather than swallowed: if permissions are wrong, unlink quietly
+ * does nothing and the folder grows forever with no symptom until the quota is
+ * gone. The count surfaces in the refusal message instead.
+ */
+function sweep(): array
 {
-    foreach (glob(roomDir() . '/*.json') ?: [] as $file) {
-        if (filemtime($file) < time() - ROOM_TTL) {
-            @unlink($file);
+    $files = glob(roomDir() . '/*.json') ?: [];
+    $cutoff = time() - ROOM_TTL;
+    $remaining = 0;
+    $stuck = 0;
+
+    foreach ($files as $file) {
+        if (filemtime($file) >= $cutoff) {
+            $remaining++;
+            continue;
+        }
+        if (!@unlink($file)) {
+            $stuck++;
+            $remaining++;
         }
     }
+
+    return ['remaining' => $remaining, 'stuck' => $stuck];
+}
+
+/**
+ * Creation rate limit, per address, in one locked file rather than one file per
+ * address — the whole point here is to not spend inodes.
+ */
+function mayCreate(): bool
+{
+    $path = roomDir() . '/.limits.json';
+    $handle = fopen($path, 'c+');
+    if (!$handle) return true;          // never block a game over bookkeeping
+
+    flock($handle, LOCK_EX);
+    $limits = json_decode((string) stream_get_contents($handle), true) ?: [];
+
+    $who = hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+    $cutoff = time() - 3600;
+
+    // Prune every address while here, so the file cannot grow unbounded either
+    foreach ($limits as $key => $times) {
+        $kept = array_values(array_filter((array) $times, static fn($t) => is_int($t) && $t > $cutoff));
+        if ($kept) $limits[$key] = $kept; else unset($limits[$key]);
+    }
+
+    $allowed = count($limits[$who] ?? []) < CREATE_LIMIT;
+    if ($allowed) $limits[$who][] = time();
+
+    ftruncate($handle, 0);
+    rewind($handle);
+    fwrite($handle, json_encode($limits));
+    fflush($handle);
+    flock($handle, LOCK_UN);
+    fclose($handle);
+
+    return $allowed;
 }
 
 function newCode(): string
@@ -256,7 +328,17 @@ switch ($action) {
      * landing on the same random code cannot both win.
      */
     case 'create': {
-        sweep();
+        $state = sweep();
+
+        if ($state['remaining'] >= MAX_ROOMS) {
+            respond(503, ['ok' => false, 'error' => $state['stuck']
+                ? 'Rooms cannot be cleaned up on this server. Please tell the site owner.'
+                : 'Too many games in progress. Please try again later.']);
+        }
+        if (!mayCreate()) {
+            respond(429, ['ok' => false, 'error' => 'Too many rooms opened from here. Try again later.']);
+        }
+
         $rules = is_array($input['rules'] ?? null) ? $input['rules'] : [];
         $hostToken = bin2hex(random_bytes(16));
 
