@@ -144,6 +144,16 @@ function withRoom(string $code, callable $mutate): never
 
     [$updated, $body, $status] = $mutate($room);
 
+    // A callback may ask for the room to go. Done here, still holding the lock,
+    // so no other request can be part-way through a read when it disappears.
+    if ($updated === 'DELETE') {
+        ftruncate($handle, 0);
+        flock($handle, LOCK_UN);
+        fclose($handle);
+        @unlink($path);
+        respond($status, $body);
+    }
+
     if ($updated !== null) {
         $updated['updated'] = time();
         ftruncate($handle, 0);
@@ -298,6 +308,7 @@ function publicRoom(array $room, ?string $seat): array
             'present' => true,
             'accepted' => (bool) ($p['accepted'] ?? false),
             'ready' => !empty($p['hand']),
+            'left' => !empty($p['left']),
             'seen' => $p['seen'] ?? null,
         ] : ['present' => false];
     }
@@ -480,6 +491,56 @@ switch ($action) {
             $room['phase'] = 'done';
 
             return [$room, ['ok' => true], 200];
+        });
+
+    /**
+     * A rematch recycles the room rather than opening a new one. The seats and
+     * the agreed rules are already there, so there is nothing to negotiate, and
+     * it costs no new file and none of the creation allowance.
+     *
+     * The event log is *continued*, not cleared. A 'rematch' event marks the
+     * boundary and clients reset their board on seeing it, which keeps `n`
+     * monotonic — clearing it would strand both players' cursors and break the
+     * replay-from-zero property that makes reconnect work.
+     */
+    case 'rematch':
+        withRoom($code, function (array $room) use ($token) {
+            $seat = requireSeat($room, $token);
+
+            $room['phase'] = 'hands';
+            $room['players']['host']['hand'] = null;
+            $room['players']['guest']['hand'] = null;
+            $room['players']['host']['left'] = false;
+            $room['players']['guest']['left'] = false;
+            append($room, 'rematch', $seat);
+
+            return [$room, ['ok' => true, 'room' => publicRoom($room, $seat)], 200];
+        });
+
+    /**
+     * Leaving is what actually removes a room, with the daily sweep left as the
+     * net for players who simply close the tab.
+     *
+     * It cannot happen when the result is posted: the loser still has to poll to
+     * learn what was taken, and deleting at that moment would hand them a 404
+     * instead. So the room goes when *both* seats say they are finished with it.
+     */
+    case 'leave':
+        withRoom($code, function (array $room) use ($token) {
+            $seat = requireSeat($room, $token);
+            $room['players'][$seat]['left'] = true;
+
+            $both = !empty($room['players']['host']['left'])
+                && (($room['players']['guest'] ?? null) === null || !empty($room['players']['guest']['left']));
+
+            if ($both) {
+                // Emptied under the lock we already hold; the unlink happens
+                // after it is released, so nothing can reopen it in between
+                return ['DELETE', ['ok' => true, 'closed' => true], 200];
+            }
+
+            append($room, 'left', $seat);
+            return [$room, ['ok' => true, 'closed' => false], 200];
         });
 
     /**
