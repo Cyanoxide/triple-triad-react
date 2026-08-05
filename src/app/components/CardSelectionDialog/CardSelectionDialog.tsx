@@ -7,7 +7,7 @@ import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import Card from "../Card/Card";
 import Image from "next/image";
 import playSound from "../../utils/sounds";
-import { multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
+import { finishMultiplayer, multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
 import { submitHand } from "../../utils/rooms";
 import { setAiPlayerCards } from "../../utils/aiCardSelection";
 import DialogPagination from "../DialogPagination/DialogPagination";
@@ -214,6 +214,22 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                 return;
             }
             playSound("back", isSoundEnabled);
+
+            /**
+             * Backing all the way out of a hand you are choosing for another
+             * player means leaving the room — there is no half-way state where
+             * you are in a game but not dealing into it.
+             *
+             * Opening the title menu instead, which is what this used to do
+             * whoever was playing, left the screen empty: the app was in
+             * multiplayer, so the single player menu it asked for was not
+             * rendered and the lobby had already stood aside for the deal.
+             */
+            if (session) {
+                void finishMultiplayer("You left that game.");
+                return;
+            }
+
             markKeyboardNavigation();
             dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
             dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
