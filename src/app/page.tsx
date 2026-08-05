@@ -158,9 +158,10 @@ function GameContent() {
     dispatch({ type: "SET_IS_GAME_ACTIVE", payload: false });
     dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
     dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
-    // Back to the lobby rather than an empty multiplayer screen — the game is
-    // over, but this is still the side of the app they chose
-    setIsMultiplayerOpen(true);
+    // All the way back to the question. A finished game is the natural point to
+    // choose again, and dropping straight into the lobby assumed the answer.
+    setIsMultiplayerOpen(false);
+    setMode(null);
   }, [session]);
 
   // Development only: lets a browser test read whose turn each client believes
@@ -310,7 +311,11 @@ function GameContent() {
 
   return (
     <>
-      <div id="app" className="max-w-4xl w-full h-full m-auto relative">
+      <div
+        id="app"
+        className="max-w-4xl w-full h-full m-auto relative"
+        data-screen={isMenuOpen && mode === null ? "mode" : undefined}
+      >
         {isCardGalleryOpen && <CardGallery />}
         <div>
           {isMenuOpen && mode === null && (

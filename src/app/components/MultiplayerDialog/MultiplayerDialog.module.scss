@@ -124,7 +124,7 @@
 }
 
 .rulesScreen {
-    width: 470px;
+    width: 530px;
     min-width: 0;
 }
 
@@ -133,7 +133,7 @@
     grid-template-columns: 1fr 1fr;
     // The column gap has to hold a cursor: the right-hand column's hangs into
     // it, and at the shared -55px it sat on top of the left column's On/Off
-    gap: 0.15rem 3.2rem;
+    gap: 0.15rem 3.9rem;
     margin-bottom: 0.4rem;
 }
 
@@ -149,13 +149,15 @@
  */
 .ruleList button.ruleToggle[data-focused="true"]::after,
 .tradeRow button.tradeOption[data-focused="true"]::after {
-    left: -42px;
-    width: 30px;
-    height: 19px;
-    // centred on the option's own line, rather than hung off the text's top
-    // edge the way the shared cursor's fixed margin leaves it
+    // The shared cursor's own size — it should read as the same cursor here as
+    // everywhere else. Only its placement changes: centred on the option's line
+    // rather than hung off the text's top edge, and pulled in far enough to sit
+    // in the column gap instead of on top of the column beside it.
+    left: -52px;
+    width: 45px;
+    height: 28px;
     top: 50%;
-    margin-top: -9px;
+    margin-top: -14px;
 }
 
 .ruleToggle {
@@ -184,14 +186,23 @@
     display: flex;
     justify-content: center;
     // room for each option's cursor to sit beside it
-    gap: 2.8rem;
+    // wide enough that a full-size cursor clears the option beside it
+    gap: 4.4rem;
 }
 
 .tradeOption {
     position: relative;
-    opacity: 0.4;
 
-    &[data-on="true"] {
+    /**
+     * The dimming is on the label, not the button. On the button it took the
+     * cursor down with it — a pseudo-element is a child, so it inherits the
+     * opacity — and hovering an unselected rule showed a greyed-out cursor.
+     */
+    > * {
+        opacity: 0.4;
+    }
+
+    &[data-on="true"] > * {
         opacity: 1;
     }
 }

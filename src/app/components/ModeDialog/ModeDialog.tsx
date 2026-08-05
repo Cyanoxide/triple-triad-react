@@ -25,9 +25,12 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
     const { isSoundEnabled } = useGameContext();
     const [hovered, setHovered] = useState<string | null>(null);
 
+    // Single player is where the cursor rests, and where it returns to when the
+    // pointer leaves — a cursor is always on something in the rest of the menus
+    const focusedId = hovered ?? "single";
     const pointer = (id: string) => ({
         className: "relative",
-        "data-focused": hovered === id,
+        "data-focused": focusedId === id,
         onMouseEnter: () => setHovered(id),
         onMouseLeave: () => setHovered((current) => (current === id ? null : current)),
     });

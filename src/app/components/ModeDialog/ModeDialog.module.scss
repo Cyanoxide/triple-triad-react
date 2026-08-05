@@ -2,6 +2,10 @@
     min-width: 0;
     width: 470px;
     text-align: center;
+
+    // Low enough to clear the emblem it is standing on. Centred, the box sat
+    // squarely over it and the screen was a grey panel on a texture.
+    top: 68%;
 }
 
 .question {

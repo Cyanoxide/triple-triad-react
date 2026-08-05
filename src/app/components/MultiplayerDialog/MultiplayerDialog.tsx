@@ -70,9 +70,30 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
      * the keyboard here.
      */
     const [hovered, setHovered] = useState<string | null>(null);
+
+    /**
+     * What the cursor rests on, and what it falls back to.
+     *
+     * Hover moves it; taking the pointer away puts it back on whatever this
+     * screen's obvious next step is, rather than leaving nothing selected. That
+     * is how the rest of the menus behave — a cursor is always somewhere.
+     */
+    /**
+     * Where the cursor sits when the pointer is not on anything: the step this
+     * screen is actually asking for. The code field is the exception — once
+     * five characters are in, the cursor moves to Join, so the next thing is
+     * one press rather than a hunt. It does not submit by itself; a typo in the
+     * last character would be sent before it could be corrected.
+     */
+    const defaultFocus =
+        !session ? (choosing ? "open" : typedCode.length === CODE_LENGTH ? "join" : "host")
+            : (session.seat === "guest" && room?.phase === "lobby") ? "accept"
+                : "leave";
+
+    const focusedId = hovered ?? defaultFocus;
     const pointer = (id: string) => ({
         className: styles.action,
-        "data-focused": hovered === id,
+        "data-focused": focusedId === id,
         onMouseEnter: () => setHovered(id),
         onMouseLeave: () => setHovered((current) => (current === id ? null : current)),
     });
@@ -386,6 +407,8 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                     </p>
                 )}
             </div>
+
+            <div className={styles.divider} />
 
             <p className={styles.status}>
                 {textToSprite(

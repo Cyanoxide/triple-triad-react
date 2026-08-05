@@ -113,3 +113,23 @@ button {
   background: rgba(0, 0, 0, 0.55);
   z-index: 9;
 }
+
+/**
+ * The "want to play a game of cards?" screen.
+ *
+ * The grid is hidden and the logo kept. The board's slot art is drawn per cell:
+ * the centre one is the Triple Triad logo and the rest are the corners and
+ * edges of the playing grid, so hiding them all — which is what this rule did
+ * at first — took the logo with it.
+ *
+ * The dialog sits low for the same reason: centred, it covered the logo it is
+ * supposed to be standing under.
+ */
+#app[data-screen="mode"] [data-position]::before,
+#app[data-screen="mode"] [data-position]::after {
+  content: none;
+}
+
+#app[data-screen="mode"] [data-position="1,1"]::before {
+  content: "";
+}
