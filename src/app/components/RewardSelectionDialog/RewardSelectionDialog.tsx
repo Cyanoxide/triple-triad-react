@@ -6,6 +6,8 @@ import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import playSound, { stopLoadedSound } from "../../utils/sounds";
+import { finishMultiplayer, multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
+import { sendRewards } from "../../utils/rooms";
 import textToSprite from "../../utils/textToSprite";
 import { useCursorNav, markKeyboardNavigation } from "../../hooks/useCursorNav";
 
@@ -19,7 +21,19 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     type RewardType = { id: number; uniqueId: string | null | undefined, level: number, player: PlayerType, position: number }
 
+    const { session, incomingRewards } = useMultiplayer();
+
     const isManualSelect = (winState === "blue" && ["one", "diff"].includes(tradeRule as string));
+
+    /**
+     * Only "one" and "diff" need anything sent. "all" and "direct" are decided
+     * by the board, so both clients reach the same answer on their own and an
+     * exchange would be pure ceremony.
+     */
+    const tradeNeedsExchange = !!session && ["one", "diff"].includes(tradeRule as string);
+
+    /** Waiting to be told which cards were taken, rather than inventing them */
+    const awaitingOpponentPicks = tradeNeedsExchange && winState === "red";
 
     const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card, index) => ({ id: card.cardId, uniqueId: card.uniqueId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "red", position: index })));
     const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card, index) => ({ id: card.cardId, uniqueId: card.uniqueId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "blue", position: index })));
@@ -61,6 +75,13 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         stopLoadedSound(victorySound);
         stopLoadedSound(bgm);
 
+        // The cards have changed hands, so the room has done its job. Ending it
+        // here returns both players to the lobby able to start another game,
+        // rather than leaving a finished room polling in the background.
+        if (session) {
+            void finishMultiplayer(winState === "blue" ? "You won that game." : "You lost that game.");
+        }
+
         dispatch({ type: "RESET_GAME" });
 
         dispatch({ type: "SET_PLAYER_CARDS", payload: updatedPlayerCards });
@@ -100,6 +121,14 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         if (selectedRewards.won.length === 0) resetGame(playerCards);
         playSound("select", isSoundEnabled);
 
+        // Position travels with the id: the winner picked from the opponent's
+        // hand, and index i there is index i of the hand they submitted, so the
+        // loser can find exactly the same cards
+        if (tradeNeedsExchange && session) {
+            void sendRewards(session.code, session.token,
+                selectedRewards.won.map((reward) => ({ id: reward.id, position: reward.position }))
+            ).catch(() => { });
+        }
 
         setIsSelectionConfirmed(true);
     }
@@ -219,9 +248,31 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         return selectedCards;
     }
 
+    /**
+     * The loser applies what the winner actually chose. Without this the local
+     * "best card" routine would pick for them, and the two players would
+     * disagree about which cards changed hands.
+     */
     const areRewardsConfirmed = useRef(false);
     useEffect(() => {
-        if (areRewardsConfirmed.current || isManualSelect) return;
+        if (!awaitingOpponentPicks || areRewardsConfirmed.current || !incomingRewards) return;
+
+        const taken = enemyRewardSelection.filter((card) =>
+            incomingRewards.some((pick) => pick.id === card.id && pick.position === card.position));
+        if (!taken.length) return;
+
+        areRewardsConfirmed.current = true;
+        setEnemyRewardSelection((previous) => previous.map((card) =>
+            taken.some((pick) => pick.id === card.id && pick.position === card.position)
+                ? { ...card, player: "red" } : card));
+        setSelectedRewards({ won: [], lost: taken });
+        setIsSelectionConfirmed(true);
+        playSound("flip", isSoundEnabled);
+        multiplayer.setIncomingRewards(null);
+    }, [incomingRewards, awaitingOpponentPicks, enemyRewardSelection, isSoundEnabled]);
+
+    useEffect(() => {
+        if (areRewardsConfirmed.current || isManualSelect || awaitingOpponentPicks) return;
 
         const selectionMethod = (["all", "direct"].includes(tradeRule as string) || winState === "blue") ? "sequential" : "best";
         const autoRewards = autoSelectRewards(selectionMethod);

@@ -29,11 +29,18 @@ type State = {
      * whole log at once, and they have to land in order.
      */
     pendingMoves: OpponentMove[];
+    /**
+     * The winner's card picks, once they arrive. Only the "one" and "diff"
+     * trade rules need this: "all" and "direct" are decided by the board, so
+     * both clients work out the same answer without asking.
+     */
+    incomingRewards: RewardPick[] | null;
 };
 
 export type OpponentMove = { cardId: number; row: number; col: number };
+export type RewardPick = { id: number; position: number };
 
-const empty: State = { session: null, room: null, handSent: false, notice: null, pendingMoves: [] };
+const empty: State = { session: null, room: null, handSent: false, notice: null, pendingMoves: [], incomingRewards: null };
 
 let state: State = empty;
 const listeners = new Set<() => void>();
@@ -53,7 +60,7 @@ export const multiplayer = {
     get: () => state,
 
     setSession(session: Session | null) {
-        state = { ...state, session, handSent: false, notice: null, pendingMoves: [] };
+        state = { ...state, session, handSent: false, notice: null, pendingMoves: [], incomingRewards: null };
         emit();
     },
 
@@ -63,7 +70,7 @@ export const multiplayer = {
      * exists, which is otherwise a dead end with nothing but an error on screen.
      */
     ended(notice: string) {
-        state = { session: null, room: null, handSent: false, notice, pendingMoves: [] };
+        state = { session: null, room: null, handSent: false, notice, pendingMoves: [], incomingRewards: null };
         emit();
     },
 
@@ -92,6 +99,17 @@ export const multiplayer = {
         return next;
     },
 
+    setIncomingRewards(picks: RewardPick[] | null) {
+        state = { ...state, incomingRewards: picks };
+        emit();
+    },
+
+    /** Clears anything left from the round just finished, ready for another */
+    startNewRound() {
+        state = { ...state, pendingMoves: [], incomingRewards: null };
+        emit();
+    },
+
     markHandSent() {
         if (state.handSent) return;
         state = { ...state, handSent: true };
@@ -111,6 +129,21 @@ export const multiplayer = {
     get opponentSide() {
         return "red" as const;
     },
+};
+
+/**
+ * Ends the game and hands the room back. Used when a game finishes, when a
+ * player quits, and when the other side disappears — all of which leave the
+ * lobby ready to start another.
+ */
+export const finishMultiplayer = async (notice: string) => {
+    const { session } = multiplayer.get();
+    if (session) {
+        const { leaveRoom, clearSession } = await import("../utils/rooms");
+        await leaveRoom(session.code, session.token).catch(() => { });
+        clearSession();
+    }
+    multiplayer.ended(notice);
 };
 
 export const useMultiplayer = () =>

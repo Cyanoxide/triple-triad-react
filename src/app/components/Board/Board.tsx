@@ -22,6 +22,9 @@ interface BoardProps {
     className?: string;
 }
 
+/** How long a player has before a move is made for them */
+const MOVE_TIMEOUT = 120000;
+
 const Board: React.FC<BoardProps> = ({ className }) => {
     const debug = false;
     const { session, pendingMoves } = useMultiplayer();
@@ -646,6 +649,46 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             }
         }
     }, [turn]);
+
+
+    /**
+     * Nobody waits forever for a turn.
+     *
+     * After MOVE_TIMEOUT a move is played for whoever is holding things up.
+     * Only the player whose turn it is runs this clock and only for their own
+     * move — if both sides timed out independently they would each play a card
+     * and the boards would diverge. The opponent simply receives it as a normal
+     * move, so nothing else needs to know a timeout happened.
+     *
+     * The card and cell are chosen at random rather than well: this is a
+     * nudge for someone who has walked away, not a substitute player.
+     */
+    useEffect(() => {
+        if (!session || turn !== "blue" || winState || !isGameActive) return;
+        if (!currentPlayerHand.length) return;
+
+        const timeout = setTimeout(() => {
+            const empty: [number, number][] = [];
+            board.forEach((row, rowIndex) => row.forEach((cell, colIndex) => {
+                if (!cell) empty.push([rowIndex, colIndex]);
+            }));
+            if (!empty.length) return;
+
+            const card = currentPlayerHand[Math.floor(Math.random() * currentPlayerHand.length)];
+            const [row, col] = empty[Math.floor(Math.random() * empty.length)];
+            if (!card) return;
+
+            grabCardFromHand(card, "blue");
+            placeCard(row, col, card);
+            playSound("place", isSoundEnabled);
+            swapTurn();
+
+            void sendMove(session.code, session.token, { cardId: card.cardId, row, col })
+                .catch(() => { });
+        }, MOVE_TIMEOUT);
+
+        return () => clearTimeout(timeout);
+    }, [turn, session, winState, isGameActive, turnNumber]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
     /**

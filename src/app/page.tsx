@@ -11,7 +11,7 @@ import { GameProvider, useGameContext } from "./context/GameContext";
 import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/sounds";
 import CardGallery from "./components/CardGallery/CardGallery";
 import MultiplayerDialog from "./components/MultiplayerDialog/MultiplayerDialog";
-import { multiplayer, useMultiplayer } from "./hooks/multiplayerSession";
+import { finishMultiplayer, multiplayer, useMultiplayer } from "./hooks/multiplayerSession";
 import { useRoom } from "./hooks/useRoom";
 import type { RoomEvent } from "./utils/rooms";
 import { generateCardsFromIds } from "./utils/general";
@@ -21,7 +21,7 @@ import textToSprite from "./utils/textToSprite";
 import { optionsNav } from "./hooks/optionsNav";
 
 function GameContent() {
-  const { turn, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
+  const { turn, board, currentEnemyHand, currentPlayerHand, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
   const victorySoundRef = useRef<HTMLAudioElement | undefined>(undefined);
   const bgmRef = useRef<HTMLAudioElement | undefined>(undefined);
 
@@ -42,6 +42,11 @@ function GameContent() {
    * game. Events are applied to the game from one place.
    */
   const { session } = useMultiplayer();
+
+  /** Cards a player owns on the board — what they carry into a sudden death round */
+  const ownedOnBoard = useCallback((owner: "red" | "blue") =>
+    board.flatMap((row) => row).filter((cell) => cell?.currentOwner === owner).map((cell) => cell!.cardId),
+    [board]);
 
   const applyRoomEvents = useCallback((events: RoomEvent[]) => {
     for (const event of events) {
@@ -70,6 +75,35 @@ function GameContent() {
         continue;
       }
 
+      if (event.type === "left") {
+        // They closed the room. Say so rather than leaving a turn that will
+        // never come.
+        void finishMultiplayer("Your opponent left the game.");
+        return;
+      }
+
+      if (event.type === "rewards" && event.picks) {
+        multiplayer.setIncomingRewards(event.picks as { id: number; position: number }[]);
+        continue;
+      }
+
+      /**
+       * A drawn game restarting under the sudden death rule. The hands are
+       * derived from the board, which both clients already agree on, so nothing
+       * is sent but the boundary itself and a fresh draw for who opens.
+       */
+      if (event.type === "sudden") {
+        multiplayer.startNewRound();
+        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: currentEnemyHand.concat(generateCardsFromIds(ownedOnBoard("red"), "red")) });
+        dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: currentPlayerHand.concat(generateCardsFromIds(ownedOnBoard("blue"), "blue")) });
+        dispatch({ type: "SET_BOARD", payload: board.map(() => Array(3).fill(null)) });
+        dispatch({ type: "SET_WIN_STATE", payload: null });
+        dispatch({ type: "RESET_TURN" });
+        dispatch({ type: "SET_SCORE", payload: [5, 5] });
+        dispatch({ type: "SET_TURN", payload: event.first === session?.seat ? "blue" : "red" });
+        continue;
+      }
+
       if (event.type === "hand" && event.hand) {
         // The opponent is always the red side locally, whichever seat they hold
         const theirHand = generateCardsFromIds(event.hand, "red");
@@ -77,7 +111,7 @@ function GameContent() {
         dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: theirHand });
       }
     }
-  }, [session?.seat]);
+  }, [session?.seat, board, currentEnemyHand, currentPlayerHand, ownedOnBoard]);
 
   const { room } = useRoom({ session, onEvents: applyRoomEvents });
 
@@ -252,6 +286,19 @@ function GameContent() {
         {winState && !isRewardSelectionOpen && victorySoundRef.current && <WinDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
       </div>
+
+      {/* Quitting a game in progress. Only shown during a multiplayer game —
+          the single-player one already has its own menu — and placed beside the
+          options bar so it needs no new furniture on the board. */}
+      {session && isGameActive && (
+        <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-50">
+          <SimpleDialog metaTitle={null} dialog="multiplayer">
+            <button onClick={() => { playSound("back", isSoundEnabled); void finishMultiplayer("You left that game."); }}>
+              {textToSprite("Quit")}
+            </button>
+          </SimpleDialog>
+        </div>
+      )}
 
       <div className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-50 flex items-center">
         <SimpleDialog metaTitle={null} dialog="options" data-expanded={isOptionsOpen}>
