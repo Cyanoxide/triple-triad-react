@@ -238,12 +238,45 @@ function GameContent() {
     const modal = document.getElementById('modal');
     if (app && modal) {
       const scaleApp = () => {
-        const originalWidth = 950;
-        const originalHeight = 750;
+        /**
+         * The canvas the whole game is laid out against. Everything is scaled
+         * to fit it, so a smaller canvas means a bigger picture.
+         *
+         * Phones get a tighter one. The content is 813 x 569 at its largest —
+         * the board with both hands beside it — so on desktop there is a wide
+         * band of empty texture around it that a phone cannot afford. Reducing
+         * the canvas spends that band on the game instead. Desktop keeps the
+         * original, where the room is not in short supply and the margin is
+         * part of how it looks.
+         *
+         * Keyed on the shorter side, which catches a phone in either
+         * orientation and leaves tablets alone.
+         */
+        const MOBILE_MAX_SHORT_SIDE = 500;
+        const DESKTOP = [950, 750];
+        /**
+         * 900 wide and 640 tall, arrived at by measuring rather than taste.
+         *
+         * Portrait is limited by width and landscape by height, so the two
+         * numbers are independent. Width stops at 900 because the hand cursor
+         * hangs 36 design pixels past the leftmost card and is not part of any
+         * element's box: at 880 the content still fits and the cursor does not.
+         * Height has more room to give, and 640 leaves the content 25 real
+         * pixels clear of the top and bottom on a 390-tall screen.
+         *
+         * Worth about 5% on portrait and 17% on landscape.
+         */
+        const MOBILE = [900, 640];
 
         // The layout viewport stays stable while pinch-zooming, unlike innerWidth/innerHeight
         const windowWidth = document.documentElement.clientWidth;
         const windowHeight = document.documentElement.clientHeight;
+
+        const onPhone = Math.min(windowWidth, windowHeight) < MOBILE_MAX_SHORT_SIDE;
+        const override = process.env.NODE_ENV === "development"
+          ? (window as unknown as { __canvas?: [number, number] }).__canvas
+          : undefined;
+        const [originalWidth, originalHeight] = override ?? (onPhone ? MOBILE : DESKTOP);
 
         const scale = Math.min(windowWidth / originalWidth, windowHeight / originalHeight);
         app.style.zoom = String(scale);
