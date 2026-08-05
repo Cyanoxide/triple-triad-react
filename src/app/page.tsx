@@ -321,7 +321,7 @@ function GameContent() {
           {isMenuOpen && mode === null && (
             <ModeDialog onSingle={() => setMode("single")} onMultiplayer={openMultiplayer} />
           )}
-          {isMenuOpen && mode === "single" && <MenuDialog />}
+          {isMenuOpen && mode === "single" && <MenuDialog onQuit={() => setMode(null)} />}
           {isCardSelectionOpen && <CardSelectionDialog />}
           {isMultiplayerOpen && (
             <MultiplayerDialog

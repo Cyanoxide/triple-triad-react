@@ -76,6 +76,18 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
      * highlight rather than something you had moved.
      */
     const [selected, setSelected] = useState("host");
+
+    /**
+     * Moving the cursor makes a sound whether it was moved by the pointer or by
+     * the arrow keys — the menu's own rows do, and a silent hover next to a
+     * noisy one is the odd one out. Guarded on the id actually changing, or a
+     * pointer resting on a row would retrigger on every stray mouse event.
+     */
+    const moveCursor = (id: string) => setSelected((current) => {
+        if (current !== id) playSound("select", isSoundEnabled);
+        return id;
+    });
+
     /**
      * Where the cursor sits when the pointer is not on anything: the step this
      * screen is actually asking for. The code field is the exception — once
@@ -132,7 +144,10 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
         if (id.startsWith("trade:")) return chooseTrade(id.slice(6));
         if (id === "confirmOpen") return void handleHost();
         if (id === "host") { playSound("select", isSoundEnabled); return setChoosing(true); }
-        if (id === "join") return typedCode.length === CODE_LENGTH ? void attemptJoin(typedCode) : undefined;
+        if (id === "join") {
+            if (typedCode.length !== CODE_LENGTH) return playSound("error", isSoundEnabled);
+            return void attemptJoin(typedCode);
+        }
         if (id === "accept") return void handleAccept();
         if (id === "leave") return void handleLeave();
         if (id === "back") {
@@ -151,7 +166,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
     useMenuCursor({
         layout,
         selected,
-        onSelect: (id) => { playSound("select", isSoundEnabled); setSelected(id); },
+        onSelect: moveCursor,
         onConfirm: confirmSelection,
         onBack: goBack,
         enabled: !busy,
@@ -163,7 +178,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
     const pointer = (id: string) => ({
         className: styles.action,
         "data-focused": selected === id,
-        onMouseEnter: () => setSelected(id),
+        onMouseEnter: () => moveCursor(id),
     });
     const [chosenRules, setChosenRules] = useState<string[]>(DEFAULT_RULES);
     const [chosenTrade, setChosenTrade] = useState<string>(DEFAULT_TRADE);
@@ -250,6 +265,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
     });
 
     const attemptJoin = useCallback((code: string) => run(async () => {
+        playSound("select", isSoundEnabled);
         const { token, room: joined } = await joinRoom(code);
         const next: Session = { code: joined.code, token, seat: "guest" };
         saveSession(next);
@@ -349,7 +365,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                             <button
                                 className={styles.ruleToggle}
                                 data-focused={selected === `rule:${rule}`}
-                                onMouseEnter={() => setSelected(`rule:${rule}`)}
+                                onMouseEnter={() => moveCursor(`rule:${rule}`)}
                                 onClick={() => toggleRule(rule)}
                             >
                                 <span>{textToSprite(rulesList.rules[rule as keyof typeof rulesList.rules] ?? rule)}</span>
@@ -371,7 +387,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                             className={styles.tradeOption}
                             data-on={chosenTrade === rule}
                             data-focused={selected === `trade:${rule}`}
-                            onMouseEnter={() => setSelected(`trade:${rule}`)}
+                            onMouseEnter={() => moveCursor(`trade:${rule}`)}
                             onClick={() => chooseTrade(rule)}
                         >
                             {textToSprite(rulesList.tradeRules[rule])}
@@ -427,7 +443,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                     >
                         {textToSprite("Join")}
                     </button>
-                    <button {...pointer("back")} onClick={onExit} disabled={busy}>
+                    <button {...pointer("back")} onClick={goBack} disabled={busy}>
                         {textToSprite("Back")}
                     </button>
                 </div>

@@ -38,6 +38,10 @@ const KEY_MAP: Record<string, NavAction> = {
     ArrowRight: "right", Numpad6: "right",
     Enter: "confirm", NumpadEnter: "confirm",
     Space: "cancel", Numpad0: "cancel", Insert: "cancel", Escape: "cancel",
+    // Backspace reads as "back" to anyone who has not learned that Space is
+    // cancel here. Safe to add: the hook already ignores keys aimed at an
+    // editable element, so nothing that takes typing loses its delete key.
+    Backspace: "cancel",
     PageUp: "pageUp", Numpad9: "pageUp",
     PageDown: "pageDown", Numpad3: "pageDown",
 };

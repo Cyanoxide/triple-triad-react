@@ -22,7 +22,12 @@ const CHAIN: CursorPos[] = [
     { group: "options", index: 0 },
 ];
 
-const MenuDialog = () => {
+type Props = {
+    /** Back to the opening question. Quit used to have nowhere to go. */
+    onQuit: () => void;
+};
+
+const MenuDialog = ({ onQuit }: Props) => {
     const { isMenuOpen, isCardGalleryOpen, isSoundEnabled, rules, tradeRule, dispatch } = useGameContext();
 
     const handlePlayClick = () => {
@@ -31,8 +36,14 @@ const MenuDialog = () => {
         playSound("select", isSoundEnabled);
     }
 
+    /**
+     * There is a screen behind this one now, so Quit goes back to it rather
+     * than refusing with an error sound — which was the only honest thing it
+     * could do when this was the first screen.
+     */
     const handleQuitClick = () => {
-        playSound("error", isSoundEnabled);
+        playSound("back", isSoundEnabled);
+        onQuit();
     }
 
     const isOptionEnabled = (index: number) => index === 0 || !!optionsNav.actions.isOpen?.();
@@ -106,6 +117,7 @@ const MenuDialog = () => {
             }
             else optionsNav.actions.toggleSound?.();
         },
+        onCancel: handleQuitClick,
     });
 
     // Let mouse hover on the options panel move the menu cursor

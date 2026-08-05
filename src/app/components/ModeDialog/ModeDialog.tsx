@@ -31,10 +31,16 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
      */
     const [selected, setSelected] = useState("single");
 
+    // Moving the cursor sounds the same however it was moved
+    const moveCursor = (id: string) => setSelected((current) => {
+        if (current !== id) playSound("select", isSoundEnabled);
+        return id;
+    });
+
     const pointer = (id: string) => ({
         className: "relative",
         "data-focused": selected === id,
-        onMouseEnter: () => setSelected(id),
+        onMouseEnter: () => moveCursor(id),
     });
 
     const confirm = (id: string) => {
@@ -45,7 +51,7 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
     useMenuCursor({
         layout: [["single"], ["multi"]],
         selected,
-        onSelect: (id) => { playSound("select", isSoundEnabled); setSelected(id); },
+        onSelect: moveCursor,
         onConfirm: confirm,
     });
 
