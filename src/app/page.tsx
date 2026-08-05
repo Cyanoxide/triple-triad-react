@@ -62,6 +62,14 @@ function GameContent() {
         continue;
       }
 
+      if (event.type === "move" && event.move) {
+        // Queued rather than applied here: the board owns placing a card, so a
+        // move from the other player runs through exactly the same code as one
+        // of your own, animations and sounds included
+        multiplayer.queueMove({ cardId: event.move.cardId, row: event.move.row, col: event.move.col });
+        continue;
+      }
+
       if (event.type === "hand" && event.hand) {
         // The opponent is always the red side locally, whichever seat they hold
         const theirHand = generateCardsFromIds(event.hand, "red");
@@ -95,8 +103,10 @@ function GameContent() {
   // it is, which is otherwise only visible as a cursor being enabled
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
-    (window as unknown as { __turn?: string | null }).__turn = turn;
-  }, [turn]);
+    const w = window as unknown as { __turn?: string | null; __mp?: unknown };
+    w.__turn = turn;
+    w.__mp = multiplayer.get();
+  });
 
   /** Rules agreed: hand over to the game's own card selection screen. */
   useEffect(() => {

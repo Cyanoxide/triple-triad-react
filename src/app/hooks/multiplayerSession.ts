@@ -23,9 +23,17 @@ type State = {
     handSent: boolean;
     /** Why the last game ended, when it ended by itself rather than by leaving */
     notice: string | null;
+    /**
+     * Moves from the opponent, oldest first, waiting to be played out on the
+     * board. A queue rather than a single slot because a reconnect replays the
+     * whole log at once, and they have to land in order.
+     */
+    pendingMoves: OpponentMove[];
 };
 
-const empty: State = { session: null, room: null, handSent: false, notice: null };
+export type OpponentMove = { cardId: number; row: number; col: number };
+
+const empty: State = { session: null, room: null, handSent: false, notice: null, pendingMoves: [] };
 
 let state: State = empty;
 const listeners = new Set<() => void>();
@@ -45,7 +53,7 @@ export const multiplayer = {
     get: () => state,
 
     setSession(session: Session | null) {
-        state = { ...state, session, handSent: false, notice: null };
+        state = { ...state, session, handSent: false, notice: null, pendingMoves: [] };
         emit();
     },
 
@@ -55,7 +63,7 @@ export const multiplayer = {
      * exists, which is otherwise a dead end with nothing but an error on screen.
      */
     ended(notice: string) {
-        state = { session: null, room: null, handSent: false, notice };
+        state = { session: null, room: null, handSent: false, notice, pendingMoves: [] };
         emit();
     },
 
@@ -63,6 +71,25 @@ export const multiplayer = {
         if (state.room === room) return;
         state = { ...state, room };
         emit();
+    },
+
+    queueMove(move: OpponentMove) {
+        state = { ...state, pendingMoves: [...state.pendingMoves, move] };
+        emit();
+    },
+
+    /** The next move without consuming it, so it is not lost if it cannot be played yet */
+    peekMove(): OpponentMove | null {
+        return state.pendingMoves[0] ?? null;
+    },
+
+    /** Removes and returns the next move, so it cannot be played twice */
+    takeMove(): OpponentMove | null {
+        const [next, ...rest] = state.pendingMoves;
+        if (!next) return null;
+        state = { ...state, pendingMoves: rest };
+        emit();
+        return next;
     },
 
     markHandSent() {

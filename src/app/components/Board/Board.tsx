@@ -10,6 +10,8 @@ import { getEnemyMove } from '../../utils/ai';
 import SimpleDialog from '../SimpleDialog/SimpleDialog';
 import Indicator from '../Indicator/Indicator';
 import playSound from "../../utils/sounds";
+import { multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
+import { sendMove } from "../../utils/rooms";
 import textToSprite from '../../utils/textToSprite';
 import elementsList from "../../../data/elements.json";
 import BoardMessage from "../BoardMessage/BoardMessage";
@@ -22,6 +24,7 @@ interface BoardProps {
 
 const Board: React.FC<BoardProps> = ({ className }) => {
     const debug = false;
+    const { session, pendingMoves } = useMultiplayer();
     const { currentPlayerHand, currentEnemyHand, selectedCardId, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, winState, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, dispatch } = useGameContext();
     const [sameFlag, setSameFlag] = useState(false);
     const [plusFlag, setPlusFlag] = useState(false);
@@ -431,6 +434,16 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         placeCard(rowIndex, colIndex, selectedCard);
         playSound("place", isSoundEnabled);
         swapTurn();
+
+        // Tell the other player. Sent after it has been played locally, so the
+        // board never waits on the network to respond to your own move.
+        if (session) {
+            void sendMove(session.code, session.token, {
+                cardId: selectedCard.cardId,
+                row: rowIndex,
+                col: colIndex,
+            }).catch(() => playSound("error", isSoundEnabled));
+        }
     }, [board, selectedCardId, turn, grabCardFromHand, placeCard, swapTurn]);
 
 
@@ -552,6 +565,9 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
 
     useEffect(() => {
+        // Red is another person in a multiplayer game, not the computer
+        if (multiplayer.get().session) return;
+
         if (turn === "red" && turnNumber <= ((debug) ? 1 : 9)) {
             // The player's cursor hides while the AI takes its turn
             gameNav.setFocus(null);
@@ -630,6 +646,59 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             }
         }
     }, [turn]);
+
+
+    /**
+     * A move from the other player.
+     *
+     * It runs through grabCardFromHand and placeCard exactly as a local move
+     * does, so the flips, the sounds and the timing are the ones already built
+     * — nothing about a remote move is drawn differently.
+     *
+     * The card is matched by id rather than by uniqueId: each client generates
+     * its own uniqueIds when it builds the opponent's hand, so they never agree
+     * across the wire. Two copies of the same card are interchangeable anyway.
+     *
+     * The timer is held in a ref and deliberately *not* cleared when the effect
+     * re-runs. Consuming the move updates the store, which re-renders this
+     * component and changes these dependencies — a cleanup that cleared the
+     * timeout would cancel the very move it had just scheduled, and the move
+     * would disappear with nothing to show for it.
+     */
+    const remoteMoveTimer = useRef<number | null>(null);
+
+    useEffect(() => () => {
+        if (remoteMoveTimer.current) clearTimeout(remoteMoveTimer.current);
+    }, []);
+
+    useEffect(() => {
+        if (!session || turn !== "red" || winState) return;
+        if (remoteMoveTimer.current) return;
+
+        // Looked at before it is taken: if the card cannot be found yet — the
+        // opponent's hand may not have been applied — leaving it queued means
+        // the next render tries again rather than dropping it
+        const move = multiplayer.peekMove();
+        if (!move) return;
+
+        const card = currentEnemyHand.find((candidate) => candidate.cardId === move.cardId);
+        if (!card) return;
+
+        multiplayer.takeMove();
+        gameNav.setFocus(null);
+
+        // A short beat, so the card does not appear the instant a poll returns
+        remoteMoveTimer.current = window.setTimeout(() => {
+            remoteMoveTimer.current = null;
+            grabCardFromHand(card, "red");
+            placeCard(move.row, move.col, card);
+            playSound("place", isSoundEnabled);
+            swapTurn();
+            if (posRef.current?.group === "hand") {
+                gameNav.setFocus({ player: "blue", index: posRef.current.index });
+            }
+        }, 400);
+    }, [pendingMoves, turn, session, winState, currentEnemyHand]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
     useEffect(() => {
