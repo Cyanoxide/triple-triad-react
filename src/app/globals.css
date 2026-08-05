@@ -117,19 +117,64 @@ button {
 /**
  * The "want to play a game of cards?" screen.
  *
- * The grid is hidden and the logo kept. The board's slot art is drawn per cell:
- * the centre one is the Triple Triad logo and the rest are the corners and
- * edges of the playing grid, so hiding them all — which is what this rule did
- * at first — took the logo with it.
+ * The grid is faded out and the logo kept. The board's slot art is drawn per
+ * cell: the centre one is the Triple Triad logo and the rest are the corners
+ * of the playing grid, so hiding them all — which is what this rule did at
+ * first — took the logo with it.
  *
- * The dialog sits low for the same reason: centred, it covered the logo it is
- * supposed to be standing under.
+ * Opacity rather than `content: none`, so the grid fades back in when a mode is
+ * chosen instead of appearing between one frame and the next. The transition
+ * lives on the cells themselves so it runs in both directions.
+ *
+ * The dialog sits low for the same reason the grid goes: centred, it covered
+ * the logo it is supposed to be standing under.
  */
-#app[data-screen="mode"] [data-position]::before,
-#app[data-screen="mode"] [data-position]::after {
-  content: none;
+#app [data-position]::before {
+  transition: opacity 450ms ease;
 }
 
+#app[data-screen="mode"] [data-position]::before {
+  opacity: 0;
+}
+
+/* The centre cell is the logo rather than part of the grid, so it stays */
 #app[data-screen="mode"] [data-position="1,1"]::before {
-  content: "";
+  opacity: 1;
+}
+
+
+/**
+ * A box opening out of nothing at its own centre.
+ *
+ * The scale carries the centring translate with it. Every box this is used on
+ * is placed with translate(-50%, -50%), and a transform that dropped it would
+ * snap the box a quarter of its own size sideways for the length of the
+ * animation. For the same reason transform-origin is left alone: the centre is
+ * already the point it should grow from.
+ *
+ * Not for [data-dialog="quit"], which is placed statically by its wrapper and
+ * would be thrown off-screen by the translate.
+ */
+@keyframes boxOpen {
+  from { transform: translate(-50%, -50%) scale(0); }
+  to   { transform: translate(-50%, -50%) scale(1); }
+}
+
+/**
+ * The contents arrive once the box has most of its size. Scaled from zero along
+ * with it they spend the first half of the animation as an unreadable smear —
+ * the text is bitmap art, so there is no small size of it that looks like
+ * anything.
+ */
+@keyframes boxOpenContent {
+  0%, 45% { opacity: 0; }
+  100%    { opacity: 1; }
+}
+
+.boxOpen {
+  animation: boxOpen 450ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+
+.boxOpen > * {
+  animation: boxOpenContent 450ms ease forwards;
 }

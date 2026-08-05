@@ -366,7 +366,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
     // ── Choosing the rules before opening a room ────────────────────────────
     if (!session && choosing) {
         return (
-            <SimpleDialog className={`${styles.lobby} ${styles.rulesScreen}`}>
+            <SimpleDialog className={`${styles.lobby} ${styles.rulesScreen} boxOpen`}>
                 <p className={styles.label}>{textToSprite("Game rules")}</p>
                 <ul className={styles.ruleList}>
                     {SELECTABLE_RULES.map((rule) => (
@@ -421,7 +421,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
     // ── Not in a room yet: host one, or type a code ──────────────────────────
     if (!session) {
         return (
-            <SimpleDialog className={styles.lobby}>
+            <SimpleDialog className={`${styles.lobby} boxOpen`}>
                 <div className={styles.section}>
                     <button {...pointer("host")} onClick={() => { playSound("select", isSoundEnabled); setChoosing(true); }} disabled={busy}>
                         {textToSprite("Host Game")}
@@ -469,7 +469,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
     const hostAwaitingAcceptance = session.seat === "host" && room?.phase === "lobby" && !waitingForOpponent;
 
     return (
-        <SimpleDialog className={styles.lobby}>
+        <SimpleDialog className={`${styles.lobby} boxOpen`}>
             {session.seat === "host" && (
                 <>
                     <p className={styles.label}>{textToSprite("Your game code")}</p>

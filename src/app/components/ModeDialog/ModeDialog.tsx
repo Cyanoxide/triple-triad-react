@@ -56,7 +56,7 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
     });
 
     return (
-        <SimpleDialog className={styles.modeDialog}>
+        <SimpleDialog className={`${styles.modeDialog} boxOpen`}>
             <p className={styles.question}>{textToSprite("Want to play a game of cards?")}</p>
             <div className={styles.options}>
                 <button {...pointer("single")} onClick={() => confirm("single")}>
