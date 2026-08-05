@@ -43,7 +43,7 @@ const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 type Props = { onClose: () => void };
 
 const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
-    const { isSoundEnabled, rules, tradeRule } = useGameContext();
+    const { isSoundEnabled } = useGameContext();
 
     const { session, room, notice } = useMultiplayer();
     const setSession = (next: Session | null) => multiplayer.setSession(next);

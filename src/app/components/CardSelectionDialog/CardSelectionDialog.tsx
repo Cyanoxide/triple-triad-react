@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./CardSelectionDialog.module.scss";
 import { useGameContext } from "../../context/GameContext";
 import { CardType } from "../../context/GameTypes";
@@ -44,11 +44,22 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         }
     }
 
-    const { session, handSent } = useMultiplayer();
+    const { session, handSent, room } = useMultiplayer();
+
+    // The random draw is a one-off. Its effect can re-run — the rules arrive
+    // over the network, so they can land after the screen has already opened —
+    // and without this the second run would deal a second hand.
+    const drawnRandomly = useRef(false);
 
     const cardsTotal = Object.values(playerCards).reduce((acc, quantity) => acc + quantity, 0);
     const [addedStartingCardsFlag, setAddedStartingCardsFlag] = useState(false);
+    const [sendFailed, setSendFailed] = useState(false);
     const hasPlayedBefore = localStorage.getItem("playerCards");
+
+    // Random deals the hand, so the list and the header count are there to be
+    // read rather than used. Against another player the screen then sits for as
+    // long as the opponent takes, which made it look like a choice was wanted.
+    const randomDraw = !!session && !!rules?.includes("random") && !isCardGalleryOpen;
 
     const gameStart = () => {
         /**
@@ -58,12 +69,28 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
          * here rather than starting the game itself.
          */
         if (session) {
+            /**
+             * The room only takes a hand while it is asking for one. The rules
+             * reach this client as soon as it is in the room, which is before
+             * the guest has accepted them, so a random draw can be ready to
+             * send while the room is still in the lobby — and that submission
+             * comes back rejected. Waiting for the phase means the draw sits
+             * here until it is wanted instead of being thrown away.
+             */
+            if (room?.phase !== "hands") return false;
+
             dispatch({ type: "SET_PLAYER_HAND", payload: hand });
-            multiplayer.markHandSent();
             playSound("spin", isSoundEnabled);
             void submitHand(session.code, session.token, hand.map((card) => card.cardId))
-                .catch(() => playSound("error", isSoundEnabled));
-            return;
+                // Marked only once the room has it. Marking up front meant a
+                // rejected hand still showed "waiting for your opponent", with
+                // nothing on its way and no way out but a refresh.
+                .then(() => multiplayer.markHandSent())
+                .catch(() => {
+                    playSound("error", isSoundEnabled);
+                    setSendFailed(true);
+                });
+            return true;
         }
 
         const enemyCards = setAiPlayerCards(enemyId, lostCards, cards);
@@ -73,6 +100,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         dispatch({ type: "SET_ENEMY_HAND", payload: enemyCards || [] })
         dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: enemyCards || [] })
         playSound("spin", isSoundEnabled);
+        return true;
     }
 
     const handleCardSelection = (cardId: number, quantity: number) => {
@@ -101,6 +129,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
 
     const handleConfirmation = () => {
         playSound("select", isSoundEnabled);
+        setSendFailed(false);
         gameStart();
     }
 
@@ -216,19 +245,26 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
 
 
     useEffect(() => {
-        if (rules && rules.includes("random") && isCardSelectionOpen) {
-            const currentPlayerCards = { ...playerCards };
+        if (rules && rules.includes("random") && isCardSelectionOpen && !drawnRandomly.current) {
+            const held = { ...cards };
+            const drawable = Object.keys(held).filter((id) => held[Number(id)] > 0);
 
-            while (hand.length < 5) {
-                const cardIdIndex = Math.floor(Math.random() * Object.keys(currentPlayerCards).length);
-                const cardId: number = Number(Object.keys(currentPlayerCards)[cardIdIndex]);
+            /**
+             * Bounded rather than "until the hand is full". The draw only counts
+             * a card once the selection accepts it, so a collection that cannot
+             * fill five — or one that disagrees with what is actually held —
+             * used to leave this spinning with the tab locked up.
+             */
+            while (hand.length < 5 && drawable.length) {
+                const index = Math.floor(Math.random() * drawable.length);
+                const cardId = Number(drawable[index]);
 
-                if (currentPlayerCards[cardId] > 0) {
-                    handleCardSelection(cardId, currentPlayerCards[cardId]);
-                    currentPlayerCards[cardId]--;
-                }
+                handleCardSelection(cardId, held[cardId]);
+                held[cardId]--;
+                if (held[cardId] <= 0) drawable.splice(index, 1);
             }
-            gameStart();
+
+            if (hand.length === 5 && gameStart()) drawnRandomly.current = true;
         }
 
 
@@ -251,27 +287,31 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                 setAddedStartingCardsFlag(false);
             }, 3000);
         }
-    }, [isCardSelectionOpen]);
+    }, [isCardSelectionOpen, rules, room?.phase, currentPlayerCards]);
 
 
     return (
         <>
             <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen || isCardGalleryOpen) ? "" : "hidden"}`} data-dialog={modifier || "cardSelection"}>
-                <div className="flex justify-between">
+                {randomDraw ? null : <div className="flex justify-between">
                     <h4 className={styles.meta} data-sprite="cards">Cards
                         <span className={`${styles.meta} ml-2 ${(Object.entries(playerCards).length > 1) ? "" : "hidden"}`.trim()} data-sprite="p.">P.
                             <span className={`${styles.meta} ml-1`} data-sprite={currentPages[pagination]}>{currentPages[pagination]}</span>
                         </span>
                     </h4>
                     <h4 className={`${styles.meta} mr-3`} data-sprite="num.">Num.</h4>
-                </div>
-                <DialogPagination items={Object.entries(cards)} itemsPerPage={ITEMS_PER_PAGE} renderItem={([cardId, quantity]: [number, number], globalIndex: unknown) =>
-                    cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity, Number(globalIndex) - (currentPage - 1) * ITEMS_PER_PAGE)} pagination={pagination} />
+                </div>}
+                {randomDraw ? null : <DialogPagination items={Object.entries(cards)} itemsPerPage={ITEMS_PER_PAGE} renderItem={([cardId, quantity]: [number, number], globalIndex: unknown) =>
+                    cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity, Number(globalIndex) - (currentPage - 1) * ITEMS_PER_PAGE)} pagination={pagination} />}
 
                 {/* Once a hand is away there is nothing to confirm or undo — it
                     is with the other player, so say so rather than offering a
                     button that would send it twice */}
-                {handSent
+                {randomDraw && !handSent && !sendFailed
+                    ? <p className={styles.waiting}>{textToSprite("Your hand has been dealt at random...")}</p>
+                    : sendFailed
+                    ? <p className={styles.waiting}>{textToSprite("Could not send your hand. Try again.")}</p>
+                    : handSent
                     ? <p className={styles.waiting}>{textToSprite("Waiting for your opponent...")}</p>
                     : currentPlayerHand.length === 5 && !isCardGalleryOpen && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
                 {showPreview && previewCardId && <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
