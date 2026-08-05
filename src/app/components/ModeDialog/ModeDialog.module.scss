@@ -20,3 +20,39 @@
     align-items: center;
     gap: 0.2rem;
 }
+
+/**
+ * Under the box rather than inside it. They are not a third way to play, and a
+ * row of them among the modes would read as one.
+ */
+.links {
+    position: absolute;
+    top: calc(74% + 100px);
+    left: 50%;
+    translate: -50% 0;
+    z-index: 3;
+}
+
+.link {
+    position: relative;
+    opacity: 0.75;
+    text-shadow: 2px 2px 0 #212121;
+
+    &[data-focused="true"] {
+        opacity: 1;
+
+        // the shared dialog cursor, which cannot reach this far outside the box
+        &::after {
+            content: "";
+            position: absolute;
+            left: -52px;
+            top: 50%;
+            margin-top: -14px;
+            width: 45px;
+            height: 28px;
+            background-image: url("/assets/cursor.png");
+            background-size: cover;
+            image-rendering: pixelated;
+        }
+    }
+}

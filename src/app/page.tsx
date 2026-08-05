@@ -248,6 +248,20 @@ function GameContent() {
         const scale = Math.min(windowWidth / originalWidth, windowHeight / originalHeight);
         app.style.zoom = String(scale);
         modal.style.zoom = String(scale);
+
+        /**
+         * The bars pinned to the bottom corners live outside #app, because they
+         * are pinned to the window rather than to the board. That put them
+         * outside the zoom as well, so they kept their own size while
+         * everything else grew and shrank around them.
+         *
+         * Zoomed here rather than moved inside #app: #app is a centred column
+         * narrower than the window, so moving them would drag them inwards to
+         * its edges. Their offsets are zoomed along with their size, so the
+         * gap to the corner scales like everything else.
+         */
+        document.querySelectorAll<HTMLElement>("[data-app-scaled]")
+          .forEach((el) => { el.style.zoom = String(scale); });
       }
 
       // iOS ignores user-scalable=no, so block pinch zoom; the app scales itself anyway
@@ -365,7 +379,7 @@ function GameContent() {
           the single-player one already has its own menu — and placed beside the
           options bar so it needs no new furniture on the board. */}
       {session && isGameActive && (
-        <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-10">
+        <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-10" data-app-scaled>
           <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("back", isSoundEnabled); void finishMultiplayer("You left that game."); }}>
               {textToSprite("Quit")}
@@ -375,7 +389,7 @@ function GameContent() {
         </div>
       )}
 
-      <div className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-50 flex items-center">
+      <div className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-10 flex items-center" data-app-scaled>
         <SimpleDialog metaTitle={null} dialog="options" data-expanded={isOptionsOpen}>
           <div className="flex items-center h-full">
             <Image src="/assets/menu-expand.png?v=1" onClick={handleToggleOptions} onMouseEnter={() => optionsNav.actions.focusOption?.(0)} data-focused={optionsFocus === 0} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" />

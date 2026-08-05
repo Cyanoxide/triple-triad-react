@@ -29,6 +29,23 @@
      * sharing it put this box in the middle of the board instead of where its
      * wrapper asked for.
      */
+    /**
+     * The links under the opening question. Placed by its wrapper, like the
+     * quit box — centring itself would drag it back to the middle of the
+     * screen — and kept small, since it is a footnote to the question above it.
+     */
+    &[data-dialog="links"] {
+        position: static;
+        translate: none;
+        min-width: 0;
+        width: max-content;
+        padding: 0.3rem 1.5rem;
+        display: flex;
+        // wide enough for a cursor to sit between them rather than on top of
+        // the label to the left
+        gap: 4.4rem;
+    }
+
     &[data-dialog="quit"] {
         position: static;
         translate: none;
@@ -39,7 +56,14 @@
 
     &[data-dialog="options"] {
         opacity: .35;
-        transform: translate(-100%, -100%);
+        /**
+         * The individual property, not `transform`, so it replaces the base
+         * dialog's centring rather than stacking on top of it. Overriding only
+         * `transform` left both applied: the box kept a -50% shift of its own
+         * width, which is nothing much while it is a 42px button and a wide
+         * gap on its right once it expands to 300px.
+         */
+        translate: -100% -100%;
         height: 2.5rem;
         padding: 1px;
         width: max-content;

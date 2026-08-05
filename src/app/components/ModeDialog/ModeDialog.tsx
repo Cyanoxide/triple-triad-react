@@ -14,6 +14,15 @@ interface Props {
 }
 
 /**
+ * Off to one side of the game itself, so they sit under the box rather than in
+ * it — picking a mode is the thing this screen is for.
+ */
+const LINKS = [
+    { id: "github", label: "Github", href: "https://github.com/Cyanoxide/triple-triad-react" },
+    { id: "donate", label: "Donate", href: "https://ko-fi.com/cyanoxide" },
+] as const;
+
+/**
  * The first thing you see: which kind of game.
  *
  * Multiplayer used to be a VS box wedged in beside the title menu, which put a
@@ -45,17 +54,27 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
 
     const confirm = (id: string) => {
         playSound("select", isSoundEnabled);
+
+        const link = LINKS.find((entry) => entry.id === id);
+        if (link) {
+            // Opened the same way a click would, so the keyboard is not a
+            // second path with its own behaviour
+            window.open(link.href, "_blank", "noreferrer,noopener");
+            return;
+        }
+
         if (id === "single") onSingle(); else onMultiplayer();
     };
 
     useMenuCursor({
-        layout: [["single"], ["multi"]],
+        layout: [["single"], ["multi"], ["github", "donate"]],
         selected,
         onSelect: moveCursor,
         onConfirm: confirm,
     });
 
     return (
+        <>
         <SimpleDialog className={styles.modeDialog}>
             <p className={styles.question}>{textToSprite("Want to play a game of cards?")}</p>
             <div className={styles.options}>
@@ -67,6 +86,26 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
                 </button>
             </div>
         </SimpleDialog>
+
+        <div className={styles.links}>
+            <SimpleDialog metaTitle={null} dialog="links">
+            {LINKS.map((link) => (
+                <a
+                    key={link.id}
+                    className={styles.link}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    data-focused={selected === link.id}
+                    onMouseEnter={() => moveCursor(link.id)}
+                    onClick={() => playSound("select", isSoundEnabled)}
+                >
+                    {textToSprite(link.label)}
+                </a>
+            ))}
+            </SimpleDialog>
+        </div>
+        </>
     );
 };
 
