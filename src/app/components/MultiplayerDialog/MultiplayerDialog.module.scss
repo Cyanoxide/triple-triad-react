@@ -43,28 +43,25 @@
         opacity: 1;
     }
 
+    // The slot waiting for the next character blinks its own underscore. A
+    // drawn block was too heavy — it read as a filled slot rather than an empty
+    // one waiting to be typed into.
     &[data-caret="true"] {
-        opacity: 1;
-        background: #fff;
         animation: codeCaret 1s steps(2, end) infinite;
-
-        // the underscore beneath it would show through the block
-        span {
-            visibility: hidden;
-        }
     }
 }
 
 @keyframes codeCaret {
-    0%, 49% { background: #fff; }
-    50%, 100% { background: #ffffff40; }
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.15; }
 }
 
 .divider {
-    height: 1px;
+    // 2px, not 1: a single-pixel line under the animated CRT scanlines lands
+    // on and off the dark bands as they move, and reads as a flicker
+    height: 2px;
     margin: 1.1rem 0;
-    background: currentColor;
-    opacity: 0.25;
+    background: #8b8e8d;
 }
 
 .row {
@@ -109,9 +106,8 @@
     display: inline-block;
 }
 
-.ruleLine {
-    opacity: 0.85;
-    margin-bottom: 0.2rem;
+.rules li span {
+    display: flex;
 }
 
 .status {
@@ -142,17 +138,24 @@
 }
 
 /**
- * A tighter cursor for the options laid out in rows and columns. The shared
- * one is sized for a button standing alone with the whole panel to its left.
+ * A tighter cursor for the options laid out in rows and columns. The shared one
+ * is sized for a button standing alone with the whole panel to its left, and at
+ * that offset it sits on top of the next column.
+ *
+ * The long selectors are deliberate. The shared rule is
+ * `.dialog button[data-focused=true]::after`, so anything shorter than three
+ * classes plus an element loses to it and nothing here applies at all — which
+ * is exactly what happened the first time.
  */
-.ruleToggle,
-.tradeOption {
-    &[data-focused="true"]::after {
-        left: -46px;
-        width: 32px;
-        height: 20px;
-        margin-top: -13px;
-    }
+.ruleList button.ruleToggle[data-focused="true"]::after,
+.tradeRow button.tradeOption[data-focused="true"]::after {
+    left: -42px;
+    width: 30px;
+    height: 19px;
+    // centred on the option's own line, rather than hung off the text's top
+    // edge the way the shared cursor's fixed margin leaves it
+    top: 50%;
+    margin-top: -9px;
 }
 
 .ruleToggle {
@@ -190,5 +193,17 @@
 
     &[data-on="true"] {
         opacity: 1;
+    }
+}
+
+/**
+ * A fixed lane for the animating dots. All three are always laid out and the
+ * unreached ones are hidden, so the message beside them never moves.
+ */
+.ellipsis {
+    display: inline-flex;
+
+    > span[data-shown="false"] {
+        visibility: hidden;
     }
 }

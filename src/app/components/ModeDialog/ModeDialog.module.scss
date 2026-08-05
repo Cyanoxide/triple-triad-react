@@ -1,0 +1,18 @@
+.modeDialog {
+    min-width: 0;
+    width: 470px;
+    text-align: center;
+}
+
+.question {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}

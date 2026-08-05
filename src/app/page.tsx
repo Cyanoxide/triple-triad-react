@@ -12,6 +12,7 @@ import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/
 import CardGallery from "./components/CardGallery/CardGallery";
 import MultiplayerDialog from "./components/MultiplayerDialog/MultiplayerDialog";
 import AutoplayTimer from "./components/AutoplayTimer/AutoplayTimer";
+import ModeDialog from "./components/ModeDialog/ModeDialog";
 import { finishMultiplayer, multiplayer, useMultiplayer } from "./hooks/multiplayerSession";
 import { useRoom } from "./hooks/useRoom";
 import { codeFromUrl, loadSession, type RoomEvent } from "./utils/rooms";
@@ -35,20 +36,28 @@ function GameContent() {
   }
 
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-  const [vsHovered, setVsHovered] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
 
   /**
-   * Open straight away when the address carries a game code, or when a seat is
-   * already stored. Following a shared link used to land on the title screen
-   * with no sign that it was an invitation — you had to know to press VS.
+   * Which kind of game, asked before either screen is shown. Null is the
+   * question itself; the single player title screen and the multiplayer lobby
+   * are the two answers, and neither has to make room for the other.
+   */
+  const [mode, setMode] = useState<"single" | "multi" | null>(null);
+
+  const openMultiplayer = () => { setMode("multi"); setIsMultiplayerOpen(true); };
+
+  /**
+   * Straight to multiplayer when the address carries a game code, or when a
+   * seat is already stored. Following a shared link used to land on the title
+   * screen with no sign that it was an invitation.
    *
    * In an effect rather than the initial state: the server has no address bar
    * and no localStorage, so deciding this during render made the first client
    * render disagree with the server's and React threw out the whole tree.
    */
   useEffect(() => {
-    if (codeFromUrl() || loadSession()) setIsMultiplayerOpen(true);
+    if (codeFromUrl() || loadSession()) openMultiplayer();
   }, []);
 
   /**
@@ -149,6 +158,9 @@ function GameContent() {
     dispatch({ type: "SET_IS_GAME_ACTIVE", payload: false });
     dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
     dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
+    // Back to the lobby rather than an empty multiplayer screen — the game is
+    // over, but this is still the side of the app they chose
+    setIsMultiplayerOpen(true);
   }, [session]);
 
   // Development only: lets a browser test read whose turn each client believes
@@ -301,28 +313,17 @@ function GameContent() {
       <div id="app" className="max-w-4xl w-full h-full m-auto relative">
         {isCardGalleryOpen && <CardGallery />}
         <div>
-          {isMenuOpen && <MenuDialog />}
-          {isCardSelectionOpen && <CardSelectionDialog />}
-          {/* Its own box on the title screen rather than another line in the
-              menu: multiplayer is a different way to play, not another setting */}
-          {isMenuOpen && !isMultiplayerOpen && (
-            <SimpleDialog metaTitle={null} dialog="multiplayer" className="multiplayerLauncher">
-              <button
-                className="relative"
-                data-focused={vsHovered}
-                onMouseEnter={() => setVsHovered(true)}
-                onMouseLeave={() => setVsHovered(false)}
-                onClick={() => { playSound("select", isSoundEnabled); setIsMultiplayerOpen(true); }}
-                title="Play a friend"
-              >
-                {textToSprite("VS")}
-              </button>
-            </SimpleDialog>
+          {isMenuOpen && mode === null && (
+            <ModeDialog onSingle={() => setMode("single")} onMultiplayer={openMultiplayer} />
           )}
-          {/* The lobby is a mode, not a panel among the others, so the title
-              screen behind it is dimmed the way the captures overlay dims */}
-          {isMultiplayerOpen && <div className="multiplayerOverlay" />}
-          {isMultiplayerOpen && <MultiplayerDialog onClose={() => setIsMultiplayerOpen(false)} />}
+          {isMenuOpen && mode === "single" && <MenuDialog />}
+          {isCardSelectionOpen && <CardSelectionDialog />}
+          {isMultiplayerOpen && (
+            <MultiplayerDialog
+              onClose={() => setIsMultiplayerOpen(false)}
+              onExit={() => { setIsMultiplayerOpen(false); setMode(null); }}
+            />
+          )}
         </div>
         <div className="flex h-full justify-center">
           <Hand className="order-1 flex items-center justify-center w-[150px] flex-shrink-0" player="red" />

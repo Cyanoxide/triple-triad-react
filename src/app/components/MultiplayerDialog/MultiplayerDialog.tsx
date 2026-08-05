@@ -40,9 +40,13 @@ const CODE_LENGTH = 5;
 /** The alphabet game.php draws from. Ambiguous characters are not in it. */
 const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-type Props = { onClose: () => void };
+type Props = {
+    onClose: () => void;
+    /** Leaving the lobby on purpose, rather than it standing aside for a game */
+    onExit?: () => void;
+};
 
-const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
+const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
     const { isSoundEnabled } = useGameContext();
 
     const { session, room, notice } = useMultiplayer();
@@ -91,7 +95,19 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
         const tick = setInterval(() => setDots((count) => (count % 3) + 1), 500);
         return () => clearInterval(tick);
     }, []);
-    const ellipsis = ".".repeat(dots);
+
+    /**
+     * Three dots are always drawn and the unreached ones are merely invisible.
+     * Growing the string instead re-centred the line on every tick, so the
+     * whole message jittered left and right as it animated.
+     */
+    const Ellipsis = () => (
+        <span className={styles.ellipsis}>
+            {[1, 2, 3].map((step) => (
+                <span key={step} data-shown={step <= dots}>{textToSprite(".")}</span>
+            ))}
+        </span>
+    );
 
     const error = null;
 
@@ -186,7 +202,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
         clearSession();
         multiplayer.reset();
         setTypedCode("");
-        onClose();
+        onExit();
     });
 
     const handleCopy = async () => {
@@ -233,7 +249,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
     // ── Choosing the rules before opening a room ────────────────────────────
     if (!session && choosing) {
         return (
-            <SimpleDialog metaTitle={null} className={`${styles.lobby} ${styles.rulesScreen}`}>
+            <SimpleDialog className={`${styles.lobby} ${styles.rulesScreen}`}>
                 <p className={styles.label}>{textToSprite("Game rules")}</p>
                 <ul className={styles.ruleList}>
                     {SELECTABLE_RULES.map((rule) => (
@@ -290,7 +306,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
     // ── Not in a room yet: host one, or type a code ──────────────────────────
     if (!session) {
         return (
-            <SimpleDialog metaTitle={null} className={styles.lobby}>
+            <SimpleDialog className={styles.lobby}>
                 <div className={styles.section}>
                     <button {...pointer("host")} onClick={() => { playSound("select", isSoundEnabled); setChoosing(true); }} disabled={busy}>
                         {textToSprite("Host Game")}
@@ -321,7 +337,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
                     >
                         {textToSprite("Join")}
                     </button>
-                    <button {...pointer("back")} onClick={onClose} disabled={busy}>
+                    <button {...pointer("back")} onClick={onExit} disabled={busy}>
                         {textToSprite("Back")}
                     </button>
                 </div>
@@ -338,7 +354,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
     const hostAwaitingAcceptance = session.seat === "host" && room?.phase === "lobby" && !waitingForOpponent;
 
     return (
-        <SimpleDialog metaTitle={null} className={styles.lobby}>
+        <SimpleDialog className={styles.lobby}>
             {session.seat === "host" && (
                 <>
                     <p className={styles.label}>{textToSprite("Your game code")}</p>
@@ -358,24 +374,27 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
             {session.seat === "host" && <div className={styles.divider} />}
 
             <div className={styles.rules}>
-                <p className={styles.label}>{textToSprite("Rules")}</p>
-                {room && ruleNames(room.rules).map((name) => (
-                    <p key={name} className={styles.ruleLine}>{textToSprite(`- ${name}`)}</p>
-                ))}
+                <p>{textToSprite("Rules:")}</p>
+                <ul>
+                    {room && ruleNames(room.rules).map((name) => (
+                        <li key={name}><span>{textToSprite(`• ${name}`)}</span></li>
+                    ))}
+                </ul>
                 {room?.rules?.tradeRule && (
-                    <p className={styles.ruleLine}>
-                        {textToSprite(`Trade: ${rulesList.tradeRules[room.rules.tradeRule as keyof typeof rulesList.tradeRules] ?? room.rules.tradeRule}`)}
+                    <p>
+                        {textToSprite(`• Trade Rule: ${rulesList.tradeRules[room.rules.tradeRule as keyof typeof rulesList.tradeRules] ?? room.rules.tradeRule}`)}
                     </p>
                 )}
             </div>
 
             <p className={styles.status}>
                 {textToSprite(
-                    waitingForOpponent ? `Waiting for a challenger${ellipsis}`
+                    waitingForOpponent ? "Waiting for a challenger"
                         : guestMustAccept ? "Accept these rules to begin"
-                            : hostAwaitingAcceptance ? `Waiting for them to accept${ellipsis}`
+                            : hostAwaitingAcceptance ? "Waiting for them to accept"
                                 : "Ready. Choose your cards.",
                 )}
+                {(waitingForOpponent || hostAwaitingAcceptance) && <Ellipsis />}
             </p>
 
             <div className={styles.row}>
