@@ -473,7 +473,13 @@ switch ($action) {
                  * trip to arrange and no chance of two clients tossing separate
                  * coins and disagreeing about who starts.
                  */
-                append($room, 'start', 'host', ['first' => random_int(0, 1) === 0 ? 'host' : 'guest']);
+                append($room, 'start', 'host', [
+                'first' => random_int(0, 1) === 0 ? 'host' : 'guest',
+                // Anything the board decides at random has to be decided once,
+                // here, or the two clients disagree about the same game. The
+                // element squares are drawn from this.
+                'seed'  => random_int(1, 2147483646),
+            ]);
             }
 
             return [$room, ['ok' => true, 'room' => publicRoom($room, $seat)], 200];

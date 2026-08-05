@@ -41,12 +41,18 @@ type State = {
      * actually uses, instead of running a second one that could drift from it.
      */
     autoplayAt: number | null;
+    /**
+     * The room's shared source of randomness. Both clients derive the same
+     * element squares from it, so the same move flips the same cards on both
+     * boards — rolled separately they diverged and the scores drifted apart.
+     */
+    seed: number | null;
 };
 
 export type OpponentMove = { cardId: number; row: number; col: number };
 export type RewardPick = { id: number; position: number };
 
-const empty: State = { session: null, room: null, handSent: false, notice: null, pendingMoves: [], incomingRewards: null, autoplayAt: null };
+const empty: State = { session: null, room: null, handSent: false, notice: null, pendingMoves: [], incomingRewards: null, autoplayAt: null, seed: null };
 
 let state: State = empty;
 const listeners = new Set<() => void>();
@@ -66,7 +72,7 @@ export const multiplayer = {
     get: () => state,
 
     setSession(session: Session | null) {
-        state = { ...state, session, handSent: false, notice: null, pendingMoves: [], incomingRewards: null, autoplayAt: null };
+        state = { ...state, session, handSent: false, notice: null, pendingMoves: [], incomingRewards: null, autoplayAt: null, seed: null };
         emit();
     },
 
@@ -76,7 +82,7 @@ export const multiplayer = {
      * exists, which is otherwise a dead end with nothing but an error on screen.
      */
     ended(notice: string) {
-        state = { session: null, room: null, handSent: false, notice, pendingMoves: [], incomingRewards: null, autoplayAt: null };
+        state = { session: null, room: null, handSent: false, notice, pendingMoves: [], incomingRewards: null, autoplayAt: null, seed: null };
         emit();
     },
 
@@ -112,7 +118,13 @@ export const multiplayer = {
 
     /** Clears anything left from the round just finished, ready for another */
     startNewRound() {
-        state = { ...state, pendingMoves: [], incomingRewards: null, autoplayAt: null };
+        state = { ...state, pendingMoves: [], incomingRewards: null, autoplayAt: null, seed: null };
+        emit();
+    },
+
+    setSeed(seed: number | null) {
+        if (state.seed === seed) return;
+        state = { ...state, seed };
         emit();
     },
 

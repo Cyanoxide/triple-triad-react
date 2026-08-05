@@ -38,6 +38,21 @@ const moveTimeout = () => {
     return MOVE_TIMEOUT;
 };
 
+/**
+ * Mulberry32. Small, and identical in both tabs for a given seed, which is the
+ * only property that matters here — this is for agreeing on a board, not for
+ * anything that has to be unguessable.
+ */
+const seededRandom = (seed: number) => {
+    let state = seed >>> 0;
+    return () => {
+        state = (state + 0x6d2b79f5) >>> 0;
+        let t = Math.imul(state ^ (state >>> 15), 1 | state);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+};
+
 const Board: React.FC<BoardProps> = ({ className }) => {
     const debug = false;
     const { session, pendingMoves } = useMultiplayer();
@@ -111,20 +126,32 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     const determineElementalBoardCells = () => {
         if (!rules || !rules?.includes("elemental")) return;
+
+        /**
+         * Against another player the squares come from the room's seed rather
+         * than from Math.random. Each client used to roll its own, so the two
+         * boards had elements in different places — and since the modifier
+         * changes a card's values, the same move flipped different cards on
+         * each screen and the scores drifted apart. Same and Plus made it
+         * obvious, because they turn on values matching exactly.
+         */
+        const seed = multiplayer.get().seed;
+        const random = seed === null ? Math.random : seededRandom(seed);
+
         const position = new Set<string>();
 
         for (let i = 0; i <= 2; i++) {
-            if (position.size && Math.random() < 0.6) continue;
+            if (position.size && random() < 0.6) continue;
 
-            const row = Math.floor(Math.random() * 3);
-            const col = Math.floor(Math.random() * 3);
+            const row = Math.floor(random() * 3);
+            const col = Math.floor(random() * 3);
             const pos = `${row},${col}`;
             position.add(pos);
         }
 
         const result: { [key: string]: (typeof elementsList)[number] } = {};
         position.forEach((pos) => {
-            const element = elementsList[Math.floor(Math.random() * elementsList.length)];
+            const element = elementsList[Math.floor(random() * elementsList.length)];
             result[pos] = element;
         });
 

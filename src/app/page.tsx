@@ -22,7 +22,7 @@ import textToSprite from "./utils/textToSprite";
 import { optionsNav } from "./hooks/optionsNav";
 
 function GameContent() {
-  const { turn, board, rules, tradeRule, currentEnemyHand, currentPlayerHand, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
+  const { turn, board, score, rules, tradeRule, currentEnemyHand, currentPlayerHand, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
   const victorySoundRef = useRef<HTMLAudioElement | undefined>(undefined);
   const bgmRef = useRef<HTMLAudioElement | undefined>(undefined);
 
@@ -65,6 +65,7 @@ function GameContent() {
         // The room drew who opens. Each side sees itself as blue, so the same
         // draw is "blue" to the player it chose and "red" to the other.
         dispatch({ type: "SET_TURN", payload: event.first === session?.seat ? "blue" : "red" });
+        multiplayer.setSeed(event.seed ?? null);
         continue;
       }
 
@@ -102,6 +103,8 @@ function GameContent() {
         dispatch({ type: "RESET_TURN" });
         dispatch({ type: "SET_SCORE", payload: [5, 5] });
         dispatch({ type: "SET_TURN", payload: event.first === session?.seat ? "blue" : "red" });
+        // The seed is left alone: sudden death keeps the board's element
+        // squares, so re-drawing them would move them mid-game
         continue;
       }
 
@@ -138,11 +141,13 @@ function GameContent() {
   // it is, which is otherwise only visible as a cursor being enabled
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
-    const w = window as unknown as { __turn?: string | null; __mp?: unknown; __rules?: unknown; __placed?: number };
+    const w = window as unknown as { __turn?: string | null; __mp?: unknown; __rules?: unknown; __placed?: number; __score?: unknown; __owners?: unknown };
     w.__turn = turn;
     w.__mp = multiplayer.get();
     w.__rules = { rules, tradeRule };
     w.__placed = board.flat().filter(Boolean).length;
+    w.__score = score;
+    w.__owners = board.flat().map((cell) => cell?.currentOwner?.[0] ?? "-").join("");
   });
 
   /**
