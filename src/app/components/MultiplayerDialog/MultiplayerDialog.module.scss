@@ -1,0 +1,92 @@
+@use "../../styles/dialog.module.scss";
+
+.lobby {
+    min-width: 420px;
+    padding: 1.5rem 1.75rem;
+    z-index: 60;
+    text-align: center;
+}
+
+.section {
+    margin-bottom: 0.5rem;
+}
+
+.label {
+    opacity: 0.75;
+    margin-bottom: 0.6rem;
+}
+
+/**
+ * The code is the thing people read aloud, so it is spaced out rather than run
+ * together — "9 V 7 P 6" survives a bad microphone in a way "9V7P6" does not.
+ */
+.code {
+    display: flex;
+    justify-content: center;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+}
+
+.codeSlot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    opacity: 0.4;
+
+    &[data-filled="true"] {
+        opacity: 1;
+    }
+}
+
+.divider {
+    height: 1px;
+    margin: 1.1rem 0;
+    background: currentColor;
+    opacity: 0.25;
+}
+
+.row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.1rem;
+}
+
+.action {
+    &:disabled {
+        opacity: 0.35;
+        pointer-events: none;
+    }
+}
+
+// Quieter than the main actions: a convenience, not the primary path
+.link {
+    display: inline-flex;
+    justify-content: center;
+    opacity: 0.7;
+    margin: 0 auto;
+}
+
+.rules {
+    text-align: left;
+    display: inline-block;
+}
+
+.ruleLine {
+    opacity: 0.85;
+    margin-bottom: 0.2rem;
+}
+
+.status {
+    margin-top: 1.1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.problem {
+    margin-top: 0.9rem;
+    display: flex;
+    justify-content: center;
+    opacity: 0.9;
+}

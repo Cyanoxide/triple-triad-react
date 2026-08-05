@@ -8,6 +8,21 @@
     transform: translate(-50%, -50%);
     min-width: 225px;
 
+    /**
+     * The multiplayer launcher: a small box of its own on the title screen,
+     * sitting under the menu dialog rather than inside it.
+     */
+    &[data-dialog="multiplayer"] {
+        // Beside the menu rather than below it: the vertical space under the
+        // info dialog already belongs to the location and player rows
+        top: 50%;
+        left: calc(50% + 175px);
+        transform: translate(-50%, -50%);
+        min-width: 0;
+        width: max-content;
+        padding: 0.35rem 1.4rem;
+    }
+
     &[data-dialog="options"] {
         opacity: .35;
         transform: translate(-100%, -100%);

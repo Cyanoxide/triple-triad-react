@@ -10,6 +10,7 @@ import RewardSelectionDialog from "./components/RewardSelectionDialog/RewardSele
 import { GameProvider, useGameContext } from "./context/GameContext";
 import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/sounds";
 import CardGallery from "./components/CardGallery/CardGallery";
+import MultiplayerDialog from "./components/MultiplayerDialog/MultiplayerDialog";
 import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
 import textToSprite from "./utils/textToSprite";
@@ -29,6 +30,7 @@ function GameContent() {
   }
 
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
 
   useEffect(() => {
     if (winState) return;
@@ -140,6 +142,16 @@ function GameContent() {
         <div>
           {isMenuOpen && <MenuDialog />}
           {isCardSelectionOpen && <CardSelectionDialog />}
+          {/* Its own box on the title screen rather than another line in the
+              menu: multiplayer is a different way to play, not another setting */}
+          {isMenuOpen && !isMultiplayerOpen && (
+            <SimpleDialog metaTitle={null} dialog="multiplayer" className="multiplayerLauncher">
+              <button onClick={() => { playSound("select", isSoundEnabled); setIsMultiplayerOpen(true); }} title="Play a friend">
+                {textToSprite("VS")}
+              </button>
+            </SimpleDialog>
+          )}
+          {isMultiplayerOpen && <MultiplayerDialog onClose={() => setIsMultiplayerOpen(false)} />}
         </div>
         <div className="flex h-full justify-center">
           <Hand className="order-1 flex items-center justify-center w-[150px] flex-shrink-0" player="red" />
