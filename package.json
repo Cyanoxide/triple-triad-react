@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dev:api": "php -S 127.0.0.1:8100 -t public"
   },
   "dependencies": {
     "next": "15.1.6",
