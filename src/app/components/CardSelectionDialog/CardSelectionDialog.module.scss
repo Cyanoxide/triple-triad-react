@@ -79,3 +79,16 @@
     margin-top: 0.75rem;
     opacity: 0.8;
 }
+
+/**
+ * The hand's status is its own box rather than a line inside the card list.
+ * Sitting in the list made it look like part of the choosing, when in fact
+ * there is nothing left to choose.
+ */
+.handStatus {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    white-space: nowrap;
+}

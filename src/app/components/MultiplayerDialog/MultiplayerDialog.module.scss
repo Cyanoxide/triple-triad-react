@@ -3,7 +3,10 @@
 .lobby {
     min-width: 420px;
     padding: 1.5rem 1.75rem;
-    z-index: 60;
+    // Under the CRT scanlines (body::after, z-index 11), which is where the
+    // rest of the dialogs sit. At 60 the lobby floated above the effect and
+    // looked like it belonged to a different screen.
+    z-index: 10;
     text-align: center;
 }
 
@@ -51,9 +54,24 @@
     justify-content: center;
     gap: 2rem;
     margin-top: 1.1rem;
+
+    // The auto margins that centre a lone button push a pair to the edges here,
+    // where the row is already doing the centring
+    .action {
+        margin-inline: 0;
+    }
 }
 
 .action {
+    /**
+     * Relative and only as wide as its label, so the shared dialog styling
+     * hangs the hand cursor beside the text. Left as a full-width block it
+     * anchored to the panel instead and the cursor floated off on its own.
+     */
+    position: relative;
+    width: max-content;
+    margin-inline: auto;
+
     &:disabled {
         opacity: 0.35;
         pointer-events: none;

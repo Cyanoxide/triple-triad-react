@@ -86,7 +86,19 @@ export const multiplayer = {
         emit();
     },
 
+    /** Drop the "why you are back here" line without touching the seat */
+    clearNotice() {
+        if (state.notice === null) return;
+        state = { ...state, notice: null };
+        emit();
+    },
+
     setRoom(room: Room | null) {
+        // A poll already in flight when the game ended still resolves, and it
+        // used to put the finished room back — so the next lobby opened showing
+        // the last game's rules. There is no seat, so there is no room.
+        if (room && !state.session) return;
+
         if (state.room === room) return;
         state = { ...state, room };
         emit();

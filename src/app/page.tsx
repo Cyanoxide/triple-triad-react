@@ -313,7 +313,7 @@ function GameContent() {
           the single-player one already has its own menu — and placed beside the
           options bar so it needs no new furniture on the board. */}
       {session && isGameActive && (
-        <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-50">
+        <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-10">
           <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("back", isSoundEnabled); void finishMultiplayer("You left that game."); }}>
               {textToSprite("Quit")}

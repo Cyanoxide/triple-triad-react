@@ -56,10 +56,14 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
     const [sendFailed, setSendFailed] = useState(false);
     const hasPlayedBefore = localStorage.getItem("playerCards");
 
-    // Random deals the hand, so the list and the header count are there to be
-    // read rather than used. Against another player the screen then sits for as
-    // long as the opponent takes, which made it look like a choice was wanted.
+    // Random deals the hand, so there is nothing on this screen to use
     const randomDraw = !!session && !!rules?.includes("random") && !isCardGalleryOpen;
+
+    const waitingMessage = !session || isCardGalleryOpen ? null
+        : sendFailed ? "Could not send your hand. Try again."
+            : handSent ? "Waiting for your opponent..."
+                : randomDraw ? "Your hand has been dealt at random..."
+                    : null;
 
     const gameStart = () => {
         /**
@@ -292,32 +296,32 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
 
     return (
         <>
-            <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen || isCardGalleryOpen) ? "" : "hidden"}`} data-dialog={modifier || "cardSelection"}>
-                {randomDraw ? null : <div className="flex justify-between">
+            <div className={`${styles.cardSelectionDialog} cardSelection ${((isCardSelectionOpen || isCardGalleryOpen) && !waitingMessage) ? "" : "hidden"}`} data-dialog={modifier || "cardSelection"}>
+                <div className="flex justify-between">
                     <h4 className={styles.meta} data-sprite="cards">Cards
                         <span className={`${styles.meta} ml-2 ${(Object.entries(playerCards).length > 1) ? "" : "hidden"}`.trim()} data-sprite="p.">P.
                             <span className={`${styles.meta} ml-1`} data-sprite={currentPages[pagination]}>{currentPages[pagination]}</span>
                         </span>
                     </h4>
                     <h4 className={`${styles.meta} mr-3`} data-sprite="num.">Num.</h4>
-                </div>}
-                {randomDraw ? null : <DialogPagination items={Object.entries(cards)} itemsPerPage={ITEMS_PER_PAGE} renderItem={([cardId, quantity]: [number, number], globalIndex: unknown) =>
-                    cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity, Number(globalIndex) - (currentPage - 1) * ITEMS_PER_PAGE)} pagination={pagination} />}
+                </div>
+                <DialogPagination items={Object.entries(cards)} itemsPerPage={ITEMS_PER_PAGE} renderItem={([cardId, quantity]: [number, number], globalIndex: unknown) =>
+                    cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity, Number(globalIndex) - (currentPage - 1) * ITEMS_PER_PAGE)} pagination={pagination} />
 
                 {/* Once a hand is away there is nothing to confirm or undo — it
                     is with the other player, so say so rather than offering a
                     button that would send it twice */}
-                {randomDraw && !handSent && !sendFailed
-                    ? <p className={styles.waiting}>{textToSprite("Your hand has been dealt at random...")}</p>
-                    : sendFailed
-                    ? <p className={styles.waiting}>{textToSprite("Could not send your hand. Try again.")}</p>
-                    : handSent
-                    ? <p className={styles.waiting}>{textToSprite("Waiting for your opponent...")}</p>
-                    : currentPlayerHand.length === 5 && !isCardGalleryOpen && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+                {!waitingMessage && currentPlayerHand.length === 5 && !isCardGalleryOpen &&
+                    <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
                 {showPreview && previewCardId && <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
                     <Card id={previewCardId} player="blue" />
                 </div>}
             </div>
+            {waitingMessage &&
+                <SimpleDialog className={styles.handStatus}>
+                    {textToSprite(waitingMessage)}
+                </SimpleDialog>
+            }
             {hasPlayedBefore && addedStartingCardsFlag && !isCardGalleryOpen &&
                 <SimpleDialog>
                     <div className="mb-2">{textToSprite("You don't have enough cards to play.")}</div>

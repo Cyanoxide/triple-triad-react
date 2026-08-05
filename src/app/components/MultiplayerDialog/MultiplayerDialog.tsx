@@ -58,6 +58,20 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
      * the guest had no say in it at all.
      */
     const [choosing, setChoosing] = useState(false);
+
+    /**
+     * The menu's buttons carry the hand cursor through data-focused, which the
+     * shared dialog styling draws. Without it "Host Game" read as a heading
+     * rather than something to press. Hover only: the code field already owns
+     * the keyboard here.
+     */
+    const [hovered, setHovered] = useState<string | null>(null);
+    const pointer = (id: string) => ({
+        className: styles.action,
+        "data-focused": hovered === id,
+        onMouseEnter: () => setHovered(id),
+        onMouseLeave: () => setHovered((current) => (current === id ? null : current)),
+    });
     const [chosenRules, setChosenRules] = useState<string[]>(DEFAULT_RULES);
     const [chosenTrade, setChosenTrade] = useState<string>(DEFAULT_TRADE);
 
@@ -145,6 +159,15 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
         await acceptRules(session.code, session.token, room.rulesHash);
     });
 
+    /**
+     * "You won that game", "Your opponent left" and so on explain why you are
+     * back at the lobby, so they are worth showing once. They were outliving
+     * that though — the notice sat in the session store until a new game
+     * replaced it, so opening this a day later still reported the last result.
+     * Cleared on the way out, which is the point it has been read.
+     */
+    useEffect(() => () => { multiplayer.clearNotice(); }, []);
+
     const handleLeave = () => run(async () => {
         playSound("back", isSoundEnabled);
         if (session) await leaveRoom(session.code, session.token).catch(() => { });
@@ -230,10 +253,10 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
                 </div>
 
                 <div className={styles.row}>
-                    <button className={styles.action} onClick={handleHost} disabled={busy}>
+                    <button {...pointer("open")} onClick={handleHost} disabled={busy}>
                         {textToSprite("Open Game")}
                     </button>
-                    <button className={styles.action} onClick={() => { playSound("back", isSoundEnabled); setChoosing(false); }} disabled={busy}>
+                    <button {...pointer("back")} onClick={() => { playSound("back", isSoundEnabled); setChoosing(false); }} disabled={busy}>
                         {textToSprite("Back")}
                     </button>
                 </div>
@@ -248,7 +271,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
         return (
             <SimpleDialog metaTitle={null} className={styles.lobby}>
                 <div className={styles.section}>
-                    <button className={styles.action} onClick={() => { playSound("select", isSoundEnabled); setChoosing(true); }} disabled={busy}>
+                    <button {...pointer("host")} onClick={() => { playSound("select", isSoundEnabled); setChoosing(true); }} disabled={busy}>
                         {textToSprite("Host Game")}
                     </button>
                 </div>
@@ -266,13 +289,13 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
 
                 <div className={styles.row}>
                     <button
-                        className={styles.action}
+                        {...pointer("join")}
                         onClick={() => attemptJoin(typedCode)}
                         disabled={busy || typedCode.length !== CODE_LENGTH}
                     >
                         {textToSprite("Join")}
                     </button>
-                    <button className={styles.action} onClick={onClose} disabled={busy}>
+                    <button {...pointer("back")} onClick={onClose} disabled={busy}>
                         {textToSprite("Back")}
                     </button>
                 </div>
@@ -329,11 +352,11 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
 
             <div className={styles.row}>
                 {guestMustAccept && (
-                    <button className={styles.action} onClick={handleAccept} disabled={busy}>
+                    <button {...pointer("accept")} onClick={handleAccept} disabled={busy}>
                         {textToSprite("Accept")}
                     </button>
                 )}
-                <button className={styles.action} onClick={handleLeave} disabled={busy}>
+                <button {...pointer("leave")} onClick={handleLeave} disabled={busy}>
                     {textToSprite(guestMustAccept ? "Decline" : "Leave")}
                 </button>
             </div>

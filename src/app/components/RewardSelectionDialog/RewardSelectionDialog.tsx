@@ -372,11 +372,24 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     const infoMessage = (rewardType === "lost") ? "lost" : "acquired";
 
+    /**
+     * Nothing has been taken yet when the loser arrives here, so naming a card
+     * gives "undefined card lost". Against another player the wait is real —
+     * the winner is still choosing — so say that instead. On your own it is
+     * only the beat before the automatic pick lands, so the line stays blank
+     * rather than flashing a message that is gone again immediately.
+     */
+    const headingText = (isSelectionConfirmed || winState === "red")
+        ? (selectedRewardName
+            ? `${selectedRewardName} card ${infoMessage}`
+            : awaitingOpponentPicks ? "Waiting for your opponent to choose..." : "")
+        : `Select ${winAmount} card(s) you want`;
+
     return (
         <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
             <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={winState}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                <h3>{textToSprite((isSelectionConfirmed || (winState === "red")) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`)}</h3>
+                <h3>{textToSprite(headingText)}</h3>
             </div>
 
             <div className="flex justify-center mb-7">
