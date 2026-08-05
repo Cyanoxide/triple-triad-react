@@ -72,3 +72,10 @@
         transform: rotateY(359deg) rotateX(-20deg);
     }
 }
+// Shown in place of the confirm/deny buttons once a hand has been sent
+.waiting {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.75rem;
+    opacity: 0.8;
+}

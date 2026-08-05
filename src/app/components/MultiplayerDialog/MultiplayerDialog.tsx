@@ -11,7 +11,7 @@ import {
     leaveRoom, linkForCode, loadSession, saveSession,
     type MultiplayerRules, type Room, type Session,
 } from "../../utils/rooms";
-import { useRoom } from "../../hooks/useRoom";
+import { multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
 import styles from "./MultiplayerDialog.module.scss";
 
 /**
@@ -33,15 +33,14 @@ type Props = { onClose: () => void };
 const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
     const { isSoundEnabled, rules, tradeRule } = useGameContext();
 
-    const [session, setSession] = useState<Session | null>(null);
+    const { session, room } = useMultiplayer();
+    const setSession = (next: Session | null) => multiplayer.setSession(next);
     const [typedCode, setTypedCode] = useState("");
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
 
-    // Nothing is applied to the game yet — that arrives with the next stage.
-    // The lobby only needs to know the room's shape, which useRoom polls for.
-    const { room, error } = useRoom({ session, onEvents: () => { } });
+    const error = null;
 
     const joinAttempted = useRef(false);
 
@@ -101,6 +100,18 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
         playSound("success", isSoundEnabled);
     }), [isSoundEnabled]);
 
+    /**
+     * The lobby's job ends when the room reaches 'hands'. Card selection is the
+     * game's own screen, so this closes and lets it take over rather than
+     * building a second one.
+     */
+    useEffect(() => {
+        if (room?.phase === "hands") {
+            playSound("success", isSoundEnabled);
+            onClose();
+        }
+    }, [room?.phase]);
+
     const handleAccept = () => run(async () => {
         if (!session || !room) return;
         playSound("select", isSoundEnabled);
@@ -111,7 +122,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
         playSound("back", isSoundEnabled);
         if (session) await leaveRoom(session.code, session.token).catch(() => { });
         clearSession();
-        setSession(null);
+        multiplayer.reset();
         setTypedCode("");
         onClose();
     });

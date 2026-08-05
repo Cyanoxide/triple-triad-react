@@ -465,9 +465,15 @@ switch ($action) {
 
             if (!empty($room['players']['host']['hand']) && !empty($room['players']['guest']['hand'])) {
                 $room['phase'] = 'playing';
-                // The host moves first. Fixed rather than random so both clients
-                // agree without another round trip.
-                append($room, 'start', 'host');
+                /**
+                 * Who opens is drawn at random, as it is against the computer.
+                 *
+                 * Drawn here rather than by either client: this is the one
+                 * moment both hands are known to be in, so there is no round
+                 * trip to arrange and no chance of two clients tossing separate
+                 * coins and disagreeing about who starts.
+                 */
+                append($room, 'start', 'host', ['first' => random_int(0, 1) === 0 ? 'host' : 'guest']);
             }
 
             return [$room, ['ok' => true, 'room' => publicRoom($room, $seat)], 200];

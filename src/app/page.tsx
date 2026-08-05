@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useSyncExternalStore } from "react";
+import { useState, useRef, useEffect, useCallback, useSyncExternalStore } from "react";
 import Board from "./components/Board/Board";
 import Hand from "./components/Hand/Hand";
 import MenuDialog from "./components/MenuDialog/MenuDialog";
@@ -11,13 +11,17 @@ import { GameProvider, useGameContext } from "./context/GameContext";
 import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/sounds";
 import CardGallery from "./components/CardGallery/CardGallery";
 import MultiplayerDialog from "./components/MultiplayerDialog/MultiplayerDialog";
+import { multiplayer, useMultiplayer } from "./hooks/multiplayerSession";
+import { useRoom } from "./hooks/useRoom";
+import type { RoomEvent } from "./utils/rooms";
+import { generateCardsFromIds } from "./utils/general";
 import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
 import textToSprite from "./utils/textToSprite";
 import { optionsNav } from "./hooks/optionsNav";
 
 function GameContent() {
-  const { isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
+  const { turn, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
   const victorySoundRef = useRef<HTMLAudioElement | undefined>(undefined);
   const bgmRef = useRef<HTMLAudioElement | undefined>(undefined);
 
@@ -31,6 +35,67 @@ function GameContent() {
 
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
+
+  /**
+   * Multiplayer lives here rather than in the lobby, because the polling has to
+   * keep running after the lobby closes — through card selection and the whole
+   * game. Events are applied to the game from one place.
+   */
+  const { session } = useMultiplayer();
+
+  const applyRoomEvents = useCallback((events: RoomEvent[]) => {
+    for (const event of events) {
+      /**
+       * Your own moves and hands come back on the poll, and were already
+       * applied locally — acting on them again would double everything.
+       *
+       * Narrated events are different. 'start' is stamped with the host's seat
+       * whoever it concerns, so skipping by author would leave the host never
+       * learning the result of its own draw.
+       */
+      if (event.by === session?.seat && (event.type === "move" || event.type === "hand")) continue;
+
+      if (event.type === "start") {
+        // The room drew who opens. Each side sees itself as blue, so the same
+        // draw is "blue" to the player it chose and "red" to the other.
+        dispatch({ type: "SET_TURN", payload: event.first === session?.seat ? "blue" : "red" });
+        continue;
+      }
+
+      if (event.type === "hand" && event.hand) {
+        // The opponent is always the red side locally, whichever seat they hold
+        const theirHand = generateCardsFromIds(event.hand, "red");
+        dispatch({ type: "SET_ENEMY_HAND", payload: theirHand });
+        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: theirHand });
+      }
+    }
+  }, [session?.seat]);
+
+  const { room } = useRoom({ session, onEvents: applyRoomEvents });
+
+  useEffect(() => { multiplayer.setRoom(room); }, [room]);
+
+  // Development only: lets a browser test read whose turn each client believes
+  // it is, which is otherwise only visible as a cursor being enabled
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+    (window as unknown as { __turn?: string | null }).__turn = turn;
+  }, [turn]);
+
+  /** Rules agreed: hand over to the game's own card selection screen. */
+  useEffect(() => {
+    if (room?.phase !== "hands" || isGameActive) return;
+    dispatch({ type: "SET_IS_MENU_OPEN", payload: false });
+    dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: true });
+  }, [room?.phase, isGameActive]);
+
+  /** Both hands are in: the room says play, so the board opens. */
+  useEffect(() => {
+    if (room?.phase !== "playing" || isGameActive) return;
+    dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
+    dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
+    playSound("spin", isSoundEnabled);
+  }, [room?.phase]);
 
   useEffect(() => {
     if (winState) return;

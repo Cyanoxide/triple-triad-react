@@ -7,6 +7,8 @@ import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import Card from "../Card/Card";
 import Image from "next/image";
 import playSound from "../../utils/sounds";
+import { multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
+import { submitHand } from "../../utils/rooms";
 import { setAiPlayerCards } from "../../utils/aiCardSelection";
 import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
@@ -42,11 +44,28 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         }
     }
 
+    const { session, handSent } = useMultiplayer();
+
     const cardsTotal = Object.values(playerCards).reduce((acc, quantity) => acc + quantity, 0);
     const [addedStartingCardsFlag, setAddedStartingCardsFlag] = useState(false);
     const hasPlayedBefore = localStorage.getItem("playerCards");
 
     const gameStart = () => {
+        /**
+         * Against another player nobody deals for anybody: the five cards just
+         * chosen are sent, and the opponent sends theirs. The board opens when
+         * the room says both are in, which the page watches for — so this stops
+         * here rather than starting the game itself.
+         */
+        if (session) {
+            dispatch({ type: "SET_PLAYER_HAND", payload: hand });
+            multiplayer.markHandSent();
+            playSound("spin", isSoundEnabled);
+            void submitHand(session.code, session.token, hand.map((card) => card.cardId))
+                .catch(() => playSound("error", isSoundEnabled));
+            return;
+        }
+
         const enemyCards = setAiPlayerCards(enemyId, lostCards, cards);
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
         dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
@@ -173,7 +192,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         if (!pos || pos.group !== "list") return;
         const entry = pageItems[Math.min(pos.index, pageItems.length - 1)];
         if (entry) setCardPreview(Number(entry[0]));
-    }, [currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [currentPage]);
 
     const cardContent = (item: { id: number, location: string, player: string, additionalDesc: string }, quantity: number, pageIndex: number) => (
         <div
@@ -249,7 +268,12 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                 <DialogPagination items={Object.entries(cards)} itemsPerPage={ITEMS_PER_PAGE} renderItem={([cardId, quantity]: [number, number], globalIndex: unknown) =>
                     cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity, Number(globalIndex) - (currentPage - 1) * ITEMS_PER_PAGE)} pagination={pagination} />
 
-                {currentPlayerHand.length === 5 && !isCardGalleryOpen && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+                {/* Once a hand is away there is nothing to confirm or undo — it
+                    is with the other player, so say so rather than offering a
+                    button that would send it twice */}
+                {handSent
+                    ? <p className={styles.waiting}>{textToSprite("Waiting for your opponent...")}</p>
+                    : currentPlayerHand.length === 5 && !isCardGalleryOpen && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
                 {showPreview && previewCardId && <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
                     <Card id={previewCardId} player="blue" />
                 </div>}

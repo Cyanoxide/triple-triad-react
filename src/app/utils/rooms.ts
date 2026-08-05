@@ -22,6 +22,8 @@ export type RoomEvent = {
     by: Seat;
     at: number;
     hand?: number[];
+    /** On a 'start' event: which seat opens, drawn at random by the room */
+    first?: Seat;
     move?: { cardId: number; uniqueId?: string | null; row: number; col: number };
     winner?: string | null;
     score?: [number, number] | null;
