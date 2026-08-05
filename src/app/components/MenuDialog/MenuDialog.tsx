@@ -131,7 +131,7 @@ const MenuDialog = ({ onQuit }: Props) => {
 
     return (
         <>
-            <div className={`${styles.menuDialog} boxOpen ${(isMenuOpen) ? "" : "hidden"}`}>
+            <div className={`${styles.menuDialog} ${(isMenuOpen) ? "" : "hidden"}`}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
                 <p>{textToSprite("Rules:")}</p>
                 <ul>

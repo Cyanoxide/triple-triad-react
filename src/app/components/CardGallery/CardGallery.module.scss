@@ -15,7 +15,7 @@
 .currentPageTitle {
     top: 0;
     left: 0;
-    transform: none;
+    translate: none;
     position: relative;
     min-width: 0;
     width: 80%;
@@ -24,7 +24,7 @@
 .galleryTitle {
     top: 0;
     left: 0;
-    transform: none;
+    translate: none;
     position: relative;
     width: 20%;
     min-width: 0;
@@ -33,7 +33,7 @@
 .selectedCardMeta {
     left: 0;
     top: 0;
-    transform: none;
+    translate: none;
     position: relative;
     min-width: 0;
     width: 100%;
@@ -42,7 +42,7 @@
 .cardDetails {
     top: 0;
     left: 0;
-    transform: none;
+    translate: none;
     position: relative;
     min-width: 0;
     width: 100%;
@@ -51,7 +51,7 @@
 .cardStatistics {
     top: 0;
     left: 0;
-    transform: none;
+    translate: none;
     position: relative;
     min-width: 0;
     width: 100%;
