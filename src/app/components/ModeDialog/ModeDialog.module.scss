@@ -30,24 +30,26 @@
     top: calc(74% + 100px);
     left: 50%;
     translate: -50% 0;
+    display: flex;
+    // room for a cursor to sit beside the second one rather than on the first
+    gap: 4.4rem;
     z-index: 3;
 }
 
 .link {
     position: relative;
-    opacity: 0.75;
     text-shadow: 2px 2px 0 #212121;
 
     &[data-focused="true"] {
-        opacity: 1;
-
-        // the shared dialog cursor, which cannot reach this far outside the box
+        // The dialog's own cursor rule cannot reach out here, so it is redrawn.
+        // Sat higher than the text it points at until the offset was nudged
+        // down — the shared one is positioned for a line inside a padded box.
         &::after {
             content: "";
             position: absolute;
             left: -52px;
             top: 50%;
-            margin-top: -14px;
+            margin-top: -7px;
             width: 45px;
             height: 28px;
             background-image: url("/assets/cursor.png");

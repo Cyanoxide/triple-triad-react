@@ -88,7 +88,6 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
         </SimpleDialog>
 
         <div className={styles.links}>
-            <SimpleDialog metaTitle={null} dialog="links">
             {LINKS.map((link) => (
                 <a
                     key={link.id}
@@ -103,7 +102,6 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
                     {textToSprite(link.label)}
                 </a>
             ))}
-            </SimpleDialog>
         </div>
         </>
     );
