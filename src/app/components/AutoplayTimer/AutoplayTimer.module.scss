@@ -1,0 +1,18 @@
+.timer {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.35rem;
+    opacity: 0.75;
+
+    // The last stretch reads as a warning rather than a decoration
+    &[data-urgent="true"] {
+        opacity: 1;
+        animation: pulse 1s steps(2, end) infinite;
+    }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.45; }
+    100% { opacity: 1; }
+}

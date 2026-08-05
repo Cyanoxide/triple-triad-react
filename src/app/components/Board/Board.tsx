@@ -677,10 +677,19 @@ const Board: React.FC<BoardProps> = ({ className }) => {
      * nudge for someone who has walked away, not a substitute player.
      */
     useEffect(() => {
-        if (!session || turn !== "blue" || winState || !isGameActive) return;
-        if (!currentPlayerHand.length) return;
+        // Off unless the host switched it on. Without the rule a game simply
+        // waits, which is what someone playing at their own pace would want.
+        if (!rules?.includes("autoplay")) { multiplayer.setAutoplayAt(null); return; }
+        if (!session || turn !== "blue" || winState || !isGameActive || !currentPlayerHand.length) {
+            multiplayer.setAutoplayAt(null);
+            return;
+        }
+
+        const wait = moveTimeout();
+        multiplayer.setAutoplayAt(Date.now() + wait);
 
         const timeout = setTimeout(() => {
+            multiplayer.setAutoplayAt(null);
             const empty: [number, number][] = [];
             board.forEach((row, rowIndex) => row.forEach((cell, colIndex) => {
                 if (!cell) empty.push([rowIndex, colIndex]);
@@ -698,10 +707,10 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
             void sendMove(session.code, session.token, { cardId: card.cardId, row, col })
                 .catch(() => { });
-        }, moveTimeout());
+        }, wait);
 
         return () => clearTimeout(timeout);
-    }, [turn, session, winState, isGameActive, turnNumber]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [turn, session, winState, isGameActive, turnNumber, rules]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
     /**

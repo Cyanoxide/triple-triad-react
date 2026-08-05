@@ -11,6 +11,7 @@ import { GameProvider, useGameContext } from "./context/GameContext";
 import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/sounds";
 import CardGallery from "./components/CardGallery/CardGallery";
 import MultiplayerDialog from "./components/MultiplayerDialog/MultiplayerDialog";
+import AutoplayTimer from "./components/AutoplayTimer/AutoplayTimer";
 import { finishMultiplayer, multiplayer, useMultiplayer } from "./hooks/multiplayerSession";
 import { useRoom } from "./hooks/useRoom";
 import type { RoomEvent } from "./utils/rooms";
@@ -312,6 +313,7 @@ function GameContent() {
             <button onClick={() => { playSound("back", isSoundEnabled); void finishMultiplayer("You left that game."); }}>
               {textToSprite("Quit")}
             </button>
+            <AutoplayTimer />
           </SimpleDialog>
         </div>
       )}

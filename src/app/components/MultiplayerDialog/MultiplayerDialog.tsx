@@ -23,6 +23,18 @@ import styles from "./MultiplayerDialog.module.scss";
  * reimplementing them.
  */
 
+/**
+ * What the host can turn on. Order matters only for the list; every one of
+ * these is a rule the game already understands, except autoplay, which is a
+ * multiplayer courtesy rather than an FF7 rule.
+ */
+const SELECTABLE_RULES = ["open", "same", "plus", "sameWall", "elemental", "random", "suddenDeath", "autoplay"] as const;
+const TRADE_RULES = ["one", "diff", "direct", "all"] as const;
+
+/** On unless the host turns it off, so a game cannot stall on someone who left */
+const DEFAULT_RULES = ["open", "autoplay"];
+const DEFAULT_TRADE = "one";
+
 const CODE_LENGTH = 5;
 
 /** The alphabet game.php draws from. Ambiguous characters are not in it. */
@@ -39,6 +51,21 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
     const [busy, setBusy] = useState(false);
     const [problem, setProblem] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+
+    /**
+     * The host picks the rules here rather than inheriting whatever the single
+     * player screen happened to have rolled — that was random per client, and
+     * the guest had no say in it at all.
+     */
+    const [choosing, setChoosing] = useState(false);
+    const [chosenRules, setChosenRules] = useState<string[]>(DEFAULT_RULES);
+    const [chosenTrade, setChosenTrade] = useState<string>(DEFAULT_TRADE);
+
+    const toggleRule = (rule: string) => {
+        playSound("select", isSoundEnabled);
+        setChosenRules((current) =>
+            current.includes(rule) ? current.filter((name) => name !== rule) : [...current, rule]);
+    };
 
     const error = null;
 
@@ -84,7 +111,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
 
     const handleHost = () => run(async () => {
         playSound("select", isSoundEnabled);
-        const offered: MultiplayerRules = { rules: rules ?? [], tradeRule: tradeRule ?? null };
+        const offered: MultiplayerRules = { rules: chosenRules, tradeRule: chosenTrade };
         const { token, room: created } = await createRoom(offered);
         const next: Session = { code: created.code, token, seat: "host" };
         saveSession(next);
@@ -168,12 +195,60 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
 
     const message = problem ?? notice ?? error;
 
+    // ── Choosing the rules before opening a room ────────────────────────────
+    if (!session && choosing) {
+        return (
+            <SimpleDialog metaTitle={null} className={styles.lobby}>
+                <p className={styles.label}>{textToSprite("Game rules")}</p>
+                <ul className={styles.ruleList}>
+                    {SELECTABLE_RULES.map((rule) => (
+                        <li key={rule}>
+                            <button className={styles.ruleToggle} onClick={() => toggleRule(rule)}>
+                                <span>{textToSprite(rulesList.rules[rule as keyof typeof rulesList.rules] ?? rule)}</span>
+                                <span data-on={chosenRules.includes(rule)} className={styles.toggleState}>
+                                    {textToSprite(chosenRules.includes(rule) ? "On" : "Off")}
+                                </span>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+
+                <div className={styles.divider} />
+
+                <p className={styles.label}>{textToSprite("Trade rule")}</p>
+                <div className={styles.tradeRow}>
+                    {TRADE_RULES.map((rule) => (
+                        <button
+                            key={rule}
+                            className={styles.tradeOption}
+                            data-on={chosenTrade === rule}
+                            onClick={() => { playSound("select", isSoundEnabled); setChosenTrade(rule); }}
+                        >
+                            {textToSprite(rulesList.tradeRules[rule])}
+                        </button>
+                    ))}
+                </div>
+
+                <div className={styles.row}>
+                    <button className={styles.action} onClick={handleHost} disabled={busy}>
+                        {textToSprite("Open Game")}
+                    </button>
+                    <button className={styles.action} onClick={() => { playSound("back", isSoundEnabled); setChoosing(false); }} disabled={busy}>
+                        {textToSprite("Back")}
+                    </button>
+                </div>
+
+                {message && <p className={styles.problem}>{textToSprite(message)}</p>}
+            </SimpleDialog>
+        );
+    }
+
     // ── Not in a room yet: host one, or type a code ──────────────────────────
     if (!session) {
         return (
             <SimpleDialog metaTitle={null} className={styles.lobby}>
                 <div className={styles.section}>
-                    <button className={styles.action} onClick={handleHost} disabled={busy}>
+                    <button className={styles.action} onClick={() => { playSound("select", isSoundEnabled); setChoosing(true); }} disabled={busy}>
                         {textToSprite("Host Game")}
                     </button>
                 </div>

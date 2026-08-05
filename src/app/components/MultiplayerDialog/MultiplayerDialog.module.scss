@@ -90,3 +90,41 @@
     justify-content: center;
     opacity: 0.9;
 }
+
+.ruleList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.15rem 1.6rem;
+    margin-bottom: 0.4rem;
+}
+
+.ruleToggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 1.2rem;
+}
+
+// Off is dimmed rather than hidden, so the whole rule set stays readable at once
+.toggleState {
+    opacity: 0.4;
+
+    &[data-on="true"] {
+        opacity: 1;
+    }
+}
+
+.tradeRow {
+    display: flex;
+    justify-content: center;
+    gap: 1.4rem;
+}
+
+.tradeOption {
+    opacity: 0.4;
+
+    &[data-on="true"] {
+        opacity: 1;
+    }
+}

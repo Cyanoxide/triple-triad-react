@@ -6,7 +6,8 @@
         "same": "Same",
         "plus": "Plus",
         "suddenDeath": "Sudden Death",
-        "sameWall": "Same Wall"
+        "sameWall": "Same Wall",
+        "autoplay": "Auto Play"
     },
     "tradeRules": {
         "one": "One",
