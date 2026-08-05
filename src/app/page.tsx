@@ -21,7 +21,7 @@ import textToSprite from "./utils/textToSprite";
 import { optionsNav } from "./hooks/optionsNav";
 
 function GameContent() {
-  const { turn, board, currentEnemyHand, currentPlayerHand, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
+  const { turn, board, rules, tradeRule, currentEnemyHand, currentPlayerHand, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
   const victorySoundRef = useRef<HTMLAudioElement | undefined>(undefined);
   const bgmRef = useRef<HTMLAudioElement | undefined>(undefined);
 
@@ -137,10 +137,25 @@ function GameContent() {
   // it is, which is otherwise only visible as a cursor being enabled
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
-    const w = window as unknown as { __turn?: string | null; __mp?: unknown };
+    const w = window as unknown as { __turn?: string | null; __mp?: unknown; __rules?: unknown };
     w.__turn = turn;
     w.__mp = multiplayer.get();
+    w.__rules = { rules, tradeRule };
   });
+
+  /**
+   * The room's rules are the agreed ones, so both clients play by them.
+   *
+   * Without this the guest kept whatever its own enemy selection had rolled —
+   * and the trade rule there is chosen at random — so the two could finish a
+   * game with one player taking a single card and the other expecting to lose
+   * all five.
+   */
+  useEffect(() => {
+    if (!room?.rules) return;
+    dispatch({ type: "SET_RULES", payload: room.rules.rules ?? [] });
+    dispatch({ type: "SET_TRADE_RULE", payload: room.rules.tradeRule ?? null });
+  }, [room?.rulesHash]);
 
   /** Rules agreed: hand over to the game's own card selection screen. */
   useEffect(() => {
