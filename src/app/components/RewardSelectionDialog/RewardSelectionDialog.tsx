@@ -373,6 +373,19 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
     const infoMessage = (rewardType === "lost") ? "lost" : "acquired";
 
     /**
+     * Which way the label flies in, matched to the card it is naming rather
+     * than to who won overall.
+     *
+     * A card you gain leaves upwards and drops back in from the top, so the
+     * label drops in with it; one you lose leaves downwards and rises back, so
+     * the label rises. Keyed to the winner they agreed by luck in a plain win
+     * or loss, and disagreed the moment a trade sent cards both ways — the
+     * direct rule does exactly that — leaving the label sliding one way while
+     * the card it belonged to went the other.
+     */
+    const labelDirection = rewardType === "lost" ? "red" : rewardType === "won" ? "blue" : winState;
+
+    /**
      * Nothing has been taken yet when the loser arrives here, so naming a card
      * gives "undefined card lost". Against another player the wait is real —
      * the winner is still choosing — so say that instead. On your own it is
@@ -387,7 +400,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     return (
         <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
-            <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={winState}>
+            <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={labelDirection}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
                 <h3>{textToSprite(headingText)}</h3>
             </div>
