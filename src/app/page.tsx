@@ -137,10 +137,11 @@ function GameContent() {
   // it is, which is otherwise only visible as a cursor being enabled
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
-    const w = window as unknown as { __turn?: string | null; __mp?: unknown; __rules?: unknown };
+    const w = window as unknown as { __turn?: string | null; __mp?: unknown; __rules?: unknown; __placed?: number };
     w.__turn = turn;
     w.__mp = multiplayer.get();
     w.__rules = { rules, tradeRule };
+    w.__placed = board.flat().filter(Boolean).length;
   });
 
   /**
@@ -307,7 +308,7 @@ function GameContent() {
           options bar so it needs no new furniture on the board. */}
       {session && isGameActive && (
         <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-50">
-          <SimpleDialog metaTitle={null} dialog="multiplayer">
+          <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("back", isSoundEnabled); void finishMultiplayer("You left that game."); }}>
               {textToSprite("Quit")}
             </button>

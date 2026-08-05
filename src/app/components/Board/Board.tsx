@@ -25,6 +25,19 @@ interface BoardProps {
 /** How long a player has before a move is made for them */
 const MOVE_TIMEOUT = 120000;
 
+/**
+ * Development can shorten it with `window.__moveTimeout = 5000`, because
+ * waiting two minutes to find out whether a two-minute timer works is not a
+ * practical way to test it.
+ */
+const moveTimeout = () => {
+    if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
+        const override = (window as unknown as { __moveTimeout?: number }).__moveTimeout;
+        if (typeof override === "number" && override > 0) return override;
+    }
+    return MOVE_TIMEOUT;
+};
+
 const Board: React.FC<BoardProps> = ({ className }) => {
     const debug = false;
     const { session, pendingMoves } = useMultiplayer();
@@ -685,7 +698,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
             void sendMove(session.code, session.token, { cardId: card.cardId, row, col })
                 .catch(() => { });
-        }, MOVE_TIMEOUT);
+        }, moveTimeout());
 
         return () => clearTimeout(timeout);
     }, [turn, session, winState, isGameActive, turnNumber]); // eslint-disable-line react-hooks/exhaustive-deps

@@ -23,6 +23,20 @@
         padding: 0.35rem 1.4rem;
     }
 
+    /**
+     * Quitting a game in progress. Its own value rather than reusing the
+     * launcher's: that one is absolutely placed beside the title menu, and
+     * sharing it put this box in the middle of the board instead of where its
+     * wrapper asked for.
+     */
+    &[data-dialog="quit"] {
+        position: static;
+        transform: none;
+        min-width: 0;
+        width: max-content;
+        padding: 0.35rem 1.4rem;
+    }
+
     &[data-dialog="options"] {
         opacity: .35;
         transform: translate(-100%, -100%);
