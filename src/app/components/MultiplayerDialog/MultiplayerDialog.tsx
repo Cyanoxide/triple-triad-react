@@ -33,7 +33,7 @@ type Props = { onClose: () => void };
 const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
     const { isSoundEnabled, rules, tradeRule } = useGameContext();
 
-    const { session, room } = useMultiplayer();
+    const { session, room, notice } = useMultiplayer();
     const setSession = (next: Session | null) => multiplayer.setSession(next);
     const [typedCode, setTypedCode] = useState("");
     const [busy, setBusy] = useState(false);
@@ -166,7 +166,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
         return names.length ? names : ["None"];
     };
 
-    const message = problem ?? error;
+    const message = problem ?? notice ?? error;
 
     // ── Not in a room yet: host one, or type a code ──────────────────────────
     if (!session) {

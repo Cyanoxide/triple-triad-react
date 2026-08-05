@@ -21,9 +21,11 @@ type State = {
     room: Room | null;
     /** Set once a hand has been sent, so the wait is not re-sent on every render */
     handSent: boolean;
+    /** Why the last game ended, when it ended by itself rather than by leaving */
+    notice: string | null;
 };
 
-const empty: State = { session: null, room: null, handSent: false };
+const empty: State = { session: null, room: null, handSent: false, notice: null };
 
 let state: State = empty;
 const listeners = new Set<() => void>();
@@ -43,7 +45,17 @@ export const multiplayer = {
     get: () => state,
 
     setSession(session: Session | null) {
-        state = { ...state, session, handSent: false };
+        state = { ...state, session, handSent: false, notice: null };
+        emit();
+    },
+
+    /**
+     * The room is gone — expired, or both players left. Drops the seat so the
+     * lobby offers a fresh game instead of polling something that no longer
+     * exists, which is otherwise a dead end with nothing but an error on screen.
+     */
+    ended(notice: string) {
+        state = { session: null, room: null, handSent: false, notice };
         emit();
     },
 

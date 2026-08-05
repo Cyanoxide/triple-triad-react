@@ -58,21 +58,43 @@ export type Session = { code: string; token: string; seat: Seat };
 const ENDPOINT = "/game.php";
 const STORAGE_KEY = "multiplayerSession";
 
-class RoomError extends Error {}
+class RoomError extends Error {
+    /** The HTTP status, so callers can tell a vanished room from a dead server */
+    status: number;
+    constructor(message: string, status: number) {
+        super(message);
+        this.status = status;
+    }
+}
+
+export const isRoomGone = (problem: unknown) =>
+    problem instanceof RoomError && problem.status === 404;
 
 async function call<T>(action: string, body: Record<string, unknown> = {}, query = ""): Promise<T> {
-    const response = await fetch(`${ENDPOINT}?action=${action}${query}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-    });
+    let response: Response;
+    try {
+        response = await fetch(`${ENDPOINT}?action=${action}${query}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+    } catch {
+        throw new RoomError("Could not reach the game server.", 0);
+    }
 
     const payload = await response.json().catch(() => null);
 
     if (!response.ok || !payload?.ok) {
-        // The server always explains itself, so pass its wording through rather
-        // than inventing one — "That room is full" is more use than "failed"
-        throw new RoomError(payload?.error ?? "Could not reach the game server.");
+        /**
+         * The server explains itself, so pass its wording through — "That room
+         * is full" is more use than "failed". A 502 has no body to quote: in
+         * development that is the PHP server not running, which is worth saying
+         * outright rather than leaving someone to guess.
+         */
+        const fallback = (response.status === 502 || response.status === 504)
+            ? "The game server is not responding. In development, check `npm run dev:api` is running."
+            : "Could not reach the game server.";
+        throw new RoomError(payload?.error ?? fallback, response.status);
     }
 
     return payload as T;

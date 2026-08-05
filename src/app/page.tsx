@@ -75,6 +75,22 @@ function GameContent() {
 
   useEffect(() => { multiplayer.setRoom(room); }, [room]);
 
+  /**
+   * The room vanished while playing — expired, or the other player closed it.
+   * The board would otherwise sit there frozen, waiting for a turn that can
+   * never arrive, so the game is put away and the menu comes back.
+   */
+  const hadSession = useRef(false);
+  useEffect(() => {
+    if (session) { hadSession.current = true; return; }
+    if (!hadSession.current) return;
+    hadSession.current = false;
+    dispatch({ type: "RESET_GAME" });
+    dispatch({ type: "SET_IS_GAME_ACTIVE", payload: false });
+    dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
+    dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
+  }, [session]);
+
   // Development only: lets a browser test read whose turn each client believes
   // it is, which is otherwise only visible as a cursor being enabled
   useEffect(() => {

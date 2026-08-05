@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchState, type Room, type RoomEvent, type Session } from "../utils/rooms";
+import { clearSession, fetchState, isRoomGone, type Room, type RoomEvent, type Session } from "../utils/rooms";
+import { multiplayer } from "./multiplayerSession";
 
 /**
  * Keeps one room in sync by polling.
@@ -61,6 +62,14 @@ export function useRoom({ session, onEvents, enabled = true }: Options) {
                 onEventsRef.current(events);
             }
         } catch (problem) {
+            // A room that no longer exists is not a transient failure — keep
+            // polling it and the player is stuck watching an error with no way
+            // back. Drop the seat and let the lobby offer a new game.
+            if (isRoomGone(problem)) {
+                clearSession();
+                multiplayer.ended("That game has ended.");
+                return;
+            }
             setError(problem instanceof Error ? problem.message : "Lost contact with the game.");
         }
     }, [session]);
