@@ -47,6 +47,9 @@ const ROOM_DIR = null;
 /** Rooms untouched for this long are swept. A game does not last a day. */
 const ROOM_TTL = 86400;
 
+/** How long a guest can go without polling before the lobby gives their seat up */
+const GUEST_IDLE = 30;
+
 /**
  * A hard ceiling on how many rooms may exist at once, and the limit that
  * actually protects the host.
@@ -614,6 +617,22 @@ switch ($action) {
     case 'leave':
         withRoom($code, function (array $room) use ($token) {
             $seat = requireSeat($room, $token);
+
+            /**
+             * A guest who declines, or closes the tab, before the game has
+             * started is not the end of the room — the host is still sitting
+             * there with a code they may have already read out. The seat is
+             * emptied and the room goes back to waiting for a challenger.
+             *
+             * Only in the lobby. Once cards are being dealt the two are
+             * committed to each other, and one walking out ends it.
+             */
+            if ($seat === 'guest' && ($room['phase'] ?? '') === 'lobby') {
+                $room['players']['guest'] = null;
+                append($room, 'left', 'guest', ['reopened' => true]);
+                return [$room, ['ok' => true, 'closed' => false, 'reopened' => true], 200];
+            }
+
             $room['players'][$seat]['left'] = true;
 
             $both = !empty($room['players']['host']['left'])
@@ -647,6 +666,26 @@ switch ($action) {
                 return [null, $body, 200];
             }
             $room['players'][$seat]['seen'] = time();
+
+            /**
+             * A guest that has stopped polling has closed the tab or lost the
+             * network. In the lobby that frees the seat, so the host is not
+             * left holding a room nobody can join.
+             *
+             * Deliberately not a 'leave' on page close from the browser: a
+             * refresh looks identical to one, and resuming a game across a
+             * refresh is something this is built to do. Silence for long
+             * enough is the only signal that tells the two apart, and a
+             * backgrounded tab still polls every ten seconds.
+             */
+            if (($room['phase'] ?? '') === 'lobby'
+                && ($room['players']['guest'] ?? null) !== null
+                && time() - (int) ($room['players']['guest']['seen'] ?? 0) > GUEST_IDLE) {
+                $room['players']['guest'] = null;
+                append($room, 'left', 'guest', ['reopened' => true]);
+                $body['room'] = publicRoom($room, $seat);
+            }
+
             return [$room, $body, 200];
         });
 

@@ -101,8 +101,18 @@ function GameContent() {
       }
 
       if (event.type === "left") {
-        // They closed the room. Say so rather than leaving a turn that will
-        // never come.
+        /**
+         * A guest who backed out before the game started only freed their
+         * seat. The host stays where they are — the code has very likely been
+         * read out to someone already — and the lobby goes back to waiting.
+         */
+        if (event.reopened) {
+          if (session?.seat === "host") setIsMultiplayerOpen(true);
+          continue;
+        }
+
+        // Otherwise they closed the room. Say so rather than leaving a turn
+        // that will never come.
         void finishMultiplayer("Your opponent left the game.");
         return;
       }

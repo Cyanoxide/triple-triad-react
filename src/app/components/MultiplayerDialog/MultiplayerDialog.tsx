@@ -237,8 +237,17 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
 
         const fromLink = codeFromUrl();
         if (fromLink) {
+            /**
+             * Cleared as it is read, not once it works. It used to survive a
+             * failed join, so every later visit to multiplayer re-attempted
+             * the same dead code — the field arrived pre-filled with it and
+             * the screen reported it expired, over and over.
+             */
+            clearUrlCode();
             setTypedCode(fromLink);
-            void attemptJoin(fromLink);
+            void attemptJoin(fromLink).then(() => {
+                if (!loadSession()) setTypedCode("");
+            });
         }
     }, []);
 
