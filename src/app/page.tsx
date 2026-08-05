@@ -21,6 +21,7 @@ import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
 import textToSprite from "./utils/textToSprite";
 import { optionsNav } from "./hooks/optionsNav";
+import { installPreview } from "./utils/preview";
 
 function GameContent() {
   const { turn, board, score, rules, tradeRule, currentEnemyHand, currentPlayerHand, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, winState, isSoundEnabled, isGameActive, currentPages, isCRTEffectActive, dispatch } = useGameContext();
@@ -173,6 +174,17 @@ function GameContent() {
     setIsMultiplayerOpen(false);
     setMode(null);
   }, [session]);
+
+  /**
+   * Development only: shortcuts into states that otherwise take a whole match
+   * to reach. `preview.rewards("direct")` in the console is the one worth
+   * knowing — it is the only rule that sends cards both ways.
+   */
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+    installPreview(dispatch as (action: { type: string; payload?: unknown }) => void);
+    console.info('Dev: preview.rewards("win" | "loss" | "direct" | "all")');
+  }, []);
 
   // Development only: lets a browser test read whose turn each client believes
   // it is, which is otherwise only visible as a cursor being enabled
