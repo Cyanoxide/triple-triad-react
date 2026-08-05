@@ -81,6 +81,18 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
             current.includes(rule) ? current.filter((name) => name !== rule) : [...current, rule]);
     };
 
+    /**
+     * A live ellipsis on the waiting lines. Nothing else on this screen moves
+     * while you wait for someone to join, and a still "..." looks the same as
+     * a crash.
+     */
+    const [dots, setDots] = useState(3);
+    useEffect(() => {
+        const tick = setInterval(() => setDots((count) => (count % 3) + 1), 500);
+        return () => clearInterval(tick);
+    }, []);
+    const ellipsis = ".".repeat(dots);
+
     const error = null;
 
     const joinAttempted = useRef(false);
@@ -221,12 +233,18 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
     // ── Choosing the rules before opening a room ────────────────────────────
     if (!session && choosing) {
         return (
-            <SimpleDialog metaTitle={null} className={styles.lobby}>
+            <SimpleDialog metaTitle={null} className={`${styles.lobby} ${styles.rulesScreen}`}>
                 <p className={styles.label}>{textToSprite("Game rules")}</p>
                 <ul className={styles.ruleList}>
                     {SELECTABLE_RULES.map((rule) => (
                         <li key={rule}>
-                            <button className={styles.ruleToggle} onClick={() => toggleRule(rule)}>
+                            <button
+                                className={styles.ruleToggle}
+                                data-focused={hovered === `rule:${rule}`}
+                                onMouseEnter={() => setHovered(`rule:${rule}`)}
+                                onMouseLeave={() => setHovered((current) => (current === `rule:${rule}` ? null : current))}
+                                onClick={() => toggleRule(rule)}
+                            >
                                 <span>{textToSprite(rulesList.rules[rule as keyof typeof rulesList.rules] ?? rule)}</span>
                                 <span data-on={chosenRules.includes(rule)} className={styles.toggleState}>
                                     {textToSprite(chosenRules.includes(rule) ? "On" : "Off")}
@@ -245,6 +263,9 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
                             key={rule}
                             className={styles.tradeOption}
                             data-on={chosenTrade === rule}
+                            data-focused={hovered === `trade:${rule}`}
+                            onMouseEnter={() => setHovered(`trade:${rule}`)}
+                            onMouseLeave={() => setHovered((current) => (current === `trade:${rule}` ? null : current))}
                             onClick={() => { playSound("select", isSoundEnabled); setChosenTrade(rule); }}
                         >
                             {textToSprite(rulesList.tradeRules[rule])}
@@ -281,7 +302,12 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
                 <p className={styles.label}>{textToSprite("Enter game code")}</p>
                 <div className={styles.code}>
                     {Array.from({ length: CODE_LENGTH }).map((_, index) => (
-                        <span key={index} className={styles.codeSlot} data-filled={!!typedCode[index]}>
+                        <span
+                            key={index}
+                            className={styles.codeSlot}
+                            data-filled={!!typedCode[index]}
+                            data-caret={index === typedCode.length}
+                        >
                             {typedCode[index] ? textToSprite(typedCode[index]) : textToSprite("_")}
                         </span>
                     ))}
@@ -327,7 +353,9 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
                 </>
             )}
 
-            <div className={styles.divider} />
+            {/* Only under the host's code. The guest has nothing above this,
+                so the rule drew a stray line across the top of the panel */}
+            {session.seat === "host" && <div className={styles.divider} />}
 
             <div className={styles.rules}>
                 <p className={styles.label}>{textToSprite("Rules")}</p>
@@ -343,9 +371,9 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose }) => {
 
             <p className={styles.status}>
                 {textToSprite(
-                    waitingForOpponent ? "Waiting for a challenger..."
+                    waitingForOpponent ? `Waiting for a challenger${ellipsis}`
                         : guestMustAccept ? "Accept these rules to begin"
-                            : hostAwaitingAcceptance ? "Waiting for them to accept..."
+                            : hostAwaitingAcceptance ? `Waiting for them to accept${ellipsis}`
                                 : "Ready. Choose your cards.",
                 )}
             </p>

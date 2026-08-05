@@ -707,12 +707,30 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         // Off unless the host switched it on. Without the rule a game simply
         // waits, which is what someone playing at their own pace would want.
         if (!rules?.includes("autoplay")) { multiplayer.setAutoplayAt(null); return; }
-        if (!session || turn !== "blue" || winState || !isGameActive || !currentPlayerHand.length) {
+        if (!session || winState || !isGameActive) {
             multiplayer.setAutoplayAt(null);
             return;
         }
 
         const wait = moveTimeout();
+
+        /**
+         * The clock is shown on the opponent's turn as well, so the wait always
+         * has a number against it rather than only when you are the one
+         * holding things up. Only their own client will actually play for them
+         * — this side is display alone, started from the moment the turn
+         * arrived here, so it can run a beat behind theirs over a slow link.
+         */
+        if (turn !== "blue") {
+            multiplayer.setAutoplayAt(Date.now() + wait);
+            return;
+        }
+
+        if (!currentPlayerHand.length) {
+            multiplayer.setAutoplayAt(null);
+            return;
+        }
+
         multiplayer.setAutoplayAt(Date.now() + wait);
 
         const timeout = setTimeout(() => {

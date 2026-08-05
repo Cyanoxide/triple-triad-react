@@ -18,8 +18,14 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
     const handFocus = useSyncExternalStore(gameNav.subscribe, gameNav.getFocus, () => null);
 
     const handleSelectCard = (card: CardType, player: PlayerType) => {
+        /**
+         * Only on your own turn. A card picked up out of turn could not be
+         * played, but it still lit up and made the select sound, which read as
+         * the game having accepted something it had not.
+         */
+        if (player === "red" || turn !== "blue" || !isGameActive) return;
+
         playSound("select", isSoundEnabled);
-        if (player === "red") return;
 
         dispatch({
             type: "SET_SELECTED_CARD_ID",

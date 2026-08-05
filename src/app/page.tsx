@@ -14,7 +14,7 @@ import MultiplayerDialog from "./components/MultiplayerDialog/MultiplayerDialog"
 import AutoplayTimer from "./components/AutoplayTimer/AutoplayTimer";
 import { finishMultiplayer, multiplayer, useMultiplayer } from "./hooks/multiplayerSession";
 import { useRoom } from "./hooks/useRoom";
-import type { RoomEvent } from "./utils/rooms";
+import { codeFromUrl, loadSession, type RoomEvent } from "./utils/rooms";
 import { generateCardsFromIds } from "./utils/general";
 import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
@@ -35,7 +35,21 @@ function GameContent() {
   }
 
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [vsHovered, setVsHovered] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
+
+  /**
+   * Open straight away when the address carries a game code, or when a seat is
+   * already stored. Following a shared link used to land on the title screen
+   * with no sign that it was an invitation — you had to know to press VS.
+   *
+   * In an effect rather than the initial state: the server has no address bar
+   * and no localStorage, so deciding this during render made the first client
+   * render disagree with the server's and React threw out the whole tree.
+   */
+  useEffect(() => {
+    if (codeFromUrl() || loadSession()) setIsMultiplayerOpen(true);
+  }, []);
 
   /**
    * Multiplayer lives here rather than in the lobby, because the polling has to
@@ -293,11 +307,21 @@ function GameContent() {
               menu: multiplayer is a different way to play, not another setting */}
           {isMenuOpen && !isMultiplayerOpen && (
             <SimpleDialog metaTitle={null} dialog="multiplayer" className="multiplayerLauncher">
-              <button onClick={() => { playSound("select", isSoundEnabled); setIsMultiplayerOpen(true); }} title="Play a friend">
+              <button
+                className="relative"
+                data-focused={vsHovered}
+                onMouseEnter={() => setVsHovered(true)}
+                onMouseLeave={() => setVsHovered(false)}
+                onClick={() => { playSound("select", isSoundEnabled); setIsMultiplayerOpen(true); }}
+                title="Play a friend"
+              >
                 {textToSprite("VS")}
               </button>
             </SimpleDialog>
           )}
+          {/* The lobby is a mode, not a panel among the others, so the title
+              screen behind it is dimmed the way the captures overlay dims */}
+          {isMultiplayerOpen && <div className="multiplayerOverlay" />}
           {isMultiplayerOpen && <MultiplayerDialog onClose={() => setIsMultiplayerOpen(false)} />}
         </div>
         <div className="flex h-full justify-center">

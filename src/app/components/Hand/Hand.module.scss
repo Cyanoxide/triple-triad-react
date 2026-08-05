@@ -44,7 +44,10 @@
         width: 45px;
         height: 28px;
         margin-top: 50px;
-        z-index: 4;
+        // Above the board's cards, which also sit at 4 and won the tie by
+        // coming later in the document — the cursor hangs over the board from
+        // the hand beside it, so it disappeared behind the nearest card
+        z-index: 5;
         image-rendering: pixelated;
     }
 }

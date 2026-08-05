@@ -103,3 +103,13 @@ button {
     background-position: 0px 15px;
   }
 }
+/**
+ * Behind the multiplayer lobby. Under the CRT scanlines (11) like the dialogs
+ * it dims for, and above the title screen's own panels.
+ */
+.multiplayerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9;
+}
