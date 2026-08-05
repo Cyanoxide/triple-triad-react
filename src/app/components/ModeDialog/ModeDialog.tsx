@@ -5,6 +5,7 @@ import textToSprite from "../../utils/textToSprite";
 import playSound from "../../utils/sounds";
 import { useGameContext } from "../../context/GameContext";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
+import { useMenuCursor } from "../../hooks/useMenuCursor";
 import styles from "./ModeDialog.module.scss";
 
 interface Props {
@@ -23,31 +24,39 @@ interface Props {
  */
 const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
     const { isSoundEnabled } = useGameContext();
-    const [hovered, setHovered] = useState<string | null>(null);
+    /**
+     * Where the cursor is, not where the pointer is. Moving off an option
+     * leaves it where it was rather than springing back — the cursor is a
+     * position you moved, the same as in the rest of the menus.
+     */
+    const [selected, setSelected] = useState("single");
 
-    // Single player is where the cursor rests, and where it returns to when the
-    // pointer leaves — a cursor is always on something in the rest of the menus
-    const focusedId = hovered ?? "single";
     const pointer = (id: string) => ({
         className: "relative",
-        "data-focused": focusedId === id,
-        onMouseEnter: () => setHovered(id),
-        onMouseLeave: () => setHovered((current) => (current === id ? null : current)),
+        "data-focused": selected === id,
+        onMouseEnter: () => setSelected(id),
     });
 
-    const choose = (go: () => void) => () => {
+    const confirm = (id: string) => {
         playSound("select", isSoundEnabled);
-        go();
+        if (id === "single") onSingle(); else onMultiplayer();
     };
+
+    useMenuCursor({
+        layout: [["single"], ["multi"]],
+        selected,
+        onSelect: (id) => { playSound("select", isSoundEnabled); setSelected(id); },
+        onConfirm: confirm,
+    });
 
     return (
         <SimpleDialog className={styles.modeDialog}>
             <p className={styles.question}>{textToSprite("Want to play a game of cards?")}</p>
             <div className={styles.options}>
-                <button {...pointer("single")} onClick={choose(onSingle)}>
+                <button {...pointer("single")} onClick={() => confirm("single")}>
                     {textToSprite("Single Player")}
                 </button>
-                <button {...pointer("multi")} onClick={choose(onMultiplayer)}>
+                <button {...pointer("multi")} onClick={() => confirm("multi")}>
                     {textToSprite("Multiplayer")}
                 </button>
             </div>

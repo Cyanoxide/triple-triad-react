@@ -12,6 +12,7 @@ import {
     type MultiplayerRules, type Room, type Session,
 } from "../../utils/rooms";
 import { multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
+import { useMenuCursor } from "../../hooks/useMenuCursor";
 import styles from "./MultiplayerDialog.module.scss";
 
 /**
@@ -69,15 +70,12 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
      * rather than something to press. Hover only: the code field already owns
      * the keyboard here.
      */
-    const [hovered, setHovered] = useState<string | null>(null);
-
     /**
-     * What the cursor rests on, and what it falls back to.
-     *
-     * Hover moves it; taking the pointer away puts it back on whatever this
-     * screen's obvious next step is, rather than leaving nothing selected. That
-     * is how the rest of the menus behave — a cursor is always somewhere.
+     * Where the cursor is. Hover moves it and it stays put when the pointer
+     * leaves — springing back to a default made the cursor feel like a
+     * highlight rather than something you had moved.
      */
+    const [selected, setSelected] = useState("host");
     /**
      * Where the cursor sits when the pointer is not on anything: the step this
      * screen is actually asking for. The code field is the exception — once
@@ -85,17 +83,87 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
      * one press rather than a hunt. It does not submit by itself; a typo in the
      * last character would be sent before it could be corrected.
      */
-    const defaultFocus =
-        !session ? (choosing ? "open" : typedCode.length === CODE_LENGTH ? "join" : "host")
-            : (session.seat === "guest" && room?.phase === "lobby") ? "accept"
-                : "leave";
+    const chooseTrade = (rule: string) => {
+        playSound("select", isSoundEnabled);
+        setChosenTrade(rule);
+    };
 
-    const focusedId = hovered ?? defaultFocus;
+    const screen = !session ? (choosing ? "rules" : "join")
+        : (session.seat === "guest" && room?.phase === "lobby") ? "accept" : "room";
+
+    /**
+     * Each screen starts the cursor on the step it is asking for. Only on
+     * arrival — after that it is yours to move, and it stays where you left it.
+     */
+    useEffect(() => {
+        setSelected(screen === "rules" ? "confirmOpen"
+            : screen === "accept" ? "accept"
+                : screen === "room" ? "leave"
+                    : "host");
+    }, [screen]);
+
+    /**
+     * A finished code moves the cursor to Join, so the next thing is one press
+     * rather than a hunt. It does not submit by itself: a typo in that last
+     * character would be gone before it could be corrected.
+     */
+    useEffect(() => {
+        if (typedCode.length === CODE_LENGTH) setSelected("join");
+    }, [typedCode.length]);
+
+    /**
+     * The keyboard, laid out as the screen is. The rules grid is filled in
+     * reading order across two columns, which is exactly how it is drawn, so
+     * Down goes to the option below rather than the next one in source order.
+     */
+    const layout: string[][] =
+        screen === "rules" ? [
+            ...Array.from({ length: Math.ceil(SELECTABLE_RULES.length / 2) }, (_, row) =>
+                SELECTABLE_RULES.slice(row * 2, row * 2 + 2).map((rule) => `rule:${rule}`)),
+            TRADE_RULES.map((rule) => `trade:${rule}`),
+            ["confirmOpen", "back"],
+        ]
+            : screen === "join" ? [["host"], ["join", "back"]]
+                : screen === "accept" ? [["accept", "leave"]]
+                    : [["leave"]];
+
+    const confirmSelection = (id: string) => {
+        if (id.startsWith("rule:")) return toggleRule(id.slice(5));
+        if (id.startsWith("trade:")) return chooseTrade(id.slice(6));
+        if (id === "confirmOpen") return void handleHost();
+        if (id === "host") { playSound("select", isSoundEnabled); return setChoosing(true); }
+        if (id === "join") return typedCode.length === CODE_LENGTH ? void attemptJoin(typedCode) : undefined;
+        if (id === "accept") return void handleAccept();
+        if (id === "leave") return void handleLeave();
+        if (id === "back") {
+            playSound("back", isSoundEnabled);
+            return screen === "rules" ? setChoosing(false) : onExit();
+        }
+    };
+
+    const goBack = () => {
+        playSound("back", isSoundEnabled);
+        if (screen === "rules") return setChoosing(false);
+        if (screen === "join") return onExit();
+        void handleLeave();
+    };
+
+    useMenuCursor({
+        layout,
+        selected,
+        onSelect: (id) => { playSound("select", isSoundEnabled); setSelected(id); },
+        onConfirm: confirmSelection,
+        onBack: goBack,
+        enabled: !busy,
+        // On the join screen Backspace belongs to the code being typed, right
+        // up until there is nothing left to delete
+        claimsBackspace: () => screen === "join" && typedCode.length > 0,
+    });
+
     const pointer = (id: string) => ({
         className: styles.action,
-        "data-focused": focusedId === id,
-        onMouseEnter: () => setHovered(id),
-        onMouseLeave: () => setHovered((current) => (current === id ? null : current)),
+        "data-focused": selected === id,
+        onMouseEnter: () => setSelected(id),
     });
     const [chosenRules, setChosenRules] = useState<string[]>(DEFAULT_RULES);
     const [chosenTrade, setChosenTrade] = useState<string>(DEFAULT_TRADE);
@@ -239,16 +307,19 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
     };
 
     // Typed by keyboard as well as clicked, since the code is usually read aloud
+    /**
+     * Typing the code. Only on the screen that has a code field — while the
+     * rules are being chosen the same keys would fill it invisibly.
+     *
+     * Enter and the arrows are not handled here: the menu cursor owns them, and
+     * a second listener acting on Enter joined the room twice.
+     */
     useEffect(() => {
-        if (session) return;
+        if (screen !== "join") return;
         const onKey = (event: KeyboardEvent) => {
             if (event.metaKey || event.ctrlKey || event.altKey) return;
             if (event.key === "Backspace") {
                 setTypedCode((code) => code.slice(0, -1));
-                return;
-            }
-            if (event.key === "Enter" && typedCode.length === CODE_LENGTH) {
-                void attemptJoin(typedCode);
                 return;
             }
             const char = event.key.toUpperCase();
@@ -258,7 +329,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
         };
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
-    }, [session, typedCode, attemptJoin]);
+    }, [screen]);
 
     const ruleNames = (offered: Room["rules"]) => {
         const names = (offered?.rules ?? []).map((key) => rulesList.rules[key as keyof typeof rulesList.rules] ?? key);
@@ -277,9 +348,8 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                         <li key={rule}>
                             <button
                                 className={styles.ruleToggle}
-                                data-focused={hovered === `rule:${rule}`}
-                                onMouseEnter={() => setHovered(`rule:${rule}`)}
-                                onMouseLeave={() => setHovered((current) => (current === `rule:${rule}` ? null : current))}
+                                data-focused={selected === `rule:${rule}`}
+                                onMouseEnter={() => setSelected(`rule:${rule}`)}
                                 onClick={() => toggleRule(rule)}
                             >
                                 <span>{textToSprite(rulesList.rules[rule as keyof typeof rulesList.rules] ?? rule)}</span>
@@ -300,10 +370,9 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                             key={rule}
                             className={styles.tradeOption}
                             data-on={chosenTrade === rule}
-                            data-focused={hovered === `trade:${rule}`}
-                            onMouseEnter={() => setHovered(`trade:${rule}`)}
-                            onMouseLeave={() => setHovered((current) => (current === `trade:${rule}` ? null : current))}
-                            onClick={() => { playSound("select", isSoundEnabled); setChosenTrade(rule); }}
+                            data-focused={selected === `trade:${rule}`}
+                            onMouseEnter={() => setSelected(`trade:${rule}`)}
+                            onClick={() => chooseTrade(rule)}
                         >
                             {textToSprite(rulesList.tradeRules[rule])}
                         </button>
@@ -311,7 +380,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                 </div>
 
                 <div className={styles.row}>
-                    <button {...pointer("open")} onClick={handleHost} disabled={busy}>
+                    <button {...pointer("confirmOpen")} onClick={handleHost} disabled={busy}>
                         {textToSprite("Open Game")}
                     </button>
                     <button {...pointer("back")} onClick={() => { playSound("back", isSoundEnabled); setChoosing(false); }} disabled={busy}>
