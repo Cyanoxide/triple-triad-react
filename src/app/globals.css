@@ -146,3 +146,32 @@ button {
 [data-app-scaled] {
   zoom: var(--app-scale, 1);
 }
+
+/**
+ * Phones get taller rows in the dialogs.
+ *
+ * Everything is scaled to fit the canvas, so a menu row that is comfortable on
+ * a monitor comes out a couple of millimetres tall in a hand. The padding is in
+ * design pixels and scales with the rest, which is the point: it buys back
+ * height in proportion rather than a fixed amount that would look wrong at one
+ * size or the other.
+ */
+:root[data-phone="true"] [data-dialog] button,
+:root[data-phone="true"] [data-dialog] a {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+}
+
+/* Rows that centre their label keep doing so once they are flex */
+:root[data-phone="true"] [data-dialog] .font {
+  align-items: center;
+}
+
+/* The options bar is a fixed-height strip of icons; padding would burst it */
+:root[data-phone="true"] [data-dialog="options"] button,
+:root[data-phone="true"] [data-dialog="quit"] button,
+:root[data-phone="true"] [data-dialog="timer"] button {
+  padding-top: 0;
+  padding-bottom: 0;
+}

@@ -123,9 +123,20 @@
     opacity: 0.9;
 }
 
+/**
+ * Sized by its content rather than pinned to a number.
+ *
+ * It used to be a fixed 530px, which the rows filled to the pixel — 474 of 474
+ * — so it only held together while every glyph measured exactly what it does
+ * in Chrome. On iOS the same text comes out a shade wider and the rules and
+ * trade options spilled out of the panel. Nothing here depends on the total
+ * any more: the grid's two equal columns keep the width steady as options are
+ * switched on and off, and the panel is whatever that comes to.
+ */
 .rulesScreen {
-    width: 530px;
+    width: max-content;
     min-width: 0;
+    max-width: 100%;
 }
 
 .ruleList {
@@ -133,7 +144,7 @@
     grid-template-columns: 1fr 1fr;
     // The column gap has to hold a cursor: the right-hand column's hangs into
     // it, and at the shared -55px it sat on top of the left column's On/Off
-    gap: 0.15rem 3.9rem;
+    gap: 0.15rem 3.6rem;
     margin-bottom: 0.4rem;
 }
 
@@ -187,7 +198,7 @@
     justify-content: center;
     // room for each option's cursor to sit beside it
     // wide enough that a full-size cursor clears the option beside it
-    gap: 4.4rem;
+    gap: 3.8rem;
 }
 
 .tradeOption {

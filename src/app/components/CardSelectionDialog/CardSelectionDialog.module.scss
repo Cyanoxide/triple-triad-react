@@ -86,6 +86,8 @@
  * there is nothing left to choose.
  */
 .handStatus {
+    display: flex;
+    justify-content: center;
     top: 50%;
     left: 50%;
     translate: -50% -50%;

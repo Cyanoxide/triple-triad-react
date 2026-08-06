@@ -405,7 +405,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
             <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={labelDirection}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                <h3>{textToSprite(headingText)}{waitingForPicks && <Ellipsis />}</h3>
+                <h3 className={styles.headingLine}>{textToSprite(headingText)}{waitingForPicks && <Ellipsis />}</h3>
             </div>
 
             <div className="flex justify-center mb-7">

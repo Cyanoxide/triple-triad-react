@@ -204,3 +204,12 @@
         transform: translateY(0);
     }
 }
+/**
+ * The message and its animating dots are two elements side by side. In a block
+ * they are two inline boxes, so a narrow screen puts the dots on a line of
+ * their own; as flex items on one line they stay together.
+ */
+.headingLine {
+    display: flex;
+    justify-content: center;
+}
