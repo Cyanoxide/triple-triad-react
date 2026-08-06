@@ -253,19 +253,21 @@ button {
  * and every version of "make room" spent it somewhere that showed.
  *
  * **Short of the desktop slide, and deliberately.** Desktop moves the card half
- * its own width; there are only 54 design pixels between the hand and the board
- * here, and a card that carries on into the board reads as already played.
+ * its own width. There are only 54 design pixels between the hand and the board
+ * here, and the chosen card's name box sits in that gap — 57 above the row at
+ * rest — so the card has to stop clear of *that*, not just of the board. It is
+ * the tighter of the two constraints by a long way.
  *
  * `transform`, not `translate`, and `!important`: it is overriding the module's
  * own `translateX(±50%)`, which is itself `!important`. Same property or they
  * compose and the card goes diagonally.
  */
 :root[data-stacked="true"] #app [data-selectable][data-player="blue"] > div[data-selected="true"] {
-  transform: translateY(-32px) !important;
+  transform: translateY(-18px) !important;
 }
 
 :root[data-stacked="true"] #app [data-selectable][data-player="red"] > div[data-selected="true"] {
-  transform: translateY(32px) !important;
+  transform: translateY(18px) !important;
 }
 
 :root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] {
@@ -344,17 +346,12 @@ button {
 }
 
 /*
- * Above its neighbours, which still overlap it horizontally however far it has
- * slid. Desktop needs no such thing: there the card leaves the stack sideways
- * and clears them outright.
- *
- * No scale and no shadow. Both were tried as extra emphasis while the card was
- * staying put, and with it moving they are just decoration desktop does not
- * have.
+ * No z-index, no scale, no shadow — desktop has none of them and neither does
+ * this. Raising the chosen card above its neighbours was tried and looked
+ * wrong: the stack has an order, and a card jumping to the front of it while
+ * the ones in front stay put breaks the sense that they are lying on each
+ * other. The part of it that has slid clear of the row is enough to read.
  */
-:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] {
-  z-index: 3;
-}
 
 
 /*
