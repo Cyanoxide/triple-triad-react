@@ -487,7 +487,7 @@ function GameContent() {
           everything else — a scaled `left: 50%` would be half of an already
           scaled width, which is not the middle of anything. */}
       {session && isGameActive && !isRewardSelectionOpen && (
-        <div className="absolute inset-x-0 top-0 flex justify-center z-10 pointer-events-none" data-timer-slot>
+        <div className="absolute inset-x-0 top-0 flex justify-center z-10 pointer-events-none">
           <div className="text-3xl mt-[1.5rem]" data-app-scaled>
             <AutoplayTimer />
           </div>

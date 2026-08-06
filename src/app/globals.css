@@ -16,36 +16,9 @@
 
 /* Clamp the document so layout overflow (a WebKit zoom artifact) can never
    grow the scrollable area and trigger mobile Safari's shrink-to-fit */
-/*
- * **`dvh`, not `vh`.** `100vh` on a phone is the *large* viewport — the height
- * the page would have if the browser's toolbar were hidden — so with the
- * toolbar showing, the bottom of the layout sits underneath it. In landscape
- * that is where the score is, and it was being clipped by what looks like a
- * black bar along the bottom edge but is actually the browser's own furniture.
- *
- * `dvh` is the currently visible height, so the app lays itself out inside what
- * can actually be seen. `scaleApp` reads `documentElement.clientHeight`, which
- * follows this, so the scale comes out right without touching it.
- *
- * The plain `vh` line stays underneath as the fallback for anything without
- * `dvh`; both are needed, in this order.
- *
- * **The background here is the other half of the black bar.** The viewport meta
- * does not set `viewport-fit=cover`, so iOS insets the layout viewport out of
- * the safe areas and fills the strip it leaves with the *canvas* colour. That
- * colour propagates from whichever of html and body declares one, and only body
- * did — `var(--background)`, which is `#0a0a0a` under a dark colour scheme. So
- * the strip came out black, right where the score sits in landscape.
- *
- * Declaring it on html wins the propagation and makes that strip a colour off
- * the texture instead. Sampled from the rendered page's own bottom edge, which
- * is darker than the texture's average because of the vignette over it.
- */
 html {
   overflow: hidden;
   height: 100%;
-  height: 100dvh;
-  background: #8b6230;
 }
 
 body {
@@ -58,7 +31,6 @@ body {
   overflow: hidden;
   display: flex;
   height: 100vh;
-  height: 100dvh;
 }
 
 /* No double-tap or pinch zoom; the app scales itself. Safari only honours
@@ -69,18 +41,6 @@ body * {
   touch-action: manipulation;
 }
 
-/*
- * **Absolute, and it has to stay absolute.** Making these two `fixed` was tried
- * as a way of covering the safe-area strip and broke the background on a real
- * phone: `fixed` lays out against the *visual* viewport, which is a different
- * rectangle from the body box, so `background-size: cover` resolved against the
- * wrong height. The texture came out off-centre and cut off along the bottom,
- * and the two gradients blended over it landed somewhere else again, which
- * reads as the blend mode having been dropped. Chrome shows none of this — the
- * two rectangles are the same there — so it cannot be caught locally.
- *
- * The strip is dealt with by the background colour on `html` instead.
- */
 body.crt-effect::after {
   content: '';
   position: absolute;
@@ -180,42 +140,6 @@ button {
 /* The centre cell is the logo rather than part of the grid, so it stays */
 #app[data-screen="mode"] [data-position="1,1"]::before {
   opacity: 1;
-}
-
-/*
- * On a phone the clock sits on the board's top edge, opposite the name of the
- * card you are holding — that reads as one pair of labels on the board rather
- * than as a bar floating at the top of the window.
- *
- * It **straddles the grid's top edge**, half on the board and half on the
- * background behind it, rather than sitting wholly inside the board the way the
- * card name does.
- *
- * The three parts do different jobs and cannot be merged:
- *
- * - the outer box is not scaled, so `top: 50%` is half the real window — and
- *   the board's middle is the window's middle in both orientations, which is
- *   what makes any of this work;
- * - the inner box is scaled, so `-248px` is design pixels and tracks the board
- *   as everything grows and shrinks. On the outer box it would be a fixed count
- *   of real pixels and would drift off the board at every other size;
- * - `translate: 0 -50%` then lifts it by half of *its own* height, which is what
- *   puts the edge through its middle. A measured offset would have to be
- *   re-measured every time the box's contents change height.
- */
-:root[data-phone="true"] [data-timer-slot] {
-  top: 50%;
-  /* Or the negative margin below is answered by the box *growing* by exactly
-     that much: it is a flex item, the row aligns `stretch` by default, and a
-     stretched item takes its margins out of the cross size it stretches to. The
-     box came out 248px tall around 60px of content, and `translate: -50%` then
-     lifted it by half of the wrong number and off the top of the screen. */
-  align-items: flex-start;
-}
-
-:root[data-phone="true"] [data-timer-slot] > [data-app-scaled] {
-  margin-top: -248px;
-  translate: 0 -50%;
 }
 
 /* Pinned to the window rather than to the board, but scaled with it */

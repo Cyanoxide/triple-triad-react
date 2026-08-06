@@ -328,9 +328,16 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
         if (screen !== "join") return;
         const onKey = (event: KeyboardEvent) => {
             if (event.metaKey || event.ctrlKey || event.altKey) return;
-            // The input handles its own typing. Without this the character
-            // arrives twice on a desktop keyboard once the field has focus.
-            if (event.target === codeInput.current) return;
+            /**
+             * The input handles its own typing. Without this the character
+             * arrives twice on a desktop keyboard once the field has focus.
+             *
+             * On `activeElement` rather than `event.target`: a soft keyboard
+             * does not reliably aim its key events at the field it is editing,
+             * so a target check let Backspace through and deleted two
+             * characters — once here and once from the input's own change.
+             */
+            if (document.activeElement === codeInput.current) return;
             if (event.key === "Backspace") {
                 setTypedCode((code) => code.slice(0, -1));
                 return;
