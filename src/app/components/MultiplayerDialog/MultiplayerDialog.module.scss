@@ -208,13 +208,23 @@
 }
 
 /**
- * A fixed lane for the animating dots. All three are always laid out and the
- * unreached ones are hidden, so the message beside them never moves.
+ * The rule between hosting and joining, broken by an "or". Without it "Host
+ * Game" sat alone above a line and read as a heading for what followed rather
+ * than as the first of two choices.
  */
-.ellipsis {
-    display: inline-flex;
+.dividerOr {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin: 1.1rem 0;
 
-    > span[data-shown="false"] {
-        visibility: hidden;
+    .divider {
+        flex: 1;
+        margin: 0;
     }
+}
+
+.or {
+    display: flex;
+    opacity: 0.75;
 }

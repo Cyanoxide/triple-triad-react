@@ -68,7 +68,7 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
     };
 
     useMenuCursor({
-        layout: [["single"], ["multi"], ["github", "donate"]],
+        layout: [["single"], ["multi"], LINKS.map((link) => link.id)],
         selected,
         onSelect: moveCursor,
         onConfirm: confirm,

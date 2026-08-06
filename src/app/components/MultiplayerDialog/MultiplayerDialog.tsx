@@ -13,6 +13,7 @@ import {
 } from "../../utils/rooms";
 import { multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
 import { useMenuCursor } from "../../hooks/useMenuCursor";
+import Ellipsis from "../Ellipsis/Ellipsis";
 import styles from "./MultiplayerDialog.module.scss";
 
 /**
@@ -50,7 +51,7 @@ type Props = {
 const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
     const { isSoundEnabled } = useGameContext();
 
-    const { session, room, notice } = useMultiplayer();
+    const { session, room } = useMultiplayer();
     const setSession = (next: Session | null) => multiplayer.setSession(next);
     const [typedCode, setTypedCode] = useState("");
     const [busy, setBusy] = useState(false);
@@ -189,30 +190,6 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
             current.includes(rule) ? current.filter((name) => name !== rule) : [...current, rule]);
     };
 
-    /**
-     * A live ellipsis on the waiting lines. Nothing else on this screen moves
-     * while you wait for someone to join, and a still "..." looks the same as
-     * a crash.
-     */
-    const [dots, setDots] = useState(3);
-    useEffect(() => {
-        const tick = setInterval(() => setDots((count) => (count % 3) + 1), 500);
-        return () => clearInterval(tick);
-    }, []);
-
-    /**
-     * Three dots are always drawn and the unreached ones are merely invisible.
-     * Growing the string instead re-centred the line on every tick, so the
-     * whole message jittered left and right as it animated.
-     */
-    const Ellipsis = () => (
-        <span className={styles.ellipsis}>
-            {[1, 2, 3].map((step) => (
-                <span key={step} data-shown={step <= dots}>{textToSprite(".")}</span>
-            ))}
-        </span>
-    );
-
     const error = null;
 
     const joinAttempted = useRef(false);
@@ -301,15 +278,6 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
         await acceptRules(session.code, session.token, room.rulesHash);
     });
 
-    /**
-     * "You won that game", "Your opponent left" and so on explain why you are
-     * back at the lobby, so they are worth showing once. They were outliving
-     * that though — the notice sat in the session store until a new game
-     * replaced it, so opening this a day later still reported the last result.
-     * Cleared on the way out, which is the point it has been read.
-     */
-    useEffect(() => () => { multiplayer.clearNotice(); }, []);
-
     const handleLeave = () => run(async () => {
         playSound("back", isSoundEnabled);
         if (session) await leaveRoom(session.code, session.token).catch(() => { });
@@ -361,7 +329,9 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
         return names.length ? names : ["None"];
     };
 
-    const message = problem ?? notice ?? error;
+    // The notice is shown as its own passing message now, wherever you end up,
+    // rather than only where the lobby happened to be open
+    const message = problem ?? error;
 
     // ── Choosing the rules before opening a room ────────────────────────────
     if (!session && choosing) {
@@ -428,7 +398,11 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                     </button>
                 </div>
 
-                <div className={styles.divider} />
+                <div className={styles.dividerOr}>
+                    <span className={styles.divider} />
+                    <span className={styles.or}>{textToSprite("or")}</span>
+                    <span className={styles.divider} />
+                </div>
 
                 <p className={styles.label}>{textToSprite("Enter game code")}</p>
                 <div className={styles.code}>

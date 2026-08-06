@@ -1,12 +1,28 @@
+/**
+ * Sits above the Quit button inside the same panel, separated by a rule, so the
+ * two read as one deliberate box rather than a button with a number loose
+ * underneath it.
+ */
 .timer {
     display: flex;
-    justify-content: center;
-    margin-top: 0.35rem;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.6rem;
+    padding-bottom: 0.3rem;
+    margin-bottom: 0.35rem;
+    border-bottom: 2px solid #8b8e8d;
+}
+
+.label {
+    display: flex;
     opacity: 0.75;
+}
+
+.clock {
+    display: flex;
 
     // The last stretch reads as a warning rather than a decoration
-    &[data-urgent="true"] {
-        opacity: 1;
+    [data-urgent="true"] & {
         animation: pulse 1s steps(2, end) infinite;
     }
 }

@@ -6,6 +6,7 @@ import Hand from "./components/Hand/Hand";
 import MenuDialog from "./components/MenuDialog/MenuDialog";
 import WinDialog from "./components/WinDialog/WinDialog";
 import CardSelectionDialog from "./components/CardSelectionDialog/CardSelectionDialog";
+import ConfirmationDialog from "./components/ConfirmationDialog/ConfirmationDialog";
 import RewardSelectionDialog from "./components/RewardSelectionDialog/RewardSelectionDialog";
 import { GameProvider, useGameContext } from "./context/GameContext";
 import playSound, { loadSound, playLoadedSound, stopLoadedSound } from "./utils/sounds";
@@ -13,6 +14,7 @@ import CardGallery from "./components/CardGallery/CardGallery";
 import MultiplayerDialog from "./components/MultiplayerDialog/MultiplayerDialog";
 import AutoplayTimer from "./components/AutoplayTimer/AutoplayTimer";
 import ModeDialog from "./components/ModeDialog/ModeDialog";
+import Notice from "./components/Notice/Notice";
 import { finishMultiplayer, multiplayer, useMultiplayer } from "./hooks/multiplayerSession";
 import { useRoom } from "./hooks/useRoom";
 import { codeFromUrl, loadSession, type RoomEvent } from "./utils/rooms";
@@ -37,6 +39,8 @@ function GameContent() {
   }
 
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [quitHovered, setQuitHovered] = useState(false);
+  const [confirmingQuit, setConfirmingQuit] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
 
   /**
@@ -392,6 +396,7 @@ function GameContent() {
           )}
           {isMenuOpen && mode === "single" && <MenuDialog onQuit={() => setMode(null)} />}
           {isCardSelectionOpen && <CardSelectionDialog />}
+          <Notice />
           {isMultiplayerOpen && (
             <MultiplayerDialog
               onClose={() => setIsMultiplayerOpen(false)}
@@ -414,11 +419,27 @@ function GameContent() {
       {session && isGameActive && (
         <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-10" data-app-scaled>
           <SimpleDialog metaTitle={null} dialog="quit">
-            <button onClick={() => { playSound("back", isSoundEnabled); void finishMultiplayer("You left that game."); }}>
+            {/* Clock first: it is the thing being read, and Quit is the way
+                out from under it */}
+            <AutoplayTimer />
+            <button
+              className="relative"
+              data-focused={quitHovered}
+              onMouseEnter={() => setQuitHovered(true)}
+              onMouseLeave={() => setQuitHovered(false)}
+              onClick={() => { playSound("select", isSoundEnabled); setConfirmingQuit(true); }}
+            >
               {textToSprite("Quit")}
             </button>
-            <AutoplayTimer />
           </SimpleDialog>
+
+          {/* Quitting ends the other player's game too, so it asks first */}
+          {confirmingQuit && (
+            <ConfirmationDialog
+              handleConfirmation={() => { setConfirmingQuit(false); void finishMultiplayer(null); }}
+              handleDenial={() => { playSound("back", isSoundEnabled); setConfirmingQuit(false); }}
+            />
+          )}
         </div>
       )}
 

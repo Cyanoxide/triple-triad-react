@@ -81,7 +81,7 @@ export const multiplayer = {
      * lobby offers a fresh game instead of polling something that no longer
      * exists, which is otherwise a dead end with nothing but an error on screen.
      */
-    ended(notice: string) {
+    ended(notice: string | null) {
         state = { session: null, room: null, handSent: false, notice, pendingMoves: [], incomingRewards: null, autoplayAt: null, seed: null };
         emit();
     },
@@ -172,7 +172,7 @@ export const multiplayer = {
  * player quits, and when the other side disappears — all of which leave the
  * lobby ready to start another.
  */
-export const finishMultiplayer = async (notice: string) => {
+export const finishMultiplayer = async (notice: string | null) => {
     const { session } = multiplayer.get();
     if (session) {
         const { leaveRoom, clearSession } = await import("../utils/rooms");

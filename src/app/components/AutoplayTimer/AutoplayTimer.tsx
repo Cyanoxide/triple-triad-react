@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import textToSprite from "../../utils/textToSprite";
 import { useMultiplayer } from "../../hooks/multiplayerSession";
+import { useGameContext } from "../../context/GameContext";
 import styles from "./AutoplayTimer.module.scss";
 
 /**
@@ -13,9 +14,8 @@ import styles from "./AutoplayTimer.module.scss";
  * screen reaching zero a second before or after the move actually happens is
  * exactly the sort of thing that makes people doubt the whole feature.
  *
- * Only shown while it is your turn, because that is the only time the clock is
- * running — the other player's countdown is their business and, on a background
- * tab, not something this client can know accurately anyway.
+ * Shown on both turns and labelled with whose it is, so the wait always has a
+ * number against it rather than only when you are the one holding things up.
  */
 
 /** Where it starts turning red, in seconds */
@@ -23,6 +23,8 @@ const URGENT_AT = 15;
 
 const AutoplayTimer = () => {
     const { autoplayAt } = useMultiplayer();
+    const { turn } = useGameContext();
+    const yourTurn = turn === "blue";
     const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
@@ -39,9 +41,12 @@ const AutoplayTimer = () => {
     const seconds = secondsLeft % 60;
 
     return (
-        <p className={styles.timer} data-urgent={secondsLeft <= URGENT_AT}>
-            {textToSprite(`${minutes}:${String(seconds).padStart(2, "0")}`)}
-        </p>
+        <div className={styles.timer} data-urgent={secondsLeft <= URGENT_AT}>
+            <span className={styles.label}>{textToSprite(yourTurn ? "Your move" : "Their move")}</span>
+            <span className={styles.clock}>
+                {textToSprite(`${minutes}:${String(seconds).padStart(2, "0")}`)}
+            </span>
+        </div>
     );
 };
 

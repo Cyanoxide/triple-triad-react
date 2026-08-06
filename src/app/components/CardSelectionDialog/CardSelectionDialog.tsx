@@ -14,6 +14,7 @@ import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
 import { generateCardFromId } from "../../utils/general";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
+import Ellipsis from "../Ellipsis/Ellipsis";
 import { useCursorNav, markKeyboardNavigation } from "../../hooks/useCursorNav";
 import { paginationNav } from "../../hooks/paginationNav";
 
@@ -54,6 +55,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
     const cardsTotal = Object.values(playerCards).reduce((acc, quantity) => acc + quantity, 0);
     const [addedStartingCardsFlag, setAddedStartingCardsFlag] = useState(false);
     const [sendFailed, setSendFailed] = useState(false);
+    const [confirmingLeave, setConfirmingLeave] = useState(false);
     const hasPlayedBefore = localStorage.getItem("playerCards");
 
     // Random deals the hand, so there is nothing on this screen to use
@@ -61,9 +63,13 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
 
     const waitingMessage = !session || isCardGalleryOpen ? null
         : sendFailed ? "Could not send your hand. Try again."
-            : handSent ? "Waiting for your opponent..."
-                : randomDraw ? "Your hand has been dealt at random..."
+            : handSent ? "Waiting for your opponent"
+                : randomDraw ? "Your hand has been dealt at random"
                     : null;
+
+    // The two that are genuinely waiting on someone get the moving dots; the
+    // failure is not waiting for anything
+    const waitingEllipsis = !!waitingMessage && !sendFailed;
 
     const gameStart = () => {
         /**
@@ -218,15 +224,11 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             /**
              * Backing all the way out of a hand you are choosing for another
              * player means leaving the room — there is no half-way state where
-             * you are in a game but not dealing into it.
-             *
-             * Opening the title menu instead, which is what this used to do
-             * whoever was playing, left the screen empty: the app was in
-             * multiplayer, so the single player menu it asked for was not
-             * rendered and the lobby had already stood aside for the deal.
+             * you are in a game but not dealing into it. Since it ends their
+             * game as well as yours, it asks first.
              */
             if (session) {
-                void finishMultiplayer("You left that game.");
+                setConfirmingLeave(true);
                 return;
             }
 
@@ -327,8 +329,13 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                 {/* Once a hand is away there is nothing to confirm or undo — it
                     is with the other player, so say so rather than offering a
                     button that would send it twice */}
-                {!waitingMessage && currentPlayerHand.length === 5 && !isCardGalleryOpen &&
-                    <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+                {confirmingLeave
+                    ? <ConfirmationDialog
+                        handleConfirmation={() => { setConfirmingLeave(false); void finishMultiplayer(null); }}
+                        handleDenial={() => { playSound("back", isSoundEnabled); setConfirmingLeave(false); }}
+                    />
+                    : !waitingMessage && currentPlayerHand.length === 5 && !isCardGalleryOpen &&
+                        <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
                 {showPreview && previewCardId && <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
                     <Card id={previewCardId} player="blue" />
                 </div>}
@@ -336,6 +343,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             {waitingMessage &&
                 <SimpleDialog className={styles.handStatus}>
                     {textToSprite(waitingMessage)}
+                    {waitingEllipsis && <Ellipsis />}
                 </SimpleDialog>
             }
             {hasPlayedBefore && addedStartingCardsFlag && !isCardGalleryOpen &&
