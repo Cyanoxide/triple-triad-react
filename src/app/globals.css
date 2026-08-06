@@ -299,6 +299,57 @@ button {
 }
 
 /*
+ * The coin-flip arrow at kickoff points at whoever starts, and stacked that is
+ * up or down rather than left or right — another 90 degrees on top of the
+ * module's own `rotate(90deg)`.
+ *
+ * The keyframes have to be restated, not just the base rule. Both of the
+ * module's animations set `transform` in full and fill forwards, so a plain
+ * declaration here is overwritten the moment the animation starts and then held
+ * overwritten. Only `animation-name` is switched — the direction, timing and
+ * the 1440/1260 degree spins are inherited from the module.
+ *
+ * The offsets go with it, and they are not a mirror of the module's. Rotating
+ * about a `top` origin moves the box as well as turning it: at 90 degrees the
+ * centre lands half a width along and half a width up, at 180 it lands a whole
+ * width along and not up at all. These put it back on the middle of the board,
+ * where desktop has it.
+ */
+:root[data-stacked="true"] #app [data-type="starting-player-indicator"] {
+  top: calc(50% + 3px);
+  left: calc(50% - 57px);
+  transform: rotate(180deg) translate(-50%, -50%);
+}
+
+:root[data-stacked="true"] #app [data-type="starting-player-indicator"][data-starting-player="red"] {
+  animation-name: rotate-red-stacked;
+}
+
+:root[data-stacked="true"] #app [data-type="starting-player-indicator"][data-starting-player="blue"] {
+  animation-name: rotate-blue-stacked;
+}
+
+@keyframes rotate-red-stacked {
+  from {
+    transform: rotate(180deg) rotateX(0deg) translate(-50%, -50%);
+  }
+
+  to {
+    transform: rotate(180deg) rotateX(1440deg) translate(-50%, -50%);
+  }
+}
+
+@keyframes rotate-blue-stacked {
+  from {
+    transform: rotate(180deg) rotateX(0deg) translate(-50%, -50%);
+  }
+
+  to {
+    transform: rotate(180deg) rotateX(1260deg) translate(-50%, -50%);
+  }
+}
+
+/*
  * Whose turn it is, pushed out to the edge of the screen: above the opponent's
  * score at the top, below yours at the bottom, and flipped so it points into
  * the board from either end. Allowed to run off a short screen — it is a

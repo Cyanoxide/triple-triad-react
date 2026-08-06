@@ -280,14 +280,24 @@ function GameContent() {
          * rather than the 813 the three-across layout needs, and be taller for
          * the two rows.
          *
-         * 760 and not the board's own 535: the frame around it — the emblem
+         * 680 and not the board's own 535: the frame around it — the emblem
          * behind, the corner pieces, the logo across the middle — is drawn
          * overhanging the board on every side. Sized to the board alone that
-         * frame hung off both edges of the screen. This is the board plus the
-         * room its own decoration needs, and still worth about 20% on the size
-         * of everything.
+         * frame hung off both edges of the screen.
+         *
+         * **What sets the number is the reward screen, not the board.** Its two
+         * rows are five cards side by side and unoverlapped — 640 design pixels,
+         * the widest thing anywhere in the app. The board's widest part is the
+         * emblem behind it at 600, and the board's own box only 535. So 680
+         * leaves the reward rows 20 design pixels either side and the emblem 40.
+         *
+         * It was 760, which was measured before the portrait board was fixed and
+         * carried the slack from that. Anything below about 660 starts cutting
+         * into the reward rows; freeing that would mean overlapping those cards
+         * the way the hand does, which is a change to how the screen looks
+         * rather than to how big it is.
          */
-        const MOBILE_PORTRAIT = [760, 900];
+        const MOBILE_PORTRAIT = [680, 900];
 
         // The layout viewport stays stable while pinch-zooming, unlike innerWidth/innerHeight
         const windowWidth = document.documentElement.clientWidth;
