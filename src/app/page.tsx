@@ -237,21 +237,6 @@ function GameContent() {
     playLoadedSound(bgmRef.current, isSoundEnabled, true);
   }, [isSoundEnabled, isGameActive])
 
-  /**
-   * Read inside the scale function rather than closed over, so the listeners
-   * are set up once and still see the current screen.
-   */
-  const gameActiveRef = useRef(isGameActive);
-  gameActiveRef.current = isGameActive;
-
-  /**
-   * Going to or from the board changes which canvas applies, and the scale is
-   * only worked out on resize. Firing one is less machinery than lifting the
-   * function out of the effect that owns the listeners.
-   */
-  useEffect(() => {
-    window.dispatchEvent(new Event("resize"));
-  }, [isGameActive]);
 
   useEffect(() => {
     const app = document.getElementById('app');
@@ -276,18 +261,6 @@ function GameContent() {
         const DESKTOP = [950, 750];
 
         /**
-         * Menus get a smaller canvas again on a phone, so they come out bigger.
-         *
-         * The wide canvas exists for the board with a hand either side of it,
-         * which is 813 across and cannot be narrowed without rebuilding the
-         * layout. No menu is anything like that wide — the widest panel is
-         * about 530 — so on a phone they were being shrunk to fit a shape they
-         * never occupy, and ended up half the width of the screen with buttons
-         * too small to hit. Off the board, the canvas is only as big as the
-         * panels need.
-         */
-        const MOBILE_MENU = [600, 500];
-        /**
          * 900 wide and 640 tall, arrived at by measuring rather than taste.
          *
          * Portrait is limited by width and landscape by height, so the two
@@ -306,12 +279,10 @@ function GameContent() {
         const windowHeight = document.documentElement.clientHeight;
 
         const onPhone = Math.min(windowWidth, windowHeight) < MOBILE_MAX_SHORT_SIDE;
-        const onBoard = gameActiveRef.current;
         const override = process.env.NODE_ENV === "development"
           ? (window as unknown as { __canvas?: [number, number] }).__canvas
           : undefined;
-        const [originalWidth, originalHeight] = override
-          ?? (onPhone ? (onBoard ? MOBILE : MOBILE_MENU) : DESKTOP);
+        const [originalWidth, originalHeight] = override ?? (onPhone ? MOBILE : DESKTOP);
 
         const scale = Math.min(windowWidth / originalWidth, windowHeight / originalHeight);
         app.style.zoom = String(scale);

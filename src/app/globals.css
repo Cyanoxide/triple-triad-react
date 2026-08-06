@@ -156,9 +156,28 @@ button {
  * height in proportion rather than a fixed amount that would look wrong at one
  * size or the other.
  */
+/**
+ * How much bigger the panels are drawn on a phone. Scaled about their own
+ * centres, so a panel that centres itself stays centred.
+ */
+:root[data-phone="true"] {
+  --dialog-scale: 1.45;
+}
+
+/*
+ * Except the ones pinned to an edge. They are placed by their wrappers rather
+ * than centred, so growing them about the middle would push them half of the
+ * growth past the edge of the screen.
+ */
+:root[data-phone="true"] [data-dialog="options"],
+:root[data-phone="true"] [data-dialog="quit"],
+:root[data-phone="true"] [data-dialog="timer"] {
+  --dialog-scale: 1;
+}
+
 :root[data-phone="true"] [data-dialog] button,
 :root[data-phone="true"] [data-dialog] a {
-  min-height: 34px;
+  min-height: 26px;
   display: flex;
   align-items: center;
 }
