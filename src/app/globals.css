@@ -292,3 +292,38 @@ button {
   bottom: -150px;
   scale: 1 -1;
 }
+
+/*
+ * Card selection sits left of centre to leave room for the preview card beside
+ * it. There is no room beside it on a phone held upright, so it centres and the
+ * preview goes underneath.
+ */
+:root[data-stacked="true"] #app [data-dialog="cardSelection"] {
+  left: 50%;
+}
+
+:root[data-stacked="true"] #app [data-dialog="cardSelection"] [class*="cardSelectionPreview"] {
+  left: 50%;
+  translate: -50% 0;
+  bottom: auto;
+  top: calc(100% + 20px);
+}
+
+/*
+ * The hand keeps its row whether or not there is anything in it. Choosing your
+ * first card used to bring the row into existence and shove the board and the
+ * other hand down the screen.
+ */
+:root[data-stacked="true"] #app [data-selectable] {
+  min-height: 164px;
+}
+
+/*
+ * A raised card pushes the next one along rather than simply covering it, so
+ * the one you have chosen is a card-shaped hole in the row instead of a card
+ * lying on top of the others.
+ */
+:root[data-stacked="true"] #app [data-selectable] > div[data-focused="true"],
+:root[data-stacked="true"] #app [data-selectable] > div[data-selected="true"] {
+  margin-right: 62px;
+}
