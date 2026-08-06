@@ -70,14 +70,20 @@ body * {
 }
 
 /*
- * Fixed rather than absolute, so both of these cover what is on screen instead
- * of covering the body box. Any mismatch between the two — and on a phone there
- * usually is one — showed as a strip of bare page along an edge, which reads as
- * a black bar because the body's own background is the dark scheme colour.
+ * **Absolute, and it has to stay absolute.** Making these two `fixed` was tried
+ * as a way of covering the safe-area strip and broke the background on a real
+ * phone: `fixed` lays out against the *visual* viewport, which is a different
+ * rectangle from the body box, so `background-size: cover` resolved against the
+ * wrong height. The texture came out off-centre and cut off along the bottom,
+ * and the two gradients blended over it landed somewhere else again, which
+ * reads as the blend mode having been dropped. Chrome shows none of this — the
+ * two rectangles are the same there — so it cannot be caught locally.
+ *
+ * The strip is dealt with by the background colour on `html` instead.
  */
 body.crt-effect::after {
   content: '';
-  position: fixed;
+  position: absolute;
   top: 0px;
   left: 0px;
   right: 0px;
@@ -92,7 +98,7 @@ body.crt-effect::after {
 
 body::before {
   content: "";
-  position: fixed;
+  position: absolute;
   top: 0px;
   left: 0px;
   right: 0px;
@@ -181,25 +187,35 @@ button {
  * card you are holding — that reads as one pair of labels on the board rather
  * than as a bar floating at the top of the window.
  *
- * It is placed as the *mirror of that label*, not against the viewport. The
- * name is `bottom: calc(50% - 245px)` inside the board's container, so 245
- * design pixels above the middle is exactly opposite it, and the two overlap
- * the board by the same amount at either end.
+ * It **straddles the grid's top edge**, half on the board and half on the
+ * background behind it, rather than sitting wholly inside the board the way the
+ * card name does.
  *
- * The halves do different jobs and cannot be merged. The outer box is not
- * scaled, so `top: 50%` is half the real window — and the board's middle is the
- * window's middle in both orientations, which is what makes this work. The
- * inner box is scaled, so its `-245px` is design pixels and tracks the board as
- * everything grows and shrinks. Putting the offset on the outer box instead
- * would leave it a fixed number of real pixels and it would drift off the board
- * at every other size.
+ * The three parts do different jobs and cannot be merged:
+ *
+ * - the outer box is not scaled, so `top: 50%` is half the real window — and
+ *   the board's middle is the window's middle in both orientations, which is
+ *   what makes any of this work;
+ * - the inner box is scaled, so `-248px` is design pixels and tracks the board
+ *   as everything grows and shrinks. On the outer box it would be a fixed count
+ *   of real pixels and would drift off the board at every other size;
+ * - `translate: 0 -50%` then lifts it by half of *its own* height, which is what
+ *   puts the edge through its middle. A measured offset would have to be
+ *   re-measured every time the box's contents change height.
  */
 :root[data-phone="true"] [data-timer-slot] {
   top: 50%;
+  /* Or the negative margin below is answered by the box *growing* by exactly
+     that much: it is a flex item, the row aligns `stretch` by default, and a
+     stretched item takes its margins out of the cross size it stretches to. The
+     box came out 248px tall around 60px of content, and `translate: -50%` then
+     lifted it by half of the wrong number and off the top of the screen. */
+  align-items: flex-start;
 }
 
 :root[data-phone="true"] [data-timer-slot] > [data-app-scaled] {
-  margin-top: -245px;
+  margin-top: -248px;
+  translate: 0 -50%;
 }
 
 /* Pinned to the window rather than to the board, but scaled with it */
