@@ -30,6 +30,43 @@
     justify-content: center;
     gap: 0.55rem;
     margin-bottom: 1rem;
+    position: relative;
+}
+
+/**
+ * The field you actually type into. The nine spans above are the field you can
+ * see; this lies over them so a tap has something to focus, which is the only
+ * way a phone raises its keyboard.
+ *
+ * Transparent, not `display: none` or `visibility: hidden` — either of those
+ * would take it out of the focus order and put us back where we started. The
+ * text is pushed out of sight with a transparent colour and caret rather than
+ * by moving the box, because the box has to stay under your thumb.
+ *
+ * 16px is the smallest iOS will focus without zooming the page in. The viewport
+ * asks it not to, and it does not always listen.
+ */
+.codeInput {
+    position: absolute;
+    // Taller than the row it covers. The drawn field is only 18 design pixels
+    // high — it is a line of sprite glyphs — which is a thin thing to hit with a
+    // thumb. Measured against its neighbours: this reaches up over the label,
+    // which is not interactive, and stops short of Join and Back below.
+    top: -12px;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: transparent;
+    caret-color: transparent;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+    // Safari draws its own rounded box and inner shadow otherwise
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .codeSlot {

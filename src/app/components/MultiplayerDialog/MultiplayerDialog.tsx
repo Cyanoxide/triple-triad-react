@@ -299,6 +299,23 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
         }
     };
 
+    /**
+     * A phone has no keyboard until something asks for one, and the code field
+     * was drawn rather than typed into — nine spans and a listener on `window`.
+     * Nothing focusable meant tapping it did nothing at all.
+     *
+     * `codeInput` is a real input lying over those spans, transparent and
+     * sized to them. Tapping the field focuses it, which is what raises the
+     * keyboard; the spans stay as the thing you actually see, so the field
+     * still looks drawn rather than like a form control.
+     */
+    const codeInput = useRef<HTMLInputElement>(null);
+
+    const typeCode = (value: string) => {
+        const cleaned = value.toUpperCase().split("").filter((c) => CODE_CHARS.includes(c)).join("");
+        setTypedCode(cleaned.slice(0, CODE_LENGTH));
+    };
+
     // Typed by keyboard as well as clicked, since the code is usually read aloud
     /**
      * Typing the code. Only on the screen that has a code field — while the
@@ -311,6 +328,9 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
         if (screen !== "join") return;
         const onKey = (event: KeyboardEvent) => {
             if (event.metaKey || event.ctrlKey || event.altKey) return;
+            // The input handles its own typing. Without this the character
+            // arrives twice on a desktop keyboard once the field has focus.
+            if (event.target === codeInput.current) return;
             if (event.key === "Backspace") {
                 setTypedCode((code) => code.slice(0, -1));
                 return;
@@ -405,7 +425,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                 </div>
 
                 <p className={styles.label}>{textToSprite("Enter game code")}</p>
-                <div className={styles.code}>
+                <div className={styles.code} onClick={() => codeInput.current?.focus()}>
                     {Array.from({ length: CODE_LENGTH }).map((_, index) => (
                         <span
                             key={index}
@@ -416,6 +436,19 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                             {typedCode[index] ? textToSprite(typedCode[index]) : textToSprite("_")}
                         </span>
                     ))}
+                    <input
+                        ref={codeInput}
+                        className={styles.codeInput}
+                        value={typedCode}
+                        onChange={(event) => typeCode(event.target.value)}
+                        maxLength={CODE_LENGTH}
+                        inputMode="text"
+                        autoCapitalize="characters"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck={false}
+                        aria-label="Game code"
+                    />
                 </div>
 
                 <div className={styles.row}>
