@@ -30,7 +30,30 @@ body {
   text-shadow: 2px 2px 0 #212121;
   overflow: hidden;
   display: flex;
-  height: 100vh;
+  /*
+   * **`100%`, not `100vh`.** The two are the same on a desktop and are not on a
+   * phone, and where they differ this is the black strip along the bottom edge.
+   *
+   * `scaleApp` sizes the app against `documentElement.clientHeight` — the
+   * layout viewport — but the page texture is `body::before`, which covers the
+   * *body box*. At `100vh` that box can come up short of the layout viewport,
+   * so the app is drawn over ground its own background does not reach, and what
+   * shows through is the bare page: black, under a dark colour scheme.
+   *
+   * `height: 100%` resolves against html, which is `100%` of the layout
+   * viewport, so the background box and the box the app is scaled to are the
+   * same box by construction.
+   *
+   * This is the sober version of a fix that did work: `body::before` was made
+   * `position: fixed`, which covered the strip because fixed is laid out
+   * against the viewport rather than the body. It also re-resolved
+   * `background-size: cover` against a different rectangle and put the layer on
+   * its own compositing layer, which threw the texture off-centre and cost the
+   * board's emblem its `mix-blend-mode`. Moving the *box* rather than the
+   * *painting* gets the same coverage with none of that. **Do not reach for
+   * `position: fixed` here again.**
+   */
+  height: 100%;
 }
 
 /* No double-tap or pinch zoom; the app scales itself. Safari only honours
