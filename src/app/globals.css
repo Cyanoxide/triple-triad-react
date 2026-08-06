@@ -321,13 +321,20 @@ button {
 }
 
 /*
- * The chosen card lifts where it stands rather than pushing the others along.
+ * The chosen card lifts, and the hand parts to uncover it.
  *
- * Displacing its neighbours is the more obvious reading of "make room", but
- * the room has to come from somewhere: the row grew by a card's width every
- * time you touched one, and a hand that changes size as you look at it is the
- * jank. Lifting is what a hand of cards does anyway — it comes forward, the
- * others stay where they are — and it costs no layout at all.
+ * Lifting alone was tried first and read as jank on a real phone: the card you
+ * touched was still buried under the two or three to its right, so the only
+ * feedback was a slight change of size on something you could barely see.
+ *
+ * The cards to the *right* are the ones that cover it — each is dealt 62px over
+ * its neighbour and, being later in the document, paints on top. So they are the
+ * only ones that have to move, and 62px is exactly the amount that clears it.
+ *
+ * Moving them alone would lean the whole hand right, so the row slides back by
+ * half as they go. Net: the hand spreads 31px each way around the card and stays
+ * centred where it was. The row's own width never changes — nothing here is
+ * layout, it is all `translate`.
  */
 :root[data-stacked="true"] #app [data-selectable][data-player] > div[data-focused="true"],
 :root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] {
@@ -335,6 +342,30 @@ button {
   scale: 1.07;
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55));
   transition: scale 120ms ease-out, filter 120ms ease-out;
+}
+
+/*
+ * Selection only, not `data-focused`. Focus is the keyboard cursor, and it
+ * rests on the first card from the moment your turn starts whether or not you
+ * have touched anything — a phone has no hover to move it. Spreading on focus
+ * left the hand permanently apart, which is just a worse-looking stack.
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"] > div[data-selected="true"] ~ div {
+  translate: 62px 0;
+}
+
+/*
+ * Only when something is actually being uncovered. The rightmost card has
+ * nothing on top of it, so touching it must not shunt the hand sideways for no
+ * reason — hence the `~ div`, "there is a card after the selected one".
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"]:has(> div[data-selected="true"] ~ div) {
+  translate: -31px 0;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"],
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"] > div {
+  transition: translate 140ms ease-out;
 }
 
 /*
@@ -348,10 +379,9 @@ button {
 }
 
 /*
- * The logo across the middle is the centre cell's art blown up 2.75 times so it
- * spills over the board. Fine where the board is half the screen; stacked it
- * fills most of it and the logo ran off both edges.
+ * The logo across the middle is the centre cell's art at 2.75, and it keeps
+ * that here. It was cut to 1.75 because it ran off both edges of the screen —
+ * which was the 392px cell, not the scale: 392 x 2.75 is 1078 design pixels.
+ * At the right cell size it is 352 against a 535 board, the desktop
+ * proportion, and shrinking it just made the board look empty.
  */
-:root[data-stacked="true"] #app [data-position="1,1"]::before {
-  transform: scale(1.75);
-}
