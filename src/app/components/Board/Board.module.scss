@@ -2,6 +2,19 @@
     grid-template-columns: repeat(3, 0fr);
     margin-left: 0;
     margin-right: 0;
+    /**
+     * So the emblem below is anchored to *this*. Without it the board is
+     * `static` and the emblem's `top: 50%` resolves against `#app`, which is
+     * the full height of the window — it only ever looked centred on the board
+     * because those two centres happen to coincide. Anything that separates
+     * them puts a 600px emblem halfway down the page instead of behind the
+     * grid, and it is the board it belongs to.
+     *
+     * Safe to add: `z-index` stays `auto`, so this creates no stacking context
+     * and the emblem's `mix-blend-mode` still reaches the page texture behind
+     * it. The cells position their own art against themselves already.
+     */
+    position: relative;
 
     &::before {
         content: "";
@@ -11,7 +24,6 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
         transform: translate(-50%, -50%);
         background-position: center;
         background-size: 600px;
