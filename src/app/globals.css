@@ -168,8 +168,11 @@ button {
  * moving the overlap from the top edge to the leading edge, and lifting the
  * chosen card towards the board rather than across to it.
  *
- * `[data-selectable]` is the hand's own container: the class on it is a CSS
- * module and its real name is a hash, so it cannot be named from here.
+ * `[data-selectable][data-player]` is the hand's own container: the class on it
+ * is a CSS module and its real name is a hash, so it cannot be named from here.
+ * The `[data-player]` half is not decoration — every *board cell* also carries
+ * `data-selectable`, and a bare `[data-selectable]` here silently sized all
+ * nine of them like a hand row.
  */
 :root[data-stacked="true"] #app > .flex.h-full {
   flex-direction: column;
@@ -201,7 +204,7 @@ button {
   margin: 0;
 }
 
-:root[data-stacked="true"] #app [data-selectable] {
+:root[data-stacked="true"] #app [data-selectable][data-player] {
   flex-direction: row;
   min-height: 0;
   padding-top: 0;
@@ -228,12 +231,12 @@ button {
  * sizes to its contents, so a percentage of it feeds back into itself and the
  * two hands came out 640 and 130 design pixels wide from the same rule.
  */
-:root[data-stacked="true"] #app [data-selectable] > div {
+:root[data-stacked="true"] #app [data-selectable][data-player] > div {
   margin-top: 0;
   margin-left: -62px;
 }
 
-:root[data-stacked="true"] #app [data-selectable] > div:first-child {
+:root[data-stacked="true"] #app [data-selectable][data-player] > div:first-child {
   margin-left: 0;
 }
 
@@ -242,7 +245,7 @@ button {
  * reads as picking it out of the hand; upwards it just looked like the row had
  * come apart.
  */
-:root[data-stacked="true"] #app [data-selectable] [data-selected="true"] {
+:root[data-stacked="true"] #app [data-selectable][data-player] [data-selected="true"] {
   transform: none !important;
 }
 
@@ -265,7 +268,7 @@ button {
  * Level with the middle of the card it points at. Its offset is measured for a
  * column, where the next card is below rather than beside it.
  */
-:root[data-stacked="true"] #app [data-selectable] > div[data-focused="true"] [data-player]::after {
+:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-focused="true"] [data-player]::after {
   top: 50%;
   margin-top: -14px;
 }
@@ -313,7 +316,7 @@ button {
  * first card used to bring the row into existence and shove the board and the
  * other hand down the screen.
  */
-:root[data-stacked="true"] #app [data-selectable] {
+:root[data-stacked="true"] #app [data-selectable][data-player] {
   min-height: 164px;
 }
 
@@ -326,8 +329,8 @@ button {
  * jank. Lifting is what a hand of cards does anyway — it comes forward, the
  * others stay where they are — and it costs no layout at all.
  */
-:root[data-stacked="true"] #app [data-selectable] > div[data-focused="true"],
-:root[data-stacked="true"] #app [data-selectable] > div[data-selected="true"] {
+:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-focused="true"],
+:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] {
   z-index: 3;
   scale: 1.07;
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55));
@@ -339,19 +342,9 @@ button {
  * not grow as a hand is chosen or shrink as it is played out. The cards centre
  * within it, and the row itself never moves.
  */
-:root[data-stacked="true"] #app [data-selectable] {
+:root[data-stacked="true"] #app [data-selectable][data-player] {
   width: 392px;
   justify-content: center;
-}
-
-/*
- * Hold the board's three columns to the card width. Stacked, the cells were
- * measuring 392 design pixels each — three times what they should — which is
- * the "zoomed in" board: the grid was resolving to one wide column rather than
- * three card-width ones.
- */
-:root[data-stacked="true"] #app [class*="board"] {
-  grid-template-columns: repeat(3, 128px);
 }
 
 /*
