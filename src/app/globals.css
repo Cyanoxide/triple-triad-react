@@ -194,3 +194,84 @@ button {
   padding-top: 0;
   padding-bottom: 0;
 }
+
+/**
+ * A phone held upright stacks the hands above and below the board.
+ *
+ * Three columns across a 390px screen leaves the board about half of it. Above
+ * and below, the board gets the whole width and everything is drawn half again
+ * larger. Only for a phone in portrait — a tablet has the room for the real
+ * layout and keeps it.
+ *
+ * The hand is a stack of overlapping cards, so turning it on its side means
+ * moving the overlap from the top edge to the leading edge, and lifting the
+ * chosen card towards the board rather than across to it.
+ *
+ * `[data-selectable]` is the hand's own container: the class on it is a CSS
+ * module and its real name is a hash, so it cannot be named from here.
+ */
+:root[data-stacked="true"] #app > .flex.h-full {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The order classes already read red, board, blue — in a column that is the
+   opponent above, the board, and your own hand below */
+:root[data-stacked="true"] #app > .flex.h-full > * {
+  width: auto;
+  /* Sized to their contents. Left to stretch, the three of them shared the
+     full height between them and the hands ended up pinned to the top and
+     bottom edges of the screen with the board marooned in the middle. */
+  flex: 0 0 auto;
+  height: auto;
+  /* The board carries `m-auto`, and auto margins in a flex line swallow the
+     free space before justify-content ever sees it — which pinned the hands to
+     the top and bottom edges of the screen. */
+  margin: 0;
+}
+
+:root[data-stacked="true"] #app [data-selectable] {
+  flex-direction: row;
+  min-height: 0;
+  padding-top: 0;
+}
+
+/*
+ * A fixed overlap, not a percentage. The column layout's -48% resolves against
+ * the container's *width*, which was a stable 150px there; here the container
+ * sizes to its contents, so a percentage of it feeds back into itself and the
+ * two hands came out 640 and 130 design pixels wide from the same rule.
+ */
+:root[data-stacked="true"] #app [data-selectable] > div {
+  margin-top: 0;
+  margin-left: -62px;
+}
+
+:root[data-stacked="true"] #app [data-selectable] > div:first-child {
+  margin-left: 0;
+}
+
+/* The chosen card lifts towards the board rather than across to it */
+:root[data-stacked="true"] #app [data-selectable][data-player="red"] [data-selected="true"] {
+  transform: translateY(50%) !important;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"] [data-selected="true"] {
+  transform: translateY(-50%) !important;
+}
+
+/*
+ * The score sits under a vertical hand. Laid out as a row it lands on top of
+ * the middle card, so it moves clear of the row — above the opponent's, below
+ * your own. It is the hand's next sibling, and carries data-sprite, which is
+ * the only handle on it from here.
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player="red"] + [data-sprite] {
+  top: -62px;
+  bottom: auto;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"] + [data-sprite] {
+  bottom: -62px;
+}

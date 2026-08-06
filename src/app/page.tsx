@@ -274,6 +274,15 @@ function GameContent() {
          */
         const MOBILE = [900, 640];
 
+        /**
+         * A phone held upright puts the hands above and below the board rather
+         * than either side of it, so the canvas only has to be as wide as the
+         * board — 535 rather than the 813 the three-across layout needs — and
+         * taller to hold the two rows. Worth about half again on the size of
+         * everything, which is most of what makes a phone hard to play on.
+         */
+        const MOBILE_PORTRAIT = [620, 900];
+
         // The layout viewport stays stable while pinch-zooming, unlike innerWidth/innerHeight
         const windowWidth = document.documentElement.clientWidth;
         const windowHeight = document.documentElement.clientHeight;
@@ -282,7 +291,9 @@ function GameContent() {
         const override = process.env.NODE_ENV === "development"
           ? (window as unknown as { __canvas?: [number, number] }).__canvas
           : undefined;
-        const [originalWidth, originalHeight] = override ?? (onPhone ? MOBILE : DESKTOP);
+        const portrait = windowHeight > windowWidth;
+        const [originalWidth, originalHeight] = override
+          ?? (onPhone ? (portrait ? MOBILE_PORTRAIT : MOBILE) : DESKTOP);
 
         const scale = Math.min(windowWidth / originalWidth, windowHeight / originalHeight);
         app.style.zoom = String(scale);
@@ -309,6 +320,9 @@ function GameContent() {
         // Published so the styling can give a phone roomier rows to hit
         // without changing anything on desktop
         document.documentElement.dataset.phone = onPhone ? "true" : "false";
+        // The stacked layout is the phone's portrait one only; a tablet keeps
+        // the three-across board however it is held
+        document.documentElement.dataset.stacked = onPhone && portrait ? "true" : "false";
       }
 
       // iOS ignores user-scalable=no, so block pinch zoom; the app scales itself anyway
