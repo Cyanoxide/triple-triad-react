@@ -157,45 +157,6 @@ button {
  * size or the other.
  */
 /**
- * How much bigger the panels are drawn on a phone. Scaled about their own
- * centres, so a panel that centres itself stays centred.
- */
-:root[data-phone="true"] {
-  --dialog-scale: 1.45;
-}
-
-/*
- * Except the ones pinned to an edge. They are placed by their wrappers rather
- * than centred, so growing them about the middle would push them half of the
- * growth past the edge of the screen.
- */
-:root[data-phone="true"] [data-dialog="options"],
-:root[data-phone="true"] [data-dialog="quit"],
-:root[data-phone="true"] [data-dialog="timer"] {
-  --dialog-scale: 1;
-}
-
-:root[data-phone="true"] [data-dialog] button,
-:root[data-phone="true"] [data-dialog] a {
-  min-height: 26px;
-  display: flex;
-  align-items: center;
-}
-
-/* Rows that centre their label keep doing so once they are flex */
-:root[data-phone="true"] [data-dialog] .font {
-  align-items: center;
-}
-
-/* The options bar is a fixed-height strip of icons; padding would burst it */
-:root[data-phone="true"] [data-dialog="options"] button,
-:root[data-phone="true"] [data-dialog="quit"] button,
-:root[data-phone="true"] [data-dialog="timer"] button {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-/**
  * A phone held upright stacks the hands above and below the board.
  *
  * Three columns across a 390px screen leaves the board about half of it. Above
@@ -238,6 +199,21 @@ button {
 }
 
 /*
+ * Clear of the board, and clear of the score that now sits outside the row.
+ *
+ * By position in the markup, not by first and last: the three are written red,
+ * blue, board and put in visual order by their `order` classes, so `:last-child`
+ * is the board and gave the gap to the wrong side.
+ */
+:root[data-stacked="true"] #app > .flex.h-full > *:nth-child(1) {
+  margin-bottom: 70px;
+}
+
+:root[data-stacked="true"] #app > .flex.h-full > *:nth-child(2) {
+  margin-top: 70px;
+}
+
+/*
  * A fixed overlap, not a percentage. The column layout's -48% resolves against
  * the container's *width*, which was a stable 150px there; here the container
  * sizes to its contents, so a percentage of it feeds back into itself and the
@@ -252,13 +228,13 @@ button {
   margin-left: 0;
 }
 
-/* The chosen card lifts towards the board rather than across to it */
-:root[data-stacked="true"] #app [data-selectable][data-player="red"] [data-selected="true"] {
-  transform: translateY(50%) !important;
-}
-
-:root[data-stacked="true"] #app [data-selectable][data-player="blue"] [data-selected="true"] {
-  transform: translateY(-50%) !important;
+/*
+ * The chosen card does not move. Sideways it slid towards the board, which
+ * reads as picking it out of the hand; upwards it just looked like the row had
+ * come apart.
+ */
+:root[data-stacked="true"] #app [data-selectable] [data-selected="true"] {
+  transform: none !important;
 }
 
 /*
@@ -268,10 +244,30 @@ button {
  * the only handle on it from here.
  */
 :root[data-stacked="true"] #app [data-selectable][data-player="red"] + [data-sprite] {
-  top: -62px;
+  top: -80px;
   bottom: auto;
 }
 
 :root[data-stacked="true"] #app [data-selectable][data-player="blue"] + [data-sprite] {
-  bottom: -62px;
+  bottom: -80px;
+}
+
+/*
+ * The hand cursor hangs to the left of a card, which in a row puts it on top of
+ * the card before it. Stacked, it sits outside the row on the side the board
+ * is, so it points at the card from the space it is about to be played into.
+ */
+:root[data-stacked="true"] #app [data-selectable] > div[data-focused="true"] [data-player]::after {
+  left: 50%;
+  margin-left: -22px;
+  margin-top: 0;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player="red"] > div[data-focused="true"] [data-player]::after {
+  top: auto;
+  bottom: -34px;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"] > div[data-focused="true"] [data-player]::after {
+  top: -34px;
 }
