@@ -179,8 +179,17 @@ button {
 
 /* The order classes already read red, board, blue — in a column that is the
    opponent above, the board, and your own hand below */
-:root[data-stacked="true"] #app > .flex.h-full > * {
+/*
+ * Only the hands. The board keeps its own width — it was in this rule too, and
+ * with `auto` the grid stretched to over twice its size and ran off both sides
+ * of the screen.
+ */
+:root[data-stacked="true"] #app > .flex.h-full > *:nth-child(1),
+:root[data-stacked="true"] #app > .flex.h-full > *:nth-child(2) {
   width: auto;
+}
+
+:root[data-stacked="true"] #app > .flex.h-full > * {
   /* Sized to their contents. Left to stretch, the three of them shared the
      full height between them and the hands ended up pinned to the top and
      bottom edges of the screen with the board marooned in the middle. */
@@ -333,4 +342,23 @@ button {
 :root[data-stacked="true"] #app [data-selectable] {
   width: 392px;
   justify-content: center;
+}
+
+/*
+ * Hold the board's three columns to the card width. Stacked, the cells were
+ * measuring 392 design pixels each — three times what they should — which is
+ * the "zoomed in" board: the grid was resolving to one wide column rather than
+ * three card-width ones.
+ */
+:root[data-stacked="true"] #app [class*="board"] {
+  grid-template-columns: repeat(3, 128px);
+}
+
+/*
+ * The logo across the middle is the centre cell's art blown up 2.75 times so it
+ * spills over the board. Fine where the board is half the screen; stacked it
+ * fills most of it and the logo ran off both edges.
+ */
+:root[data-stacked="true"] #app [data-position="1,1"]::before {
+  transform: scale(1.75);
 }

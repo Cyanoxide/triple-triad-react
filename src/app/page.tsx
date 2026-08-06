@@ -276,12 +276,18 @@ function GameContent() {
 
         /**
          * A phone held upright puts the hands above and below the board rather
-         * than either side of it, so the canvas only has to be as wide as the
-         * board — 535 rather than the 813 the three-across layout needs — and
-         * taller to hold the two rows. Worth about half again on the size of
-         * everything, which is most of what makes a phone hard to play on.
+         * than either side of it, so the canvas only has to hold the board
+         * rather than the 813 the three-across layout needs, and be taller for
+         * the two rows.
+         *
+         * 760 and not the board's own 535: the frame around it — the emblem
+         * behind, the corner pieces, the logo across the middle — is drawn
+         * overhanging the board on every side. Sized to the board alone that
+         * frame hung off both edges of the screen. This is the board plus the
+         * room its own decoration needs, and still worth about 20% on the size
+         * of everything.
          */
-        const MOBILE_PORTRAIT = [620, 900];
+        const MOBILE_PORTRAIT = [760, 900];
 
         // The layout viewport stays stable while pinch-zooming, unlike innerWidth/innerHeight
         const windowWidth = document.documentElement.clientWidth;
