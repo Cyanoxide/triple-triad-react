@@ -9,6 +9,7 @@ import playSound, { stopLoadedSound } from "../../utils/sounds";
 import { finishMultiplayer, multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
 import { sendRewards } from "../../utils/rooms";
 import textToSprite from "../../utils/textToSprite";
+import Ellipsis from "../Ellipsis/Ellipsis";
 import { useCursorNav, markKeyboardNavigation } from "../../hooks/useCursorNav";
 
 interface RewardSelectionDialogProps {
@@ -392,17 +393,19 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
      * only the beat before the automatic pick lands, so the line stays blank
      * rather than flashing a message that is gone again immediately.
      */
+    const waitingForPicks = (isSelectionConfirmed || winState === "red") && !selectedRewardName && awaitingOpponentPicks;
+
     const headingText = (isSelectionConfirmed || winState === "red")
         ? (selectedRewardName
             ? `${selectedRewardName} card ${infoMessage}`
-            : awaitingOpponentPicks ? "Waiting for your opponent to choose..." : "")
+            : awaitingOpponentPicks ? "Waiting for your opponent to choose" : "")
         : `Select ${winAmount} card(s) you want`;
 
     return (
         <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
             <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={labelDirection}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                <h3>{textToSprite(headingText)}</h3>
+                <h3>{textToSprite(headingText)}{waitingForPicks && <Ellipsis />}</h3>
             </div>
 
             <div className="flex justify-center mb-7">

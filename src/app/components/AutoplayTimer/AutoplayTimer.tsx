@@ -27,7 +27,7 @@ import styles from "./AutoplayTimer.module.scss";
 const PEEK_EVERY_MS = 30000;
 
 /** How long it stays up when it does */
-const PEEK_FOR_MS = 3000;
+const PEEK_FOR_MS = 4000;
 
 /** Seconds left at which it stops hiding and stays up for good */
 const URGENT_AT = 10;

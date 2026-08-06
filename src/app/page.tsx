@@ -193,13 +193,14 @@ function GameContent() {
   // it is, which is otherwise only visible as a cursor being enabled
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
-    const w = window as unknown as { __turn?: string | null; __mp?: unknown; __rules?: unknown; __placed?: number; __score?: unknown; __owners?: unknown };
+    const w = window as unknown as { __turn?: string | null; __mp?: unknown; __rules?: unknown; __placed?: number; __score?: unknown; __owners?: unknown; __hands?: unknown };
     w.__turn = turn;
     w.__mp = multiplayer.get();
     w.__rules = { rules, tradeRule };
     w.__placed = board.flat().filter(Boolean).length;
     w.__score = score;
     w.__owners = board.flat().map((cell) => cell?.currentOwner?.[0] ?? "-").join("");
+    w.__hands = { blue: currentPlayerHand.length, red: currentEnemyHand.length };
   });
 
   /**
@@ -419,7 +420,11 @@ function GameContent() {
       {/* Quitting a game in progress. Only shown during a multiplayer game —
           the single-player one already has its own menu — and placed beside the
           options bar so it needs no new furniture on the board. */}
-      {session && isGameActive && (
+      {/* Not once the rewards are being handed over: leaving at that point
+          would be a way to keep cards you had just lost. A refresh may still
+          manage it — the cards move on each client rather than on the server —
+          but there is no need to put a button on it. */}
+      {session && isGameActive && !isRewardSelectionOpen && (
         <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-10" data-app-scaled>
           <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("select", isSoundEnabled); setConfirmingQuit(true); }}>
@@ -437,14 +442,17 @@ function GameContent() {
         </div>
       )}
 
-      {/* The clock sits between the two corner boxes and level with them. The
-          wrapper is not scaled and the box inside it is, so the centring is
+      {/* Above the board rather than below it: the bottom edge already carries
+          Quit and the options bar, and three things along one edge is a lot to
+          take in at a glance.
+
+          The wrapper is not scaled and the box inside it is, so the centring is
           done against the real window while the box and its offset scale like
           everything else — a scaled `left: 50%` would be half of an already
           scaled width, which is not the middle of anything. */}
-      {session && isGameActive && (
-        <div className="absolute inset-x-0 bottom-0 flex justify-center z-10 pointer-events-none">
-          <div className="text-3xl mb-[1.5rem]" data-app-scaled>
+      {session && isGameActive && !isRewardSelectionOpen && (
+        <div className="absolute inset-x-0 top-0 flex justify-center z-10 pointer-events-none">
+          <div className="text-3xl mt-[1.5rem]" data-app-scaled>
             <AutoplayTimer />
           </div>
         </div>

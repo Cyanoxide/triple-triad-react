@@ -25,6 +25,9 @@ interface BoardProps {
 /** How long a player has before a move is made for them */
 const MOVE_TIMEOUT = 120000;
 
+/** The pause between the clock showing 0:00 and the card actually going down */
+const AUTOPLAY_GRACE_MS = 1000;
+
 /**
  * Development can shorten it with `window.__moveTimeout = 5000`, because
  * waiting two minutes to find out whether a two-minute timer works is not a
@@ -733,6 +736,11 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
         multiplayer.setAutoplayAt(Date.now() + wait);
 
+        /**
+         * A beat between the clock reaching zero and the card being played, so
+         * the move does not land in the same instant the number hits 0:00 —
+         * there is nothing to read in a countdown whose end you never see.
+         */
         const timeout = setTimeout(() => {
             multiplayer.setAutoplayAt(null);
             const empty: [number, number][] = [];
@@ -752,7 +760,7 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
             void sendMove(session.code, session.token, { cardId: card.cardId, row, col })
                 .catch(() => { });
-        }, wait);
+        }, wait + AUTOPLAY_GRACE_MS);
 
         return () => clearTimeout(timeout);
     }, [turn, session, winState, isGameActive, turnNumber, rules]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -818,7 +826,18 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         dispatch({ type: "SET_SCORE", payload: [redScore, blueScore] });
 
         setWinState([redScore, blueScore])
-    }, [board]);
+        /**
+         * Recomputed when a game starts as well as when the board changes.
+         *
+         * On `board` alone it was never recomputed at kickoff — the board does
+         * not change, it is nine empty cells before and after — so the score on
+         * screen was whatever card selection had left in the array. That screen
+         * used to add to it as you picked, one per card, straight into the
+         * state object: invisible at the time, since the score is hidden until
+         * a game is on, and then shown as the opening score. Those writes are
+         * gone and this no longer depends on them.
+         */
+    }, [board, isGameActive]);
 
     const [showStartingPlayerIndicator, setShowStartingPlayerIndicator] = useState(false);
 
