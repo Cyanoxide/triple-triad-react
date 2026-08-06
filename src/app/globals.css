@@ -16,9 +16,36 @@
 
 /* Clamp the document so layout overflow (a WebKit zoom artifact) can never
    grow the scrollable area and trigger mobile Safari's shrink-to-fit */
+/*
+ * **`dvh`, not `vh`.** `100vh` on a phone is the *large* viewport — the height
+ * the page would have if the browser's toolbar were hidden — so with the
+ * toolbar showing, the bottom of the layout sits underneath it. In landscape
+ * that is where the score is, and it was being clipped by what looks like a
+ * black bar along the bottom edge but is actually the browser's own furniture.
+ *
+ * `dvh` is the currently visible height, so the app lays itself out inside what
+ * can actually be seen. `scaleApp` reads `documentElement.clientHeight`, which
+ * follows this, so the scale comes out right without touching it.
+ *
+ * The plain `vh` line stays underneath as the fallback for anything without
+ * `dvh`; both are needed, in this order.
+ *
+ * **The background here is the other half of the black bar.** The viewport meta
+ * does not set `viewport-fit=cover`, so iOS insets the layout viewport out of
+ * the safe areas and fills the strip it leaves with the *canvas* colour. That
+ * colour propagates from whichever of html and body declares one, and only body
+ * did — `var(--background)`, which is `#0a0a0a` under a dark colour scheme. So
+ * the strip came out black, right where the score sits in landscape.
+ *
+ * Declaring it on html wins the propagation and makes that strip a colour off
+ * the texture instead. Sampled from the rendered page's own bottom edge, which
+ * is darker than the texture's average because of the vignette over it.
+ */
 html {
   overflow: hidden;
   height: 100%;
+  height: 100dvh;
+  background: #8b6230;
 }
 
 body {
@@ -31,6 +58,7 @@ body {
   overflow: hidden;
   display: flex;
   height: 100vh;
+  height: 100dvh;
 }
 
 /* No double-tap or pinch zoom; the app scales itself. Safari only honours
@@ -41,9 +69,15 @@ body * {
   touch-action: manipulation;
 }
 
+/*
+ * Fixed rather than absolute, so both of these cover what is on screen instead
+ * of covering the body box. Any mismatch between the two — and on a phone there
+ * usually is one — showed as a strip of bare page along an edge, which reads as
+ * a black bar because the body's own background is the dark scheme colour.
+ */
 body.crt-effect::after {
   content: '';
-  position: absolute;
+  position: fixed;
   top: 0px;
   left: 0px;
   right: 0px;
@@ -58,7 +92,7 @@ body.crt-effect::after {
 
 body::before {
   content: "";
-  position: absolute;
+  position: fixed;
   top: 0px;
   left: 0px;
   right: 0px;
@@ -140,6 +174,32 @@ button {
 /* The centre cell is the logo rather than part of the grid, so it stays */
 #app[data-screen="mode"] [data-position="1,1"]::before {
   opacity: 1;
+}
+
+/*
+ * On a phone the clock sits on the board's top edge, opposite the name of the
+ * card you are holding — that reads as one pair of labels on the board rather
+ * than as a bar floating at the top of the window.
+ *
+ * It is placed as the *mirror of that label*, not against the viewport. The
+ * name is `bottom: calc(50% - 245px)` inside the board's container, so 245
+ * design pixels above the middle is exactly opposite it, and the two overlap
+ * the board by the same amount at either end.
+ *
+ * The halves do different jobs and cannot be merged. The outer box is not
+ * scaled, so `top: 50%` is half the real window — and the board's middle is the
+ * window's middle in both orientations, which is what makes this work. The
+ * inner box is scaled, so its `-245px` is design pixels and tracks the board as
+ * everything grows and shrinks. Putting the offset on the outer box instead
+ * would leave it a fixed number of real pixels and it would drift off the board
+ * at every other size.
+ */
+:root[data-phone="true"] [data-timer-slot] {
+  top: 50%;
+}
+
+:root[data-phone="true"] [data-timer-slot] > [data-app-scaled] {
+  margin-top: -245px;
 }
 
 /* Pinned to the window rather than to the board, but scaled with it */
