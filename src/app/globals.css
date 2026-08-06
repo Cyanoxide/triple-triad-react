@@ -206,11 +206,11 @@ button {
  * is the board and gave the gap to the wrong side.
  */
 :root[data-stacked="true"] #app > .flex.h-full > *:nth-child(1) {
-  margin-bottom: 70px;
+  margin-bottom: 54px;
 }
 
 :root[data-stacked="true"] #app > .flex.h-full > *:nth-child(2) {
-  margin-top: 70px;
+  margin-top: 54px;
 }
 
 /*
@@ -244,30 +244,51 @@ button {
  * the only handle on it from here.
  */
 :root[data-stacked="true"] #app [data-selectable][data-player="red"] + [data-sprite] {
-  top: -80px;
+  top: -56px;
   bottom: auto;
 }
 
 :root[data-stacked="true"] #app [data-selectable][data-player="blue"] + [data-sprite] {
-  bottom: -80px;
+  bottom: -56px;
 }
 
 /*
- * The hand cursor hangs to the left of a card, which in a row puts it on top of
- * the card before it. Stacked, it sits outside the row on the side the board
- * is, so it points at the card from the space it is about to be played into.
+ * Level with the middle of the card it points at. Its offset is measured for a
+ * column, where the next card is below rather than beside it.
  */
 :root[data-stacked="true"] #app [data-selectable] > div[data-focused="true"] [data-player]::after {
-  left: 50%;
-  margin-left: -22px;
-  margin-top: 0;
+  top: 50%;
+  margin-top: -14px;
 }
 
-:root[data-stacked="true"] #app [data-selectable][data-player="red"] > div[data-focused="true"] [data-player]::after {
+/*
+ * A card that is being pointed at, or has been picked up, comes out from under
+ * its neighbours. The cards overlap by half their width, so without this the
+ * one you chose is the one you can see least of — and the cursor beside it
+ * disappears behind the card before it.
+ */
+:root[data-stacked="true"] #app [data-selectable] > div[data-focused="true"],
+:root[data-stacked="true"] #app [data-selectable] > div[data-selected="true"] {
+  z-index: 3;
+}
+
+/*
+ * Whose turn it is, pushed out to the edge of the screen: above the opponent's
+ * score at the top, below yours at the bottom, and flipped so it points into
+ * the board from either end. Allowed to run off a short screen — it is a
+ * marker, and the half of it that shows still reads.
+ */
+:root[data-stacked="true"] #app [data-type="turn-indicator"] {
   top: auto;
-  bottom: -34px;
 }
 
-:root[data-stacked="true"] #app [data-selectable][data-player="blue"] > div[data-focused="true"] [data-player]::after {
-  top: -34px;
+:root[data-stacked="true"] #app [data-player="red"] ~ [data-type="turn-indicator"],
+:root[data-stacked="true"] #app [data-type="turn-indicator"]:has(~ [data-player="red"]) {
+  top: -150px;
+}
+
+:root[data-stacked="true"] #app [data-type="turn-indicator"]:has(~ [data-player="blue"]) {
+  top: auto;
+  bottom: -150px;
+  scale: 1 -1;
 }
