@@ -29,19 +29,26 @@
      * sharing it put this box in the middle of the board instead of where its
      * wrapper asked for.
      */
-    &[data-dialog="quit"] {
+    /**
+     * Quit, and the clock along the bottom edge. Both are placed by their
+     * wrappers rather than centring themselves, and both match the height of
+     * the options bar opposite so the bottom of the screen reads as one row.
+     *
+     * The padding is symmetrical and the content centred in it: the text is
+     * sprite glyphs whose line box is taller than the glyphs themselves, which
+     * left the label sitting high and to the left of the middle.
+     */
+    &[data-dialog="quit"],
+    &[data-dialog="timer"] {
         position: static;
         translate: none;
         min-width: 0;
         width: max-content;
-        padding: 0.4rem 1.2rem 0.5rem;
-
-        // the clock above sets the width, so the button centres under it
-        button {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
+        height: 2.5rem;
+        padding: 0 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     &[data-dialog="options"] {

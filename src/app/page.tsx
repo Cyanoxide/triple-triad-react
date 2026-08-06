@@ -39,7 +39,6 @@ function GameContent() {
   }
 
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-  const [quitHovered, setQuitHovered] = useState(false);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
 
@@ -287,18 +286,22 @@ function GameContent() {
         modal.style.zoom = String(scale);
 
         /**
-         * The bars pinned to the bottom corners live outside #app, because they
+         * The bars pinned to the bottom edge live outside #app, because they
          * are pinned to the window rather than to the board. That put them
          * outside the zoom as well, so they kept their own size while
          * everything else grew and shrank around them.
          *
-         * Zoomed here rather than moved inside #app: #app is a centred column
+         * Scaled here rather than moved inside #app: #app is a centred column
          * narrower than the window, so moving them would drag them inwards to
-         * its edges. Their offsets are zoomed along with their size, so the
-         * gap to the corner scales like everything else.
+         * its edges. Their offsets scale along with their size, so the gap to
+         * the corner keeps pace too.
+         *
+         * Published as a custom property rather than written onto each element.
+         * Setting it directly only reached what was on screen when the viewport
+         * last changed, and the quit box and the clock appear when a game
+         * starts — long after that — so they were left at their natural size.
          */
-        document.querySelectorAll<HTMLElement>("[data-app-scaled]")
-          .forEach((el) => { el.style.zoom = String(scale); });
+        document.documentElement.style.setProperty("--app-scale", String(scale));
       }
 
       // iOS ignores user-scalable=no, so block pinch zoom; the app scales itself anyway
@@ -419,16 +422,7 @@ function GameContent() {
       {session && isGameActive && (
         <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-10" data-app-scaled>
           <SimpleDialog metaTitle={null} dialog="quit">
-            {/* Clock first: it is the thing being read, and Quit is the way
-                out from under it */}
-            <AutoplayTimer />
-            <button
-              className="relative"
-              data-focused={quitHovered}
-              onMouseEnter={() => setQuitHovered(true)}
-              onMouseLeave={() => setQuitHovered(false)}
-              onClick={() => { playSound("select", isSoundEnabled); setConfirmingQuit(true); }}
-            >
+            <button onClick={() => { playSound("select", isSoundEnabled); setConfirmingQuit(true); }}>
               {textToSprite("Quit")}
             </button>
           </SimpleDialog>
@@ -440,6 +434,19 @@ function GameContent() {
               handleDenial={() => { playSound("back", isSoundEnabled); setConfirmingQuit(false); }}
             />
           )}
+        </div>
+      )}
+
+      {/* The clock sits between the two corner boxes and level with them. The
+          wrapper is not scaled and the box inside it is, so the centring is
+          done against the real window while the box and its offset scale like
+          everything else — a scaled `left: 50%` would be half of an already
+          scaled width, which is not the middle of anything. */}
+      {session && isGameActive && (
+        <div className="absolute inset-x-0 bottom-0 flex justify-center z-10 pointer-events-none">
+          <div className="text-3xl mb-[1.5rem]" data-app-scaled>
+            <AutoplayTimer />
+          </div>
         </div>
       )}
 

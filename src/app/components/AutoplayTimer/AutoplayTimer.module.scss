@@ -1,16 +1,31 @@
 /**
- * Sits above the Quit button inside the same panel, separated by a rule, so the
- * two read as one deliberate box rather than a button with a number loose
- * underneath it.
+ * Its own box on the bottom edge, the same height as the quit box and the
+ * options bar either side of it, so the three read as one row of furniture.
  */
+/**
+ * Out of the way until it has something worth saying. Faded rather than
+ * unmounted, so it does not shift the row as it comes and goes.
+ */
+.wrap {
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+    pointer-events: none;
+
+    &[data-shown="true"] {
+        opacity: 0.65;
+    }
+
+    // The last stretch is the part that matters, so it stops being polite
+    &[data-urgent="true"] {
+        opacity: 1;
+    }
+}
+
 .timer {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1.6rem;
-    padding-bottom: 0.3rem;
-    margin-bottom: 0.35rem;
-    border-bottom: 2px solid #8b8e8d;
+    align-items: center;
+    justify-content: center;
+    gap: 1.4rem;
 }
 
 .label {
@@ -21,7 +36,6 @@
 .clock {
     display: flex;
 
-    // The last stretch reads as a warning rather than a decoration
     [data-urgent="true"] & {
         animation: pulse 1s steps(2, end) infinite;
     }

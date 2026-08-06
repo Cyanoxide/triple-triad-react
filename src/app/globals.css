@@ -141,3 +141,8 @@ button {
 #app[data-screen="mode"] [data-position="1,1"]::before {
   opacity: 1;
 }
+
+/* Pinned to the window rather than to the board, but scaled with it */
+[data-app-scaled] {
+  zoom: var(--app-scale, 1);
+}
