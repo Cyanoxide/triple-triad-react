@@ -11,7 +11,24 @@ import type { NextConfig } from "next";
  */
 const isDev = process.env.NODE_ENV === "development";
 
+/**
+ * A static export, for uploading to a plain PHP host that cannot run Node.
+ *
+ * Opt-in via the environment rather than always on: `next dev` and the normal
+ * build stay exactly as they were, and nothing here has to be undone to work
+ * on the app. `personal-branch` sets `output: export` unconditionally in its
+ * own config; this is the same thing behind a switch, so a test upload does
+ * not need that branch.
+ *
+ * `images.unoptimized` comes with it. The optimiser is a server that will not
+ * exist on the host, and an export refuses to build with it enabled.
+ */
+const staticExport = !!process.env.STATIC_EXPORT;
+
 const nextConfig: NextConfig = {
+  ...(staticExport
+    ? { output: "export" as const, images: { unoptimized: true } }
+    : {}),
   ...(isDev
     ? {
       async rewrites() {
