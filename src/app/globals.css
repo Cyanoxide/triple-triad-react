@@ -262,17 +262,6 @@ button {
 }
 
 /*
- * A card that is being pointed at, or has been picked up, comes out from under
- * its neighbours. The cards overlap by half their width, so without this the
- * one you chose is the one you can see least of — and the cursor beside it
- * disappears behind the card before it.
- */
-:root[data-stacked="true"] #app [data-selectable] > div[data-focused="true"],
-:root[data-stacked="true"] #app [data-selectable] > div[data-selected="true"] {
-  z-index: 3;
-}
-
-/*
  * Whose turn it is, pushed out to the edge of the screen: above the opponent's
  * score at the top, below yours at the bottom, and flipped so it points into
  * the board from either end. Allowed to run off a short screen — it is a
@@ -302,11 +291,12 @@ button {
   left: 50%;
 }
 
+/* Above the list, not below it, where it would sit on your own hand */
 :root[data-stacked="true"] #app [data-dialog="cardSelection"] [class*="cardSelectionPreview"] {
   left: 50%;
   translate: -50% 0;
-  bottom: auto;
-  top: calc(100% + 20px);
+  bottom: calc(100% + 20px);
+  top: auto;
 }
 
 /*
@@ -319,11 +309,28 @@ button {
 }
 
 /*
- * A raised card pushes the next one along rather than simply covering it, so
- * the one you have chosen is a card-shaped hole in the row instead of a card
- * lying on top of the others.
+ * The chosen card lifts where it stands rather than pushing the others along.
+ *
+ * Displacing its neighbours is the more obvious reading of "make room", but
+ * the room has to come from somewhere: the row grew by a card's width every
+ * time you touched one, and a hand that changes size as you look at it is the
+ * jank. Lifting is what a hand of cards does anyway — it comes forward, the
+ * others stay where they are — and it costs no layout at all.
  */
 :root[data-stacked="true"] #app [data-selectable] > div[data-focused="true"],
 :root[data-stacked="true"] #app [data-selectable] > div[data-selected="true"] {
-  margin-right: 62px;
+  z-index: 3;
+  scale: 1.07;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55));
+  transition: scale 120ms ease-out, filter 120ms ease-out;
+}
+
+/*
+ * The row is a fixed width — five cards at the overlap they sit at — so it does
+ * not grow as a hand is chosen or shrink as it is played out. The cards centre
+ * within it, and the row itself never moves.
+ */
+:root[data-stacked="true"] #app [data-selectable] {
+  width: 392px;
+  justify-content: center;
 }
