@@ -226,111 +226,50 @@ button {
 }
 
 /*
- * ---------------------------------------------------------------------------
- * The stacked hand's geometry.
- *
  * A fixed overlap, not a percentage. The column layout's -48% resolves against
  * the container's *width*, which was a stable 150px there; here the container
  * sizes to its contents, so a percentage of it feeds back into itself and the
  * two hands came out 640 and 130 design pixels wide from the same rule.
- *
- * Choosing a card opens the two gaps either side of it by `--open` and tightens
- * every other gap to pay for it, so the overlaps redistribute and **the hand
- * occupies exactly the same width whether or not anything is chosen**. That is
- * the point of doing it in `margin-left` rather than `translate`: the width is
- * constant by construction, and `justify-content: center` keeps the row centred
- * without anything having to be shifted back.
- *
- *   opened gaps  x  --open  =  remaining gaps  x  --tighten
- *
- * `--opened` is 2 for a card with neighbours either side and 1 at each end,
- * where there is only one gap to open. Both are counted rather than just the
- * covering one: only the cards to the right actually hide it, but moving one
- * side alone is what read as unintentional.
- *
- * **`--tighten` is the fixed end of that equation, not `--open`.** Every gap
- * that is not being opened gives up the same 22px whatever the hand is doing,
- * which is the even distribution; how far the chosen card opens is then just
- * whatever those gaps happened to raise. Fixing `--open` instead was tried and
- * puts the whole cost on however many gaps are left — with four cards and the
- * third one chosen there is exactly one, and it took a card down to a 26px
- * sliver. It also makes the degenerate hands fall out for free: three cards
- * with the middle one chosen has nothing left to tighten, so it raises nothing
- * and nothing moves.
- * ---------------------------------------------------------------------------
  */
-:root[data-stacked="true"] #app [data-selectable][data-player] {
-  --overlap: 62px;
-  --tighten: 0px;
-  --opened: 2;
-  --gaps: 4;
-  --open: calc(var(--tighten) * (var(--gaps) - var(--opened)) / var(--opened));
-}
-
-/* How many gaps there are to share the cost. Same specificity, so the last one
-   that matches wins — five cards leaves four gaps. */
-:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div:nth-child(2)) {
-  --gaps: 1;
-}
-
-:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div:nth-child(3)) {
-  --gaps: 2;
-}
-
-:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div:nth-child(4)) {
-  --gaps: 3;
-}
-
-:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div:nth-child(5)) {
-  --gaps: 4;
-}
-
-/*
- * 22px off every other gap, taking those cards from a 66px strip down to 44.
- *
- * It cannot be much more than this. The row holds five 128px cards in 392px, so
- * the resting strips are only 66px wide and there is very little slack to move
- * around: uncovering a card *completely* at a fixed width would mean 124px
- * overlaps everywhere else, leaving the other four as 4px slivers. With a full
- * hand this buys the chosen card 22px each side — about seven tenths of it
- * showing, against just over half at rest — and rather more than that once a
- * card or two has been played and its share of the raised space grows.
- */
-:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div[data-selected="true"]) {
-  --tighten: 22px;
-}
-
-/* An end card has a gap on one side only */
-:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div[data-selected="true"]:first-child),
-:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div[data-selected="true"]:last-child) {
-  --opened: 1;
-}
-
 :root[data-stacked="true"] #app [data-selectable][data-player] > div {
   margin-top: 0;
-  margin-left: calc(0px - var(--overlap) - var(--tighten));
-  transition: margin-left 140ms ease-out;
+  margin-left: -62px;
 }
 
-/* The gap before the chosen card, and the gap after it */
-:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"],
-:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] + div {
-  margin-left: calc(0px - var(--overlap) + var(--open));
-}
-
-/* Last, so that it also wins for a chosen first card: there is no gap in front
-   of the first card to open or close. */
 :root[data-stacked="true"] #app [data-selectable][data-player] > div:first-child {
   margin-left: 0;
 }
 
 /*
- * The chosen card does not move. Sideways it slid towards the board, which
- * reads as picking it out of the hand; upwards it just looked like the row had
- * come apart.
+ * Choosing a card slides it out of the stack, exactly as on desktop — turned
+ * through ninety degrees with the rest of the layout, so it goes towards the
+ * board rather than across to it. Up out of your own hand at the bottom, down
+ * out of the opponent's at the top.
+ *
+ * Nothing else moves. Two earlier attempts made the neighbours give way instead
+ * — first by sliding them aside, then by redistributing the overlap so the row
+ * kept its width — and both looked worse than the thing they replaced. The row
+ * holds five 128px cards in 392px, so there is barely any slack to move around,
+ * and every version of "make room" spent it somewhere that showed.
+ *
+ * **Short of the desktop slide, and deliberately.** Desktop moves the card half
+ * its own width; there are only 54 design pixels between the hand and the board
+ * here, and a card that carries on into the board reads as already played.
+ *
+ * `transform`, not `translate`, and `!important`: it is overriding the module's
+ * own `translateX(±50%)`, which is itself `!important`. Same property or they
+ * compose and the card goes diagonally.
  */
-:root[data-stacked="true"] #app [data-selectable][data-player] [data-selected="true"] {
-  transform: none !important;
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"] > div[data-selected="true"] {
+  transform: translateY(-32px) !important;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player="red"] > div[data-selected="true"] {
+  transform: translateY(32px) !important;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] {
+  transition: transform 140ms ease-out;
 }
 
 /*
@@ -405,18 +344,16 @@ button {
 }
 
 /*
- * The chosen card lifts as well as being uncovered. Lifting alone was tried
- * first and read as jank on a real phone: the card you touched stayed buried
- * under the two or three to its right, so the only feedback was a slight change
- * of size on something you could barely see. The parting is done by the overlap
- * rules further up.
+ * Above its neighbours, which still overlap it horizontally however far it has
+ * slid. Desktop needs no such thing: there the card leaves the stack sideways
+ * and clears them outright.
+ *
+ * No scale and no shadow. Both were tried as extra emphasis while the card was
+ * staying put, and with it moving they are just decoration desktop does not
+ * have.
  */
-:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-focused="true"],
 :root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] {
   z-index: 3;
-  scale: 1.07;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.55));
-  transition: scale 120ms ease-out, filter 120ms ease-out;
 }
 
 
