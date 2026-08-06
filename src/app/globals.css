@@ -226,16 +226,100 @@ button {
 }
 
 /*
+ * ---------------------------------------------------------------------------
+ * The stacked hand's geometry.
+ *
  * A fixed overlap, not a percentage. The column layout's -48% resolves against
  * the container's *width*, which was a stable 150px there; here the container
  * sizes to its contents, so a percentage of it feeds back into itself and the
  * two hands came out 640 and 130 design pixels wide from the same rule.
+ *
+ * Choosing a card opens the two gaps either side of it by `--open` and tightens
+ * every other gap to pay for it, so the overlaps redistribute and **the hand
+ * occupies exactly the same width whether or not anything is chosen**. That is
+ * the point of doing it in `margin-left` rather than `translate`: the width is
+ * constant by construction, and `justify-content: center` keeps the row centred
+ * without anything having to be shifted back.
+ *
+ *   opened gaps  x  --open  =  remaining gaps  x  --tighten
+ *
+ * `--opened` is 2 for a card with neighbours either side and 1 at each end,
+ * where there is only one gap to open. Both are counted rather than just the
+ * covering one: only the cards to the right actually hide it, but moving one
+ * side alone is what read as unintentional.
+ *
+ * **`--tighten` is the fixed end of that equation, not `--open`.** Every gap
+ * that is not being opened gives up the same 22px whatever the hand is doing,
+ * which is the even distribution; how far the chosen card opens is then just
+ * whatever those gaps happened to raise. Fixing `--open` instead was tried and
+ * puts the whole cost on however many gaps are left — with four cards and the
+ * third one chosen there is exactly one, and it took a card down to a 26px
+ * sliver. It also makes the degenerate hands fall out for free: three cards
+ * with the middle one chosen has nothing left to tighten, so it raises nothing
+ * and nothing moves.
+ * ---------------------------------------------------------------------------
  */
-:root[data-stacked="true"] #app [data-selectable][data-player] > div {
-  margin-top: 0;
-  margin-left: -62px;
+:root[data-stacked="true"] #app [data-selectable][data-player] {
+  --overlap: 62px;
+  --tighten: 0px;
+  --opened: 2;
+  --gaps: 4;
+  --open: calc(var(--tighten) * (var(--gaps) - var(--opened)) / var(--opened));
 }
 
+/* How many gaps there are to share the cost. Same specificity, so the last one
+   that matches wins — five cards leaves four gaps. */
+:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div:nth-child(2)) {
+  --gaps: 1;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div:nth-child(3)) {
+  --gaps: 2;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div:nth-child(4)) {
+  --gaps: 3;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div:nth-child(5)) {
+  --gaps: 4;
+}
+
+/*
+ * 22px off every other gap, taking those cards from a 66px strip down to 44.
+ *
+ * It cannot be much more than this. The row holds five 128px cards in 392px, so
+ * the resting strips are only 66px wide and there is very little slack to move
+ * around: uncovering a card *completely* at a fixed width would mean 124px
+ * overlaps everywhere else, leaving the other four as 4px slivers. With a full
+ * hand this buys the chosen card 22px each side — about seven tenths of it
+ * showing, against just over half at rest — and rather more than that once a
+ * card or two has been played and its share of the raised space grows.
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div[data-selected="true"]) {
+  --tighten: 22px;
+}
+
+/* An end card has a gap on one side only */
+:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div[data-selected="true"]:first-child),
+:root[data-stacked="true"] #app [data-selectable][data-player]:has(> div[data-selected="true"]:last-child) {
+  --opened: 1;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player] > div {
+  margin-top: 0;
+  margin-left: calc(0px - var(--overlap) - var(--tighten));
+  transition: margin-left 140ms ease-out;
+}
+
+/* The gap before the chosen card, and the gap after it */
+:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"],
+:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] + div {
+  margin-left: calc(0px - var(--overlap) + var(--open));
+}
+
+/* Last, so that it also wins for a chosen first card: there is no gap in front
+   of the first card to open or close. */
 :root[data-stacked="true"] #app [data-selectable][data-player] > div:first-child {
   margin-left: 0;
 }
@@ -321,20 +405,11 @@ button {
 }
 
 /*
- * The chosen card lifts, and the hand parts to uncover it.
- *
- * Lifting alone was tried first and read as jank on a real phone: the card you
- * touched was still buried under the two or three to its right, so the only
- * feedback was a slight change of size on something you could barely see.
- *
- * The cards to the *right* are the ones that cover it — each is dealt 62px over
- * its neighbour and, being later in the document, paints on top. So they are the
- * only ones that have to move, and 62px is exactly the amount that clears it.
- *
- * Moving them alone would lean the whole hand right, so the row slides back by
- * half as they go. Net: the hand spreads 31px each way around the card and stays
- * centred where it was. The row's own width never changes — nothing here is
- * layout, it is all `translate`.
+ * The chosen card lifts as well as being uncovered. Lifting alone was tried
+ * first and read as jank on a real phone: the card you touched stayed buried
+ * under the two or three to its right, so the only feedback was a slight change
+ * of size on something you could barely see. The parting is done by the overlap
+ * rules further up.
  */
 :root[data-stacked="true"] #app [data-selectable][data-player] > div[data-focused="true"],
 :root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] {
@@ -344,29 +419,6 @@ button {
   transition: scale 120ms ease-out, filter 120ms ease-out;
 }
 
-/*
- * Selection only, not `data-focused`. Focus is the keyboard cursor, and it
- * rests on the first card from the moment your turn starts whether or not you
- * have touched anything — a phone has no hover to move it. Spreading on focus
- * left the hand permanently apart, which is just a worse-looking stack.
- */
-:root[data-stacked="true"] #app [data-selectable][data-player="blue"] > div[data-selected="true"] ~ div {
-  translate: 62px 0;
-}
-
-/*
- * Only when something is actually being uncovered. The rightmost card has
- * nothing on top of it, so touching it must not shunt the hand sideways for no
- * reason — hence the `~ div`, "there is a card after the selected one".
- */
-:root[data-stacked="true"] #app [data-selectable][data-player="blue"]:has(> div[data-selected="true"] ~ div) {
-  translate: -31px 0;
-}
-
-:root[data-stacked="true"] #app [data-selectable][data-player="blue"],
-:root[data-stacked="true"] #app [data-selectable][data-player="blue"] > div {
-  transition: translate 140ms ease-out;
-}
 
 /*
  * The row is a fixed width — five cards at the overlap they sit at — so it does
