@@ -478,19 +478,19 @@ function GameContent() {
         </div>
       )}
 
-      {/* Above the board rather than below it: the bottom edge already carries
-          Quit and the options bar, and three things along one edge is a lot to
-          take in at a glance.
+      {/* The top right corner, laid out exactly like Quit and the options bar
+          below it — same 1.5rem inset, same `data-app-scaled` — so the three
+          read as the same kind of furniture pinned to the same margins.
 
-          The wrapper is not scaled and the box inside it is, so the centring is
-          done against the real window while the box and its offset scale like
-          everything else — a scaled `left: 50%` would be half of an already
-          scaled width, which is not the middle of anything. */}
+          Centred at the top was tried first, and so was sitting it on the
+          board's own top edge. Both need the offset worked out against
+          something that moves: the first wants an unscaled wrapper to centre
+          against the real window, the second wants the board's height in design
+          pixels. A corner needs neither. This is the pattern already proven by
+          the two boxes along the bottom. */}
       {session && isGameActive && !isRewardSelectionOpen && (
-        <div className="absolute inset-x-0 top-0 flex justify-center z-10 pointer-events-none">
-          <div className="text-3xl mt-[1.5rem]" data-app-scaled>
-            <AutoplayTimer />
-          </div>
+        <div className="absolute right-[1.5rem] top-[1.5rem] text-3xl z-10 pointer-events-none" data-app-scaled>
+          <AutoplayTimer />
         </div>
       )}
 
