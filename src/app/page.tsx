@@ -526,7 +526,12 @@ function GameContent() {
         </div>
       )}
 
-      <div className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-10 flex items-center" data-app-scaled>
+      {/* z-11 rather than z-10, so the bar stays reachable over the card
+          gallery's dim — the gallery is z-11 too, and this comes after #app in
+          the document, so an equal z-index leaves this one on top. The CRT
+          scanlines are also 11 and are `body::after`, later still, so they keep
+          their place over everything. */}
+      <div className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-[11] flex items-center" data-app-scaled>
         <SimpleDialog metaTitle={null} dialog="options" data-expanded={isOptionsOpen}>
           <div className="flex items-center h-full">
             <Image src="/assets/menu-expand.png?v=1" onClick={handleToggleOptions} onMouseEnter={() => optionsNav.actions.focusOption?.(0)} data-focused={optionsFocus === 0} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" />

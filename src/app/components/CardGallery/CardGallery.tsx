@@ -42,12 +42,23 @@ const CardGallery = () => {
 
     return (
         <div className={`${styles.cardGalleryContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`} onClick={handleDismissGallery}>
-            <div className="m-20 relative h-full flex flex-col justify-center" onClick={(e) => e.stopPropagation()}>
-                <div className="flex w-full gap-1 p-1">
+            {/*
+              * The stop-propagation sits on each *row*, not on this wrapper.
+              *
+              * This wrapper is `h-full` and centres its rows, so the dark bands
+              * above and below them are its own space — and with the guard up
+              * here every one of those clicks was swallowed. On a desktop it
+              * never showed: the wrapper is 840 wide in a 1440 window, so the
+              * band you actually aim at belongs to the overlay behind it. On a
+              * phone the wrapper is 372 of 390 and there is nothing else left
+              * to hit, so the gallery could not be dismissed at all.
+              */}
+            <div className="m-20 relative h-full flex flex-col justify-center">
+                <div className="flex w-full gap-1 p-1" onClick={(e) => e.stopPropagation()}>
                     <SimpleDialog className={styles.currentPageTitle} metaTitle={"help"}><p>{textToSprite(`${currentPageTitle}`)}</p></SimpleDialog>
                     <SimpleDialog className={styles.galleryTitle} metaTitle={null}><p className="flex">{textToSprite("Card")}<span className={(cardTotals.total === 110) ? "" : "hidden"}>⭐️</span></p></SimpleDialog>
                 </div>
-                <div className="flex justify-between gap-1 my-1">
+                <div className="flex justify-between gap-1 my-1" onClick={(e) => e.stopPropagation()}>
                     <div className="w-1/2 ml-4">
                         <CardSelectionDialog showPreview={false} showMissingCards={true} modifier="card-gallery" pagination="cardGallery" onCancel={() => { playSound("back", isSoundEnabled); handleDismissGallery(); }} />
                     </div>
@@ -71,7 +82,7 @@ const CardGallery = () => {
                         </SimpleDialog>
                     </div>
                 </div >
-                <div className="flex w-full p-1">
+                <div className="flex w-full p-1" onClick={(e) => e.stopPropagation()}>
                     <SimpleDialog className={styles.selectedCardMeta} metaTitle={null}>
                         <div className="flex justify-between">
                             <p>{previewCardData && (previewCardLocation) ? textToSprite("AREA") : textToSprite(titleType.toUpperCase())}</p>
