@@ -5,6 +5,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* How soft the CRT filter makes everything it touches. One place to change
+     it: the panels, the title screen's links and the cards all read it, and it
+     only ever applies under `body.crt-effect`. */
+  --crt-blur: 0.4px;
 }
 
 @media (prefers-color-scheme: dark) {

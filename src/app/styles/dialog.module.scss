@@ -29,6 +29,20 @@
 
 .dialog {
     animation: boxOpen 200ms cubic-bezier(0.2, 0.9, 0.3, 1) 120ms both;
+
+    /**
+     * Softened under the CRT filter, along with the cards and the title
+     * screen's links.
+     *
+     * Written here rather than in `globals.css` because every panel in the game
+     * `@extend`s this class, and an extend carries *every* rule the class
+     * appears in — so this one declaration reaches all of them. Their real class
+     * names are module hashes and cannot be named from a global stylesheet.
+     */
+    :global(body.crt-effect) & {
+        filter: blur(var(--crt-blur));
+    }
+
     background: linear-gradient(125deg, #434546, #696c69);
     box-shadow: inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
     outline: 2px solid #000;

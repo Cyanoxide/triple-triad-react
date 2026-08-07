@@ -7,6 +7,7 @@
     transform-style: preserve-3d;
     transition: transform 0.2s;
 
+
     &[data-player=red] {
         background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
     }
@@ -179,4 +180,34 @@ p {
         background-position-x: -197px;
     }
 }
+}
+
+/**
+ * The CRT filter's softening, on the cards.
+ *
+ * **`filter` forces a `preserve-3d` element to flatten**, and a card is turned
+ * rather than swapped: `.card--hidden` is `rotateY(180deg)` and the back you
+ * then see is the front's own `::before`, culled by `backface-visibility`. Put
+ * the blur on `.card` itself and that context collapses — measured in Chromium,
+ * a face-down card stopped drawing its back entirely and showed the front, which
+ * is the opponent's hand given away.
+ *
+ * So the two states are softened separately, and neither one flattens anything
+ * that is doing work:
+ *
+ * - a card that is *not* face down has no culling left to do — what you see is
+ *   the front, and the whole card can take the filter;
+ * - a card that *is* face down keeps its 3D intact and the blur goes on the back
+ *   itself, which is the only thing being drawn.
+ *
+ * Do not simplify this back into one rule on `.card`.
+ */
+:global(body.crt-effect) {
+    .card:not(.card--hidden) {
+        filter: blur(var(--crt-blur));
+    }
+
+    .card--hidden .card__front::before {
+        filter: blur(var(--crt-blur));
+    }
 }
