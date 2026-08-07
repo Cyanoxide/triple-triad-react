@@ -4,8 +4,37 @@
     border: 1px solid #000;
     width: 128px; //256px
     height: 163px; //326px
+    position: relative;
     transform-style: preserve-3d;
     transition: transform 0.2s;
+
+    /**
+     * The back of the card, and a **sibling** of the front rather than a child
+     * of it.
+     *
+     * The two faces have to be siblings inside this element's 3D context, so
+     * that each can be softened on its own under the CRT filter. `filter`
+     * forces a `preserve-3d` element to flatten, so a filter anywhere on the
+     * way down — on `.card`, or on `.card__front` while the back lived inside
+     * it — collapses the context the culling depends on, and the card stops
+     * being able to turn: the spinning preview showed a mirrored *front*
+     * instead of its back, and a face-down card gave its front away.
+     *
+     * Here nothing filtered has 3D children, so nothing that matters flattens.
+     */
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        backface-visibility: hidden;
+        background-image: url("/assets/cardback.png");
+        transform: rotateY(180deg);
+        background-size: cover;
+        z-index: 1;
+    }
 
 
     &[data-player=red] {
@@ -22,21 +51,6 @@
         height: 100%;
         background-size: 1568px 1498px;
         backface-visibility: hidden;
-        transform-style: preserve-3d;
-
-        &::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            backface-visibility: hidden;
-            transform-style: preserve-3d;
-            background-image: url("/assets/cardback.png");
-            transform: rotateY(180deg);
-            background-size: cover;
-        }
 
         $startX: 5;
         $startY: 5;
@@ -183,31 +197,16 @@ p {
 }
 
 /**
- * The CRT filter's softening, on the cards.
+ * The CRT filter's softening, on both faces of the card.
  *
- * **`filter` forces a `preserve-3d` element to flatten**, and a card is turned
- * rather than swapped: `.card--hidden` is `rotateY(180deg)` and the back you
- * then see is the front's own `::before`, culled by `backface-visibility`. Put
- * the blur on `.card` itself and that context collapses — measured in Chromium,
- * a face-down card stopped drawing its back entirely and showed the front, which
- * is the opponent's hand given away.
- *
- * So the two states are softened separately, and neither one flattens anything
- * that is doing work:
- *
- * - a card that is *not* face down has no culling left to do — what you see is
- *   the front, and the whole card can take the filter;
- * - a card that *is* face down keeps its 3D intact and the blur goes on the back
- *   itself, which is the only thing being drawn.
- *
- * Do not simplify this back into one rule on `.card`.
+ * On the two faces rather than on `.card`, because `filter` forces a
+ * `preserve-3d` element to flatten and `.card` is the context that lets the
+ * card turn at all. Neither of these has 3D children, so neither flattening
+ * costs anything.
  */
 :global(body.crt-effect) {
-    .card:not(.card--hidden) {
-        filter: blur(var(--crt-blur));
-    }
-
-    .card--hidden .card__front::before {
+    .card::before,
+    .card__front {
         filter: blur(var(--crt-blur));
     }
 }

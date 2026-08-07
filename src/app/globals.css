@@ -8,7 +8,7 @@
   /* How soft the CRT filter makes everything it touches. One place to change
      it: the panels, the title screen's links and the cards all read it, and it
      only ever applies under `body.crt-effect`. */
-  --crt-blur: 0.4px;
+  --crt-blur: 0.3px;
 }
 
 @media (prefers-color-scheme: dark) {
