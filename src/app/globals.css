@@ -16,9 +16,28 @@
 
 /* Clamp the document so layout overflow (a WebKit zoom artifact) can never
    grow the scrollable area and trigger mobile Safari's shrink-to-fit */
+/*
+ * **The background here is a diagnostic as much as a fix**, for the strip along
+ * the bottom edge on a phone. `height: 100%` on the body turned it from black
+ * to grey, which says the black *was* the page — body's `var(--background)`
+ * under a dark scheme — and that what is left is something else.
+ *
+ * A background on the root element is the next thing to rule out. The root's
+ * background propagates to the canvas, which is what paints any region of the
+ * viewport no box reaches; only body declared one before, so body's colour was
+ * doing that job. If the strip turns this parchment colour, it was the canvas
+ * and this is the fix. **If it stays grey it is the browser's own furniture and
+ * no stylesheet can reach it** — which is worth knowing, because the only lever
+ * left after that is `viewport-fit=cover` plus `env(safe-area-inset-*)` padding
+ * on every edge, and that is a much bigger change than the problem.
+ *
+ * The colour is sampled from the rendered page's own bottom edge, which is
+ * darker than the texture's average because of the vignette drawn over it.
+ */
 html {
   overflow: hidden;
   height: 100%;
+  background: #8b6230;
 }
 
 body {

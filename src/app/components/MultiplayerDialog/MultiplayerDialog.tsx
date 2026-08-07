@@ -30,7 +30,16 @@ import styles from "./MultiplayerDialog.module.scss";
  * these is a rule the game already understands, except autoplay, which is a
  * multiplayer courtesy rather than an FF7 rule.
  */
-const SELECTABLE_RULES = ["open", "same", "plus", "sameWall", "elemental", "random", "allCards", "suddenDeath", "autoplay"] as const;
+const SELECTABLE_RULES = ["open", "same", "plus", "sameWall", "elemental", "random", "suddenDeath", "autoplay"] as const;
+
+/**
+ * Set apart from the grid above, on its own centred line between two rules.
+ *
+ * It is not another rule about how the game plays — it changes which cards you
+ * may bring at all, and it takes the trade rule away with it. Sitting eighth in
+ * a two-column list of toggles, it read as one more of the same.
+ */
+const DECK_RULES = ["allCards"] as const;
 const TRADE_RULES = ["none", "one", "diff", "direct", "all"] as const;
 
 /** On unless the host turns it off, so a game cannot stall on someone who left */
@@ -143,6 +152,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
         screen === "rules" ? [
             ...Array.from({ length: Math.ceil(SELECTABLE_RULES.length / 2) }, (_, row) =>
                 SELECTABLE_RULES.slice(row * 2, row * 2 + 2).map((rule) => `rule:${rule}`)),
+            DECK_RULES.map((rule) => `rule:${rule}`),
             TRADE_RULES.map((rule) => `trade:${rule}`),
             ["confirmOpen", "back"],
         ]
@@ -389,6 +399,26 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
                 <p className={styles.label}>{textToSprite("Game rules")}</p>
                 <ul className={styles.ruleList}>
                     {SELECTABLE_RULES.map((rule) => (
+                        <li key={rule}>
+                            <button
+                                className={styles.ruleToggle}
+                                data-focused={selected === `rule:${rule}`}
+                                onMouseEnter={() => moveCursor(`rule:${rule}`)}
+                                onClick={() => toggleRule(rule)}
+                            >
+                                <span>{textToSprite(rulesList.rules[rule as keyof typeof rulesList.rules] ?? rule)}</span>
+                                <span data-on={chosenRules.includes(rule)} className={styles.toggleState}>
+                                    {textToSprite(chosenRules.includes(rule) ? "On" : "Off")}
+                                </span>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+
+                <div className={styles.divider} />
+
+                <ul className={styles.deckRuleList}>
+                    {DECK_RULES.map((rule) => (
                         <li key={rule}>
                             <button
                                 className={styles.ruleToggle}

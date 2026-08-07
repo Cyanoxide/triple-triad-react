@@ -217,6 +217,33 @@
     gap: 1.2rem;
 }
 
+/**
+ * The rule that gets a section to itself, centred between two dividers.
+ *
+ * `width: auto` on the toggle, against the grid's `width: 100%`: stretched to
+ * the panel it would push its On/Off out to the right edge and the pair would
+ * not read as centred however the list around it was aligned. Sized to its own
+ * contents, the label and the state stay together and the pair centres.
+ */
+.deckRuleList {
+    display: flex;
+    justify-content: center;
+
+    .ruleToggle {
+        width: auto;
+    }
+}
+
+.deckRuleList button.ruleToggle[data-focused="true"]::after {
+    // Matching the grid's cursor rather than the shared one — same reasoning,
+    // and the same three-classes-plus-an-element needed to beat it
+    left: -52px;
+    width: 45px;
+    height: 28px;
+    top: 50%;
+    margin-top: -14px;
+}
+
 // Off is dimmed rather than hidden, so the whole rule set stays readable at once
 .toggleState {
     opacity: 0.4;
