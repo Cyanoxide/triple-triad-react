@@ -16,6 +16,9 @@
 # next.js
 /.next/
 /out/
+# The export, zipped for upload. Rebuilt on every deploy and never belongs in
+# git — it was tracked until 2026-08-07 and is 10MB a copy.
+/out.zip
 
 # production
 /build
