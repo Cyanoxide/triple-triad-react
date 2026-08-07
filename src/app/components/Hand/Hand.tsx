@@ -13,7 +13,7 @@ interface HandProps {
 }
 
 const Hand: React.FC<HandProps> = ({ className, player }) => {
-    const { currentPlayerHand, currentEnemyHand, currentPlayerCards, turn, turnNumber, selectedCardId, score, isMenuOpen, isCardSelectionOpen, isGameActive, isSoundEnabled, dispatch } = useGameContext();
+    const { currentPlayerHand, currentEnemyHand, currentPlayerCards, turn, turnNumber, selectedCardId, score, isMenuOpen, isCardSelectionOpen, isGameActive, isSoundEnabled, rules, dispatch } = useGameContext();
     const cards = (player === "red") ? currentEnemyHand : currentPlayerHand;
     const handFocus = useSyncExternalStore(gameNav.subscribe, gameNav.getFocus, () => null);
 
@@ -37,7 +37,10 @@ const Hand: React.FC<HandProps> = ({ className, player }) => {
 
             playSound("back", isSoundEnabled);
             dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: remaining });
-            dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: returned });
+            // Under All Cards the pool is worked out from the hand, so taking a
+            // card back restores it by itself. Crediting the collection too
+            // would hand you a card you do not own.
+            if (!rules?.includes("allCards")) dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: returned });
             return;
         }
 

@@ -253,6 +253,20 @@
     &[data-on="true"] > * {
         opacity: 1;
     }
+
+    /**
+     * All Cards pins this row to "None", so the row is shown decided rather
+     * than hidden — you can see what the rule did instead of the choice
+     * vanishing. The one that is on stays legible; the rest go further down
+     * than the ordinary unselected 0.4 so the row reads as settled.
+     */
+    &[data-locked] > * {
+        opacity: 0.18;
+    }
+
+    &[data-locked][data-on="true"] > * {
+        opacity: 0.75;
+    }
 }
 
 /**

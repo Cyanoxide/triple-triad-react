@@ -3,6 +3,7 @@
         "open": "Open",
         "elemental": "Elemental",
         "random": "Random",
+        "allCards": "All Cards",
         "same": "Same",
         "plus": "Plus",
         "suddenDeath": "Sudden Death",
@@ -10,6 +11,7 @@
         "autoplay": "Auto Play"
     },
     "tradeRules": {
+        "none": "None",
         "one": "One",
         "diff": "Diff.",
         "direct": "Direct",

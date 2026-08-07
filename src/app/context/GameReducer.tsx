@@ -54,10 +54,32 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             return { ...state, currentPages: action.payload };
         case "SET_SLIDE_DIRECTION":
             return { ...state, slideDirection: action.payload };
-        case "SET_RULES":
-            return { ...state, rules: action.payload };
+        /**
+         * "All Cards" and a trade rule cannot both be on.
+         *
+         * All Cards lets you field anything in the game rather than only what
+         * you own, so any trade rule alongside it is a route for cards you do
+         * not have to end up in your collection — play a multiplayer game with
+         * All Cards, take the winnings home, and single player has been handed
+         * a deck it never earned. Nothing here is anti-cheat in the serious
+         * sense; both clients are trusted. It is the one combination that
+         * quietly breaks the single player game, so it is not offered.
+         *
+         * Enforced on the reducer rather than on the pickers, because the rules
+         * arrive from four directions — the enemy's rule set, the multiplayer
+         * host, the room's own copy applied on the guest, and the preview
+         * helper — and this is the one place all four pass through.
+         */
+        case "SET_RULES": {
+            const rules = action.payload;
+            const forcesNoTrade = !!rules?.includes("allCards");
+            return { ...state, rules, tradeRule: forcesNoTrade ? "none" : state.tradeRule };
+        }
         case "SET_TRADE_RULE":
-            return { ...state, tradeRule: action.payload };
+            return {
+                ...state,
+                tradeRule: state.rules?.includes("allCards") ? "none" : action.payload,
+            };
         case "SET_ELEMENTS":
             return { ...state, elements: action.payload };
         case "SET_IS_CRT_EFFECT_ACTIVE":

@@ -14,7 +14,7 @@ interface WinDialogProps {
 }
 
 const WinDialog: React.FC<WinDialogProps> = ({ victorySound, bgm }) => {
-    const { winState, playerCards, currentEnemyHand, currentPlayerHand, isSoundEnabled, board, rules, score, dispatch } = useGameContext();
+    const { winState, playerCards, currentEnemyHand, currentPlayerHand, isSoundEnabled, board, rules, tradeRule, score, dispatch } = useGameContext();
     const { session } = useMultiplayer();
     const playerCardsCopy = { ...playerCards };
 
@@ -41,6 +41,27 @@ const WinDialog: React.FC<WinDialogProps> = ({ victorySound, bgm }) => {
                     const winner = winState === "blue" ? "host" : "guest";
                     void reportResult(session.code, session.token, winner, score).catch(() => { });
                 }
+
+                /**
+                 * Nothing changes hands under the "None" trade rule, so there is
+                 * no reward screen to show. It has to be skipped rather than
+                 * shown empty: that screen closes itself once it has finished
+                 * handing cards over, and with none to hand over it would sit
+                 * there for good with no way out but a refresh.
+                 *
+                 * The result is still reported above — the room wants to know
+                 * who won whether or not anything was won.
+                 */
+                if (tradeRule === "none") {
+                    if (session) {
+                        void finishMultiplayer(winState === "blue" ? "You won that game." : "You lost that game.");
+                        return;
+                    }
+                    dispatch({ type: "RESET_GAME" });
+                    dispatch({ type: "SET_PLAYER_CARDS", payload: playerCardsCopy });
+                    return;
+                }
+
                 dispatch({ type: "SET_IS_REWARD_SELECTION_OPEN", payload: true });
             } else {
                 /**

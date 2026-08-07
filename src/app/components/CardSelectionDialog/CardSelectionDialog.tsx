@@ -35,7 +35,29 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
     const allCards: Record<number, number> = Object.fromEntries(
         cardList.map(card => [card.id, 0])
     );
-    const cards: Record<number, number> = { ...currentPlayerCards };
+
+    /**
+     * The "All Cards" rule opens the whole game up: you field anything, not
+     * only what you own.
+     *
+     * The pool is derived from the hand rather than kept in `currentPlayerCards`
+     * and decremented like a real collection. Your collection has nothing to do
+     * with this game, and writing a pretend one into state would then have to be
+     * unwritten — `handleDenial` and the hand's own "take a card back" both put
+     * cards *back* into it. One of everything, minus what you are already
+     * holding, is the same rule stated once and needs no undoing.
+     *
+     * One of each rather than unlimited: five copies of the same card is not a
+     * hand, it is a bug report.
+     */
+    const allCardsRule = !!rules?.includes("allCards") && !isCardGalleryOpen;
+
+    const cards: Record<number, number> = allCardsRule
+        ? Object.fromEntries(cardList.map((card) => [
+            card.id,
+            currentPlayerHand.some((held) => held.cardId === card.id) ? 0 : 1,
+        ]))
+        : { ...currentPlayerCards };
 
     if (showMissingCards) {
         for (const id of Object.keys(allCards)) {
@@ -103,7 +125,10 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             return true;
         }
 
-        const enemyCards = setAiPlayerCards(enemyId, lostCards, cards);
+        // The real collection, not the pool: this decides whether the enemy
+        // offers its rare card, and the answer is about what you own rather
+        // than what this game happens to let you field
+        const enemyCards = setAiPlayerCards(enemyId, lostCards, allCardsRule ? playerCards : cards);
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
         dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
         dispatch({ type: "SET_PLAYER_HAND", payload: hand });
@@ -128,12 +153,17 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         }
 
         dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: hand });
-        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
+        // Under All Cards the pool is worked out from the hand, so there is
+        // nothing to store — and storing it would overwrite the real collection
+        // this game is deliberately ignoring.
+        if (!allCardsRule) dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
     }
 
     const setCardPreview = (id: number) => {
-        const previewValue = !(Object.keys(playerCards).find(cardId => cardId === String(id))) ? null : id;
-        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: previewValue });
+        // Ownership is the wrong question under All Cards — every card in the
+        // list is yours to pick, so every card in the list previews
+        const owned = allCardsRule || !!Object.keys(playerCards).find(cardId => cardId === String(id));
+        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: owned ? id : null });
     };
 
     const handleConfirmation = () => {
@@ -213,7 +243,10 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                 if (removed) newCards[removed.cardId] = (newCards[removed.cardId] ?? 0) + 1;
                 playSound("back", isSoundEnabled);
                 dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: newHand });
-                dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: newCards });
+                // Putting a card back is the hand shrinking, and under All Cards
+                // the pool follows the hand on its own. Handing it to the
+                // collection as well would credit you a card you do not own.
+                if (!allCardsRule) dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: newCards });
                 return;
             }
             playSound("back", isSoundEnabled);
@@ -248,7 +281,11 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             onClick={() => handleCardSelection(item.id, quantity)}
             onMouseEnter={() => focus({ group: "list", index: pageIndex })}
             data-focused={isFocused("list", pageIndex) && (isGalleryInstance || currentPlayerHand.length < 5)}
-            className={`${styles.cardListItem} flex justify-between ${!(Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "opacity-0" : quantity ? "cursor-pointer" : "opacity-50"}`}
+            /* Ownership decides whether a row is drawn at all — the gallery
+               lists every card in the game and hides the ones you have never
+               held. Under All Cards that is the wrong question and would blank
+               almost the whole list, so the pool answers it instead. */
+            className={`${styles.cardListItem} flex justify-between ${!(allCardsRule || Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "opacity-0" : quantity ? "cursor-pointer" : "opacity-50"}`}
             data-slide-direction={(slideDirection && slideDirection[0] === pagination) ? slideDirection[1] : null}
             style={isCardGalleryOpen ? { zoom: 1.27 } : undefined}
         >

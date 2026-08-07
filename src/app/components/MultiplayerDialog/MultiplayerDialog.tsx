@@ -30,8 +30,8 @@ import styles from "./MultiplayerDialog.module.scss";
  * these is a rule the game already understands, except autoplay, which is a
  * multiplayer courtesy rather than an FF7 rule.
  */
-const SELECTABLE_RULES = ["open", "same", "plus", "sameWall", "elemental", "random", "suddenDeath", "autoplay"] as const;
-const TRADE_RULES = ["one", "diff", "direct", "all"] as const;
+const SELECTABLE_RULES = ["open", "same", "plus", "sameWall", "elemental", "random", "allCards", "suddenDeath", "autoplay"] as const;
+const TRADE_RULES = ["none", "one", "diff", "direct", "all"] as const;
 
 /** On unless the host turns it off, so a game cannot stall on someone who left */
 const DEFAULT_RULES = ["open", "autoplay"];
@@ -96,7 +96,17 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
      * one press rather than a hunt. It does not submit by itself; a typo in the
      * last character would be sent before it could be corrected.
      */
+    /**
+     * All Cards pins the trade rule to "None" — see the reducer for why. The
+     * row stays on screen rather than disappearing, so it is visible *that* the
+     * choice has been made for you rather than the option quietly vanishing,
+     * but it does not answer to a press.
+     */
     const chooseTrade = (rule: string) => {
+        if (tradeLocked) {
+            playSound("error", isSoundEnabled);
+            return;
+        }
         playSound("select", isSoundEnabled);
         setChosenTrade(rule);
     };
@@ -189,6 +199,18 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
         setChosenRules((current) =>
             current.includes(rule) ? current.filter((name) => name !== rule) : [...current, rule]);
     };
+
+    const tradeLocked = chosenRules.includes("allCards");
+
+    /**
+     * Turning All Cards on takes the trade rule with it. The offer sent to the
+     * room is built from `chosenTrade`, so it is not enough to grey the row
+     * out — the value itself has to move, or a host who picked "All" and then
+     * turned All Cards on would send a combination the guest is then shown.
+     */
+    useEffect(() => {
+        if (tradeLocked && chosenTrade !== "none") setChosenTrade("none");
+    }, [tradeLocked, chosenTrade]);
 
     const error = null;
 
@@ -385,13 +407,14 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
 
                 <div className={styles.divider} />
 
-                <p className={styles.label}>{textToSprite("Trade rule")}</p>
+                <p className={styles.label}>{textToSprite(tradeLocked ? "Trade rule (All Cards)" : "Trade rule")}</p>
                 <div className={styles.tradeRow}>
                     {TRADE_RULES.map((rule) => (
                         <button
                             key={rule}
                             className={styles.tradeOption}
                             data-on={chosenTrade === rule}
+                            data-locked={tradeLocked || undefined}
                             data-focused={selected === `trade:${rule}`}
                             onMouseEnter={() => moveCursor(`trade:${rule}`)}
                             onClick={() => chooseTrade(rule)}
