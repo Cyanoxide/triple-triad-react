@@ -413,6 +413,24 @@ button {
 }
 
 /*
+ * The card gallery gets nearly the whole screen on a phone.
+ *
+ * It is two halves side by side, and each is `w-1/2` — which a flex item is
+ * free to overrun, because its `min-width` is `auto` and sprite text does not
+ * wrap. Inset by the desktop's 5rem on each side there is not enough width left
+ * for the card names, so the list pushed past its half and squashed the panel
+ * beside it, **by a different amount on each page**, since each page's longest
+ * name differs. That is the width jumping about as you turn the page.
+ *
+ * Giving it the room back is the fix rather than letting the halves shrink:
+ * they cannot shrink, because there is nothing inside them that can.
+ */
+:root[data-phone="true"] [class*="cardGalleryContainer"] > div {
+  width: calc(100% - 2rem);
+  margin: 1rem;
+}
+
+/*
  * Card selection sits left of centre to leave room for the preview card beside
  * it. There is no room beside it on a phone held upright, so it centres and the
  * preview goes underneath.

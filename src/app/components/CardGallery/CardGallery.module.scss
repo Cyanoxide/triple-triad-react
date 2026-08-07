@@ -55,4 +55,15 @@
     position: relative;
     min-width: 0;
     width: 100%;
+    /**
+     * Fill whatever the card list leaves. The right-hand column is stretched to
+     * the list's height, but its two panels are sized by their contents, so any
+     * difference was left as bare space under this one. On a desktop the two
+     * happened to add up and it never showed; at a phone's size they do not.
+     *
+     * On the last panel rather than the first, so the space goes where there is
+     * something to spread into — the five rows inside are already
+     * `justify-between`.
+     */
+    flex: 1;
 }
