@@ -132,6 +132,18 @@ p {
     top: 8px;
     right: 7px;
     image-rendering: pixelated;
+    /**
+     * Face down means face down. A hidden card is the whole card turned a half
+     * turn — `.card--hidden` is `rotateY(180deg)` — and the back you then see is
+     * the front's own `::before`. Everything drawn on the front has to be told
+     * to disappear with it, or it carries on facing you and floats over the
+     * card back: the opponent's element was showing through, which tells you
+     * something about a card you are not supposed to be able to see.
+     *
+     * `CardValues` has carried this from the start, which is why the numbers
+     * were never the giveaway. This was the one thing on the front without it.
+     */
+    backface-visibility: hidden;
 
     &[data-sprite="thunder"] {
         background-position-x: 0;
