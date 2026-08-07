@@ -456,7 +456,7 @@ const MultiplayerDialog: React.FC<Props> = ({ onClose, onExit = onClose }) => {
 
                 <div className={styles.row}>
                     <button {...pointer("confirmOpen")} onClick={handleHost} disabled={busy}>
-                        {textToSprite("Open Game")}
+                        {textToSprite("Start")}
                     </button>
                     <button {...pointer("back")} onClick={() => { playSound("back", isSoundEnabled); setChoosing(false); }} disabled={busy}>
                         {textToSprite("Back")}
