@@ -232,10 +232,42 @@ function GameContent() {
     playSound("spin", isSoundEnabled);
   }, [room?.phase]);
 
+  /**
+   * The background music, and the one thing that must never play over the
+   * victory fanfare.
+   *
+   * Normally the reward screen covers this: it holds the end of the game for as
+   * long as the cards take to change hands, and stops both tracks itself on the
+   * way out. **With no reward screen there is nothing in between.** `WinDialog`
+   * resets the game the moment the board is done — under the "None" trade rule
+   * there is nothing to award — `winState` goes back to null, and this effect
+   * used to start the music straight over the top of the fanfare.
+   *
+   * So it waits for the fanfare to finish and comes in after it, which is the
+   * order it has always had; there was simply always a screen doing the waiting
+   * before.
+   */
   useEffect(() => {
     if (winState) return;
+
+    const victory = victorySoundRef.current;
+
+    // A new game has begun. The last one's fanfare has had its moment, and
+    // leaving it running would trail it over the opening of this one.
+    if (isGameActive) {
+      stopLoadedSound(victory);
+      playLoadedSound(bgmRef.current, isSoundEnabled, true);
+      return;
+    }
+
+    if (victory && !victory.paused) {
+      const resume = () => playLoadedSound(bgmRef.current, isSoundEnabled, true);
+      victory.addEventListener("ended", resume, { once: true });
+      return () => victory.removeEventListener("ended", resume);
+    }
+
     playLoadedSound(bgmRef.current, isSoundEnabled, true);
-  }, [isSoundEnabled, isGameActive])
+  }, [isSoundEnabled, isGameActive, winState])
 
 
   useEffect(() => {
