@@ -38,6 +38,21 @@ export default function RootLayout({
           */}
         <link rel="preload" as="image" href="/assets/cardback.png"></link>
         {/*
+          * The reward screen's backdrop, warmed early so the screen does not
+          * assemble itself in front of you.
+          *
+          * **At low priority.** It is 476KB and nothing needs it until a game
+          * has been played all the way through, so it must not compete with
+          * first paint on a phone — but it is a `preload` rather than a
+          * `prefetch`, because Safari's support for prefetch has been patchy
+          * and a warmed cache is the whole point. Where `fetchpriority` is not
+          * understood this is simply an ordinary preload.
+          *
+          * `bg.png` sits behind it in the same stack and needs no help: the
+          * page texture already uses it from the first frame.
+          */}
+        <link rel="preload" as="image" href="/assets/bg-accent.png" fetchPriority="low"></link>
+        {/*
           * The animated card icon, and the only icon link on the page.
           *
           * There used to be a `src/app/favicon.ico` beside this file — the one
