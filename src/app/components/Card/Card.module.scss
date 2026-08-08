@@ -73,6 +73,29 @@
         background-size: 1568px 1498px;
         backface-visibility: hidden;
 
+        /**
+         * **The face's layers are numbered, not left to document order.**
+         *
+         * Bottom to top they are: the artwork (this element's own background),
+         * the numbers, the element badge, and the frame — the frame last
+         * because its job is to cover the sliver of the *next* card in the
+         * sprite sheet that bleeds past this one's edge.
+         *
+         * Document order alone gives that, and on Blink and Gecko it does. It
+         * does not on WebKit: every one of these carries
+         * `backface-visibility: hidden`, which promotes them to compositing
+         * layers of their own, and layer order there does not reliably follow
+         * paint order. The bleed came out over the frame, and the numbers came
+         * out under the artwork.
+         *
+         * Saying the order outright costs nothing and leaves nothing to infer.
+         * `position: relative; z-index: 0` makes this element the stacking
+         * context they are numbered within, so they cannot escape the face and
+         * argue with the card back.
+         */
+        position: relative;
+        z-index: 0;
+
         $startX: 5;
         $startY: 5;
         $x: 144;
@@ -106,6 +129,8 @@
         left: 0;
         background-size: 633px 161px;
         backface-visibility: hidden;
+        // the frame is the top layer: it is what hides the next card's bleed
+        z-index: 3;
     }
 
     &[data-level="6"],
@@ -168,6 +193,8 @@ p {
     top: 8px;
     right: 7px;
     image-rendering: pixelated;
+    // over the numbers, under the frame
+    z-index: 2;
     /**
      * Face down means face down. A hidden card is the whole card turned a half
      * turn — `.card--hidden` is `rotateY(180deg)` — and the back you then see is
