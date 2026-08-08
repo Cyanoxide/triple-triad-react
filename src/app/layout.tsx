@@ -28,6 +28,16 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"></meta>
         {/*
+          * The card back, fetched up front.
+          *
+          * It is a CSS background on `.card::before`, so nothing asks for it
+          * until a card is first drawn — and the opponent's placeholder hand is
+          * drawn the moment card selection opens. Until the image arrives those
+          * five cards are just the bare `[data-player=red]` gradient, which is
+          * a flash of flat pink. Preloading it means it is already in hand.
+          */}
+        <link rel="preload" as="image" href="/assets/cardback.png"></link>
+        {/*
           * The animated card icon, and the only icon link on the page.
           *
           * There used to be a `src/app/favicon.ico` beside this file — the one
