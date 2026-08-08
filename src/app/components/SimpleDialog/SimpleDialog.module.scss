@@ -78,12 +78,13 @@
         max-width: 400px;
         transition: max-width 0.5s ease-in-out, opacity 0.5s ease-in-out;
         /**
-         * Belt and braces with `overflow: hidden`, for Safari, which has been
-         * seen letting the collapsed bar show a sliver of the row it is
-         * supposed to be hiding. A clip path is honoured by the compositor
-         * where an overflow on a transformed, filtered box is not always.
+         * **No `clip-path` here.** One was added to help Safari clip the
+         * collapsed bar and it took the black edge with it: that edge is the
+         * dialog's `outline`, which is painted *outside* the border box, and a
+         * clip path clips to the border box. Losing it left the grey panel
+         * running to its own edges — which reads as stretched when open and
+         * not-quite-square when shut.
          */
-        clip-path: inset(0);
 
         &[data-expanded="false"] {
             max-width: 42px;
