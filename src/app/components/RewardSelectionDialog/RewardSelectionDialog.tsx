@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import styles from './RewardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import { PlayerType, CardType } from "../../context/GameTypes";
@@ -16,6 +16,21 @@ interface RewardSelectionDialogProps {
     victorySound: HTMLAudioElement;
     bgm: HTMLAudioElement | undefined;
 }
+
+/**
+ * Everything on this screen runs at this fraction of its written time.
+ *
+ * **`$speed` in `RewardSelectionDialog.module.scss` has to match.** The waits
+ * below are counted against those animations — when a card is centred, when it
+ * has gone — so if the two drift the sounds land on the wrong beat and the
+ * screen closes over a card still moving.
+ */
+const REWARD_SPEED = 0.85;
+const beat = (ms: number) => Math.round(ms * REWARD_SPEED);
+
+/** Where in the card's travel it is centred and holding, as a fraction of the
+ *  `card-preview-*` keyframes — the 40% mark. Tapping skips ahead to here. */
+const CENTRED_AT = 0.4;
 
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
     const { playerCards, playerHand, enemyId, enemyHand, lostCards, winState, score, tradeRule, isSoundEnabled, isCardGalleryOpen, board, dispatch } = useGameContext();
@@ -38,6 +53,32 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card, index) => ({ id: card.cardId, uniqueId: card.uniqueId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "red", position: index })));
     const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card, index) => ({ id: card.cardId, uniqueId: card.uniqueId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "blue", position: index })));
+
+    /**
+     * Waits that can be brought forward.
+     *
+     * A tap skips the card to the middle of the screen, which means every
+     * animation *and* every pending wait has to move by the same amount or the
+     * sounds and the hand-over drift out of step with what is on screen. So the
+     * waits are registered rather than fired and forgotten.
+     */
+    const rewardScreen = useRef<HTMLDivElement>(null);
+
+    const pending = useRef<{ id: number; run: () => void; fireAt: number }[]>([]);
+
+    const after = useCallback((ms: number, run: () => void) => {
+        const entry = { id: 0, run, fireAt: performance.now() + ms };
+        entry.id = window.setTimeout(() => {
+            pending.current = pending.current.filter((p) => p !== entry);
+            run();
+        }, ms);
+        pending.current.push(entry);
+    }, []);
+
+    useEffect(() => () => {
+        pending.current.forEach((p) => window.clearTimeout(p.id));
+        pending.current = [];
+    }, []);
 
     const [isSelectionConfirmed, setIsSelectionConfirmed] = useState(false);
     const [selectedRewards, setSelectedRewards] = useState<Record<'won' | 'lost', RewardType[]>>({ "won": [], "lost": [] });
@@ -71,6 +112,58 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             winAmount = scoreDifference;
             break;
     }
+
+    /**
+     * Tap to bring the card straight to the middle.
+     *
+     * The card's own animation says how far there is left to go: its
+     * `card-preview-*` keyframes reach the centre at `CENTRED_AT`, so the gap
+     * between that and where it has got to is the amount to skip. **Every
+     * running animation on the screen is moved by that same amount**, not just
+     * the card — the label slides in on its own timeline and would otherwise
+     * arrive late — and so is every pending wait.
+     *
+     * Nothing is cut short: the card still holds in the middle and still leaves
+     * the way it would have. Only the wait to get there goes.
+     */
+    const skipToCentre = useCallback(() => {
+        if (!isSelectionConfirmed) return;
+        const screen = rewardScreen.current;
+        if (!screen) return;
+
+        /**
+         * Only the ones still going. A finished animation stays on the element
+         * because these are all `forwards`, so asking for the first
+         * `card-preview` finds the *last card's* spent one, whose time is
+         * already past the centre — and every card after the first stopped
+         * being skippable.
+         */
+        const running = screen.getAnimations({ subtree: true }).filter((a) => a.playState === "running");
+        const preview = running.find((a) => (a as CSSAnimation).animationName?.includes("card-preview"));
+        if (!preview) return;
+
+        const timing = preview.effect?.getComputedTiming();
+        const duration = Number(timing?.duration ?? 0);
+        const delay = Number(timing?.delay ?? 0);
+        if (!duration) return;
+
+        const centred = delay + duration * CENTRED_AT;
+        const jump = centred - Number(preview.currentTime ?? 0);
+        if (jump <= 0) return;
+
+        running.forEach((animation) => {
+            animation.currentTime = Number(animation.currentTime ?? 0) + jump;
+        });
+
+        pending.current.forEach((p) => {
+            window.clearTimeout(p.id);
+            p.fireAt -= jump;
+            p.id = window.setTimeout(() => {
+                pending.current = pending.current.filter((q) => q !== p);
+                p.run();
+            }, Math.max(0, p.fireAt - performance.now()));
+        });
+    }, [isSelectionConfirmed]);
 
     const resetGame = (updatedPlayerCards: Record<number, number>) => {
         stopLoadedSound(victorySound);
@@ -338,32 +431,32 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         setSelectedReward(reward);
         setSelectedRewards(rewardsList);
 
-        setTimeout(() => {
+        after(beat((playerWinState === "lost") ? 500 : 0), () => {
             playSound("place", isSoundEnabled);
-        }, (playerWinState === "lost") ? 500 : 0);
+        });
 
-        setTimeout(() => {
+        after(beat((playerWinState === "lost") ? 3000 : 2500), () => {
             playSound((playerWinState === "won") ? "success" : "place", isSoundEnabled);
-        }, (playerWinState === "lost") ? 3000 : 2500);
+        });
 
         confirmedList.push(reward);
         setConfirmedCards(confirmedList);
 
-        setTimeout(() => {
+        after(beat(2800), () => {
             setSelectedReward(undefined);
-        }, 2800);
+        });
 
         if (!rewardsList.won.length && !rewardsList.lost.length) {
-            setTimeout(() => {
+            after(beat(4500), () => {
                 resetGame(updatedPlayerCards);
-            }, 4500);
+            });
         }
     }
 
 
     useEffect(() => {
         if (!isSelectionConfirmed) return;
-        setTimeout(processRewards, (confirmedCards.length) ? 3000 : 1500);
+        after(beat((confirmedCards.length) ? 3000 : 1500), processRewards);
     }, [isSelectionConfirmed, confirmedCards]);
 
 
@@ -402,7 +495,11 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         : `Select ${winAmount} card(s) you want`;
 
     return (
-        <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
+        <div
+            ref={rewardScreen}
+            onClick={skipToCentre}
+            className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}
+        >
             <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={labelDirection}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
                 <h3 className={styles.headingLine}>{textToSprite(headingText)}{waitingForPicks && <Ellipsis />}</h3>

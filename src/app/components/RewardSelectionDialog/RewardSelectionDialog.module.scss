@@ -1,5 +1,16 @@
 @use "../../styles/dialog.module.scss";
 
+/**
+ * Everything on this screen runs at this fraction of its written time, so the
+ * whole sequence can be tuned from one number.
+ *
+ * **`REWARD_SPEED` in `RewardSelectionDialog.tsx` has to match.** The component
+ * hands cards over, plays the sounds and closes the screen on `setTimeout`s
+ * that are counted against these animations; if the two drift the sounds land
+ * on the wrong beat and the screen closes over a card still moving.
+ */
+$speed: 0.85;
+
 .rewardSelectionContainer {
     background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), url("/assets/bg-accent.png"), url("/assets/bg.png");
     background-blend-mode: soft-light;
@@ -38,11 +49,11 @@
 
     [data-selected][data-confirmed] {
         &[data-player="blue"] {
-            animation: card-flip-blue 0.5s ease-in-out forwards;
+            animation: card-flip-blue (0.5s * $speed) ease-in-out forwards;
 
             &[data-confirmed=true] {
                 z-index: 4;
-                animation: card-preview-blue 3s ease-in-out forwards;
+                animation: card-preview-blue (3s * $speed) ease-in-out forwards;
             }
         }
 
@@ -51,11 +62,11 @@
 
     [data-enemy-selected][data-confirmed] {
         &[data-player="red"] {
-            animation: card-flip-red 0.5s ease-in-out forwards;
+            animation: card-flip-red (0.5s * $speed) ease-in-out forwards;
 
             &[data-confirmed=true] {
                 z-index: 4;
-                animation: card-preview-red 3s ease-in-out 0.5s forwards;
+                animation: card-preview-red (3s * $speed) ease-in-out (0.5s * $speed) forwards;
 
             }
         }
@@ -69,11 +80,11 @@
 
     &[data-animation]:not([data-animation=""]) {
         &[data-player="red"] {
-            animation: red-reward-label 1.6s forwards 0s ease-in-out;
+            animation: red-reward-label (1.6s * $speed) forwards 0s ease-in-out;
         }
 
         &[data-player="blue"] {
-            animation: blue-reward-label 1.2s forwards 0s ease-in-out;
+            animation: blue-reward-label (1.2s * $speed) forwards 0s ease-in-out;
         }
     }
 }
