@@ -87,13 +87,26 @@
          */
 
         &[data-expanded="false"] {
-            max-width: 42px;
+            /**
+             * The same as the height, so the shut button is square. It was
+             * 42px against a 2.5rem bar, which is 40 — near enough to look
+             * like a mistake rather than a choice.
+             *
+             * `max-width` rather than `width`, because the width stays
+             * `max-content` in both states so the open/close can animate; the
+             * row is far wider than this, so the clamp decides the size
+             * exactly.
+             */
+            max-width: 2.5rem;
             transition: max-width 0.2s ease-in;
 
             img:first-child {
                 box-shadow: none;
                 border: none;
                 transform: scaleX(-100%);
+                // Even padding in a square button, and less of it, so the arrow
+                // keeps its size in the narrower box
+                padding: .2rem .35rem;
             }
         }
 
@@ -108,6 +121,15 @@
 
         img {
             width: auto;
+            /**
+             * **`contain`, not the default `fill`.** These icons are not
+             * square — the expand arrow is 30x36 — and the lane they sit in is
+             * sized by the bar's height and its own padding, so the box and the
+             * image disagree about their proportions and `fill` stretches the
+             * artwork to fit. `contain` fits the image inside the box instead
+             * and leaves the ratio alone.
+             */
+            object-fit: contain;
             margin: 0;
             padding: .2rem .4rem .2rem .5rem;
             border-right: 2px solid #030303;
