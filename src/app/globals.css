@@ -6,13 +6,8 @@
   --background: #ffffff;
   --foreground: #171717;
   /*
-   * How soft the CRT filter is. See the rule that uses it, below.
-   *
-   * **Below about 1px this number only moves Blink and Gecko.** WebKit has a
-   * floor: measured at dpr 1, every radius from 0.1px to 1px gave exactly the
-   * same 4 CSS pixels of spread. So on iOS — where every browser is WebKit —
-   * 0.3 and 0.6 are the same picture, and the only way to soften it further is
-   * to turn it off. Blink renders nothing at all until 0.8px.
+   * How soft the CRT filter is — on a desktop only; see below for why a phone
+   * gets none of it.
    */
   --crt-blur: 0.3px;
 }
@@ -122,6 +117,26 @@ body * {
  */
 body.crt-effect {
   filter: blur(var(--crt-blur));
+}
+
+/**
+ * **No blur on a phone.**
+ *
+ * A phone draws the same artwork into a third of the pixels, so a blur that is
+ * a gentle haze on a monitor is a smear in the hand — and it cannot be dialled
+ * down to compensate, because **WebKit has a floor**: measured at dpr 1, every
+ * radius from 0.1px to 1px gives the same 4 CSS pixels of spread. Since every
+ * browser on iOS is WebKit, there is no number between "this much" and "none",
+ * so a phone gets none.
+ *
+ * Keyed on `data-phone`, which `scaleApp` sets from the viewport's shorter side
+ * — the same switch the canvas sizes itself by — rather than repeating that
+ * threshold as a media query here.
+ *
+ * The scanlines are untouched: they are `body::after` and their own thing.
+ */
+:root[data-phone="true"] body.crt-effect {
+  filter: none;
 }
 
 body.crt-effect::after {
