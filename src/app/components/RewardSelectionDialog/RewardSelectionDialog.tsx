@@ -25,7 +25,7 @@ interface RewardSelectionDialogProps {
  * has gone — so if the two drift the sounds land on the wrong beat and the
  * screen closes over a card still moving.
  */
-const REWARD_SPEED = 0.85;
+const REWARD_SPEED = 0.9;
 const beat = (ms: number) => Math.round(ms * REWARD_SPEED);
 
 /** Where in the card's travel it is centred and holding, as a fraction of the

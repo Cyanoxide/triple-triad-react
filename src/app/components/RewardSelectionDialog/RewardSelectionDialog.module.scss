@@ -2,14 +2,15 @@
 
 /**
  * Everything on this screen runs at this fraction of its written time, so the
- * whole sequence can be tuned from one number.
+ * whole sequence can be tuned from one number. Five cards take 18.1s at 1 and
+ * 16.2s here; 0.85 was tried and judged a shade too quick.
  *
  * **`REWARD_SPEED` in `RewardSelectionDialog.tsx` has to match.** The component
  * hands cards over, plays the sounds and closes the screen on `setTimeout`s
  * that are counted against these animations; if the two drift the sounds land
  * on the wrong beat and the screen closes over a card still moving.
  */
-$speed: 0.85;
+$speed: 0.9;
 
 .rewardSelectionContainer {
     background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), url("/assets/bg-accent.png"), url("/assets/bg.png");
