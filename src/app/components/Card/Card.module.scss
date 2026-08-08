@@ -71,30 +71,27 @@
         image-rendering: pixelated;
         height: 100%;
         background-size: 1568px 1498px;
+        /**
+         * **This and the card back are the only two things that carry
+         * `backface-visibility`.** They are the two faces; nothing drawn *on* a
+         * face needs it, because `.card__front` is not `preserve-3d`, so its
+         * contents are flattened into it and turn away with it.
+         *
+         * They used to have it anyway — the numbers, the element badge and the
+         * frame — and in WebKit that promotes each to a compositing layer of
+         * its own, where order does not reliably follow the document and
+         * culling does not reliably follow the parent. That is the sprite bleed
+         * appearing over the frame, and the numbers showing through the *back*
+         * of a card on the reward screen.
+         *
+         * **Numbering them with z-index made the second fault worse**, because
+         * a positioned, z-indexed child is promoted all the harder. Taking the
+         * property off instead leaves them as ordinary content of this element:
+         * artwork, then numbers, then badge, then frame, by document order —
+         * which is the order wanted — and all of it turns away together.
+         */
         backface-visibility: hidden;
 
-        /**
-         * **The face's layers are numbered, not left to document order.**
-         *
-         * Bottom to top they are: the artwork (this element's own background),
-         * the numbers, the element badge, and the frame — the frame last
-         * because its job is to cover the sliver of the *next* card in the
-         * sprite sheet that bleeds past this one's edge.
-         *
-         * Document order alone gives that, and on Blink and Gecko it does. It
-         * does not on WebKit: every one of these carries
-         * `backface-visibility: hidden`, which promotes them to compositing
-         * layers of their own, and layer order there does not reliably follow
-         * paint order. The bleed came out over the frame, and the numbers came
-         * out under the artwork.
-         *
-         * Saying the order outright costs nothing and leaves nothing to infer.
-         * `position: relative; z-index: 0` makes this element the stacking
-         * context they are numbered within, so they cannot escape the face and
-         * argue with the card back.
-         */
-        position: relative;
-        z-index: 0;
 
         $startX: 5;
         $startY: 5;
@@ -128,9 +125,6 @@
         top: 0;
         left: 0;
         background-size: 633px 161px;
-        backface-visibility: hidden;
-        // the frame is the top layer: it is what hides the next card's bleed
-        z-index: 3;
     }
 
     &[data-level="6"],
@@ -193,8 +187,7 @@ p {
     top: 8px;
     right: 7px;
     image-rendering: pixelated;
-    // over the numbers, under the frame
-    z-index: 2;
+
     /**
      * Face down means face down. A hidden card is the whole card turned a half
      * turn — `.card--hidden` is `rotateY(180deg)` — and the back you then see is
@@ -203,10 +196,9 @@ p {
      * card back: the opponent's element was showing through, which tells you
      * something about a card you are not supposed to be able to see.
      *
-     * `CardValues` has carried this from the start, which is why the numbers
-     * were never the giveaway. This was the one thing on the front without it.
+     * Neither this nor anything else drawn on the face carries
+     * `backface-visibility` any more — see the note on `&__front`.
      */
-    backface-visibility: hidden;
 
     &[data-sprite="thunder"] {
         background-position-x: 0;

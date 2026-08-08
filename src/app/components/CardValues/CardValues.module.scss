@@ -1,14 +1,4 @@
 .values {
-    backface-visibility: hidden;
-    /**
-     * Over the card's artwork and under its element badge and frame. Stated
-     * rather than left to document order, because every layer on the card face
-     * carries `backface-visibility: hidden` and WebKit gives each its own
-     * compositing layer, where order does not reliably follow the document.
-     */
-    position: relative;
-    z-index: 1;
-
     [data-sprite] {
         width: 16px;
         text-shadow: none;
@@ -87,7 +77,6 @@
 }
 
 .galleryValues {
-    backface-visibility: hidden;
 
     [data-sprite] {
         width: 18px;
