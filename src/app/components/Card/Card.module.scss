@@ -33,6 +33,27 @@
         background-image: url("/assets/cardback.png");
         transform: rotateY(180deg);
         background-size: cover;
+        /**
+         * **The stacking says which face wins, so culling does not have to.**
+         *
+         * A flat `z-index: 1` here was wrong: it put the back above the front
+         * always. Invisible while backface culling is exact — only one face is
+         * ever drawn — but WebKit's is not, and the back then won and painted
+         * over the card. That is the borders looking wrong after a flip and the
+         * artwork sitting over the numbers.
+         *
+         * So neither settled state leans on culling now. Face up, the back has
+         * no z-index and paints first, under the front. Face down, it is lifted
+         * over the front by the rule below. Both are decided by stacking, which
+         * every engine agrees on.
+         *
+         * Mid-turn — the flip on the board, the spinning preview — is still the
+         * culling's job, and there is no stacking answer for it because the
+         * right face changes halfway through.
+         */
+    }
+
+    &--hidden::before {
         z-index: 1;
     }
 
