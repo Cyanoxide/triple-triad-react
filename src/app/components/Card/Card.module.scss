@@ -4,59 +4,8 @@
     border: 1px solid #000;
     width: 128px; //256px
     height: 163px; //326px
-    position: relative;
     transform-style: preserve-3d;
     transition: transform 0.2s;
-
-    /**
-     * The back of the card, and a **sibling** of the front rather than a child
-     * of it.
-     *
-     * The two faces have to be siblings inside this element's 3D context, so
-     * that each can be softened on its own under the CRT filter. `filter`
-     * forces a `preserve-3d` element to flatten, so a filter anywhere on the
-     * way down — on `.card`, or on `.card__front` while the back lived inside
-     * it — collapses the context the culling depends on, and the card stops
-     * being able to turn: the spinning preview showed a mirrored *front*
-     * instead of its back, and a face-down card gave its front away.
-     *
-     * Here nothing filtered has 3D children, so nothing that matters flattens.
-     */
-    &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        backface-visibility: hidden;
-        background-image: url("/assets/cardback.png");
-        transform: rotateY(180deg);
-        background-size: cover;
-        /**
-         * **The stacking says which face wins, so culling does not have to.**
-         *
-         * A flat `z-index: 1` here was wrong: it put the back above the front
-         * always. Invisible while backface culling is exact — only one face is
-         * ever drawn — but WebKit's is not, and the back then won and painted
-         * over the card. That is the borders looking wrong after a flip and the
-         * artwork sitting over the numbers.
-         *
-         * So neither settled state leans on culling now. Face up, the back has
-         * no z-index and paints first, under the front. Face down, it is lifted
-         * over the front by the rule below. Both are decided by stacking, which
-         * every engine agrees on.
-         *
-         * Mid-turn — the flip on the board, the spinning preview — is still the
-         * culling's job, and there is no stacking answer for it because the
-         * right face changes halfway through.
-         */
-    }
-
-    &--hidden::before {
-        z-index: 1;
-    }
-
 
     &[data-player=red] {
         background: linear-gradient(to top, rgba(131, 48, 66, 1) 0%, rgba(235, 186, 208, 1) 100%);
@@ -71,27 +20,22 @@
         image-rendering: pixelated;
         height: 100%;
         background-size: 1568px 1498px;
-        /**
-         * **This and the card back are the only two things that carry
-         * `backface-visibility`.** They are the two faces; nothing drawn *on* a
-         * face needs it, because `.card__front` is not `preserve-3d`, so its
-         * contents are flattened into it and turn away with it.
-         *
-         * They used to have it anyway — the numbers, the element badge and the
-         * frame — and in WebKit that promotes each to a compositing layer of
-         * its own, where order does not reliably follow the document and
-         * culling does not reliably follow the parent. That is the sprite bleed
-         * appearing over the frame, and the numbers showing through the *back*
-         * of a card on the reward screen.
-         *
-         * **Numbering them with z-index made the second fault worse**, because
-         * a positioned, z-indexed child is promoted all the harder. Taking the
-         * property off instead leaves them as ordinary content of this element:
-         * artwork, then numbers, then badge, then frame, by document order —
-         * which is the order wanted — and all of it turns away together.
-         */
         backface-visibility: hidden;
+        transform-style: preserve-3d;
 
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            background-image: url("/assets/cardback.png");
+            transform: rotateY(180deg);
+            background-size: cover;
+        }
 
         $startX: 5;
         $startY: 5;
@@ -125,6 +69,7 @@
         top: 0;
         left: 0;
         background-size: 633px 161px;
+        backface-visibility: hidden;
     }
 
     &[data-level="6"],
@@ -187,18 +132,21 @@ p {
     top: 8px;
     right: 7px;
     image-rendering: pixelated;
-
     /**
-     * Face down means face down. A hidden card is the whole card turned a half
-     * turn — `.card--hidden` is `rotateY(180deg)` — and the back you then see is
-     * the front's own `::before`. Everything drawn on the front has to be told
-     * to disappear with it, or it carries on facing you and floats over the
-     * card back: the opponent's element was showing through, which tells you
-     * something about a card you are not supposed to be able to see.
+     * Turns away with the rest of the face.
      *
-     * Neither this nor anything else drawn on the face carries
-     * `backface-visibility` any more — see the note on `&__front`.
+     * Everything drawn on the front sits in `.card__front`'s own 3D context —
+     * it is `preserve-3d` — so each is culled by its own `backface-visibility`.
+     * The numbers and the frame have always had it; this was the one thing
+     * without, and an opponent's element was readable on a face-down card.
+     *
+     * **Do not take `preserve-3d` off `.card__front` to "simplify" this.** That
+     * was tried: it flattens the face, its children stop being culled
+     * individually, and the numbers and this badge start showing through the
+     * card back everywhere — on the board, on the reward screen and through the
+     * spinning preview.
      */
+    backface-visibility: hidden;
 
     &[data-sprite="thunder"] {
         background-position-x: 0;

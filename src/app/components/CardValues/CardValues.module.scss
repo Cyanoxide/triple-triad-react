@@ -1,4 +1,6 @@
 .values {
+    backface-visibility: hidden;
+
     [data-sprite] {
         width: 16px;
         text-shadow: none;
@@ -77,6 +79,7 @@
 }
 
 .galleryValues {
+    backface-visibility: hidden;
 
     [data-sprite] {
         width: 18px;
