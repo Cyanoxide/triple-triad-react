@@ -38,9 +38,7 @@
         // Softened with everything else under the CRT filter. Cursors drawn
         // inside a panel already inherit it from `.dialog`; the hand is not a
         // panel, so it asks for its own.
-        :global(body.crt-effect) & {
-            filter: blur(var(--crt-blur));
-        }
+
 
         content: "";
         position: absolute;

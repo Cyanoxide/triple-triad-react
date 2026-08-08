@@ -541,7 +541,7 @@ function GameContent() {
               <span className="ml-3 mr-3">{textToSprite("Sound")}</span>
               <div className="flex items-center">
                 <span className={`${(!isSoundEnabled) ? "opacity-50" : ""} mr-3`}>{textToSprite("ON")}</span>
-                <span className={`${(isSoundEnabled) ? "opacity-50" : ""} mr-3`}>{textToSprite("OFF")}</span>
+                <span className={`${(isSoundEnabled) ? "opacity-50" : ""} mr-1`}>{textToSprite("OFF")}</span>
               </div>
             </div>
           </div>

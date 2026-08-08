@@ -37,9 +37,7 @@
 }
 
 .link {
-    :global(body.crt-effect) & {
-        filter: blur(var(--crt-blur));
-    }
+
 
     position: relative;
     text-shadow: 2px 2px 0 #212121;

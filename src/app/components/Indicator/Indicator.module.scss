@@ -2,18 +2,7 @@ $rotate: -17.5deg;
 $z-offset: 6px;
 
 .indicatorContainer {
-    /**
-     * Softened with everything else under the CRT filter.
-     *
-     * On the image, not on this container: the container is the thing that
-     * spins, and both of its animations are 3D `rotateX`. A filter forces a
-     * `preserve-3d` element to flatten, and there is no reason to risk the one
-     * element here whose whole job is a rotation. The image is a leaf and has
-     * nothing to flatten.
-     */
-    :global(body.crt-effect) & img {
-        filter: blur(var(--crt-blur));
-    }
+
 
     &[data-type="starting-player-indicator"] {
         position: absolute;

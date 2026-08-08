@@ -63,15 +63,31 @@
         translate: -100% -100%;
         height: 2.5rem;
         padding: 1px;
-        width: max-content;
-        transition: all 0.5s ease-in-out;
         min-width: 0;
         overflow: hidden;
-        width: 300px;
+        /**
+         * **`max-width` opens and closes it, not `width`.**
+         *
+         * It used to be a hard `width: 300px`, which is wider than the row
+         * actually needs and left a band of empty panel after "OFF". The width
+         * is the content's own now and `max-width` does the animating — a
+         * width cannot transition to `max-content`, but a max-width can be a
+         * plain number while the box stays content-sized underneath it.
+         */
+        width: max-content;
+        max-width: 400px;
+        transition: max-width 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        /**
+         * Belt and braces with `overflow: hidden`, for Safari, which has been
+         * seen letting the collapsed bar show a sliver of the row it is
+         * supposed to be hiding. A clip path is honoured by the compositor
+         * where an overflow on a transformed, filtered box is not always.
+         */
+        clip-path: inset(0);
 
         &[data-expanded="false"] {
-            width: 42px;
-            transition: width 0.2s ease-in;
+            max-width: 42px;
+            transition: max-width 0.2s ease-in;
 
             img:first-child {
                 box-shadow: none;

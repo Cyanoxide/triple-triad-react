@@ -195,18 +195,3 @@ p {
     }
 }
 }
-
-/**
- * The CRT filter's softening, on both faces of the card.
- *
- * On the two faces rather than on `.card`, because `filter` forces a
- * `preserve-3d` element to flatten and `.card` is the context that lets the
- * card turn at all. Neither of these has 3D children, so neither flattening
- * costs anything.
- */
-:global(body.crt-effect) {
-    .card::before,
-    .card__front {
-        filter: blur(var(--crt-blur));
-    }
-}

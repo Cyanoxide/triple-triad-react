@@ -149,9 +149,7 @@
         &::after {
             // As on the hand: the board is not a panel, so its cursor asks for
             // the CRT filter's blur rather than inheriting it
-            :global(body.crt-effect) & {
-                filter: blur(var(--crt-blur));
-            }
+
 
             content: "";
             position: absolute;

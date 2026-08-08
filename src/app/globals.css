@@ -5,9 +5,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  /* How soft the CRT filter makes everything it touches. One place to change
-     it: the panels, the title screen's links and the cards all read it, and it
-     only ever applies under `body.crt-effect`. */
+  /*
+   * How soft the CRT filter is. See the rule that uses it, below.
+   *
+   * **Below about 1px this number only moves Blink and Gecko.** WebKit has a
+   * floor: measured at dpr 1, every radius from 0.1px to 1px gave exactly the
+   * same 4 CSS pixels of spread. So on iOS — where every browser is WebKit —
+   * 0.3 and 0.6 are the same picture, and the only way to soften it further is
+   * to turn it off. Blink renders nothing at all until 0.8px.
+   */
   --crt-blur: 0.3px;
 }
 
@@ -85,6 +91,37 @@ html,
 body,
 body * {
   touch-action: manipulation;
+}
+
+/**
+ * The CRT filter's softness — **one blur, on the body**.
+ *
+ * Two earlier placements were wrong, and each was wrong for its own reason:
+ *
+ * 1. **A filter on each panel, link, card face, pip and cursor.** They
+ *    compounded — a card inside a panel got the panel's blur and then its own —
+ *    and **WebKit has a floor**: measured against a sharp edge at dpr 3, every
+ *    radius from 0.05px to 0.5px gave the same 6 device pixels of spread. Blink
+ *    renders nothing below 0.5px, which is why Chrome looked clean while iOS
+ *    was unreadable. Each stacked layer cost a full ~2 CSS pixels whatever the
+ *    number said.
+ * 2. **A single filter on `#app`.** No compounding, but a filter *isolates*:
+ *    `mix-blend-mode` blends with the backdrop only as far as the nearest
+ *    stacking context. The board's `balamb.png` blends into the page texture,
+ *    which is `body::before` and therefore **outside** `#app` — so the emblem
+ *    lost its blend the moment `#app` became an isolation boundary.
+ *
+ * On `body` both of those go away: one pass, and the texture and everything
+ * that blends into it are inside the same boundary.
+ *
+ * **Safe for the cards even though `filter` flattens a `preserve-3d` element**:
+ * what flattens is the filtered element's own `transform-style`, and `.card`
+ * declares its own `preserve-3d` much further down, so its two faces keep their
+ * context. Verified — a face-down card still shows its back and the spinning
+ * preview still has one. Do not move this down onto the cards.
+ */
+body.crt-effect {
+  filter: blur(var(--crt-blur));
 }
 
 body.crt-effect::after {
