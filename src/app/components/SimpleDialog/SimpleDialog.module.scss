@@ -16,7 +16,7 @@
         // Beside the menu rather than below it: the vertical space under the
         // info dialog already belongs to the location and player rows
         top: 50%;
-        left: calc(50% + 175px);
+        left: calc(50% + 175px / var(--dialog-boost, 1));
         translate: -50% -50%;
         min-width: 0;
         width: max-content;

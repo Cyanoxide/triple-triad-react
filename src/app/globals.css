@@ -399,6 +399,28 @@ button {
    * `--furniture-margin` still floors it, for a desktop and for any phone
    * whose corners are square.
    */
+  /*
+   * **How much bigger the dialogs are on a phone.**
+   *
+   * The whole canvas is scaled to fit, so a menu row that is comfortable on a
+   * monitor comes out a couple of millimetres tall in the hand. This enlarges
+   * the panels and everything in them without touching the board or the hands,
+   * which cannot overflow.
+   *
+   * `zoom`, not `scale`. Every dialog opens with `boxOpen`, which fills its own
+   * `scale` and `opacity` — a `scale` declared on a `.dialog` silently never
+   * applies, which the notes record costing an afternoon twice. `zoom` is a
+   * different property and does not collide with it.
+   *
+   * **Percentages are not scaled by `zoom`; absolute lengths are.** Verified in
+   * Chromium and WebKit: at `zoom: 2` a box at `top: 50%` still centres
+   * correctly, and dividing that 50% by the zoom moves it to a quarter. So
+   * `top: 50%` needs no compensation, while a `calc(50% + 249px)` does — on
+   * its pixel term only. That is why only four dialogs have a division in them
+   * and the rest were left alone.
+   */
+  --dialog-boost: 1;
+
   --furniture-margin: calc(1.5rem / var(--furniture-boost));
   --furniture-clearance: 0px;
 
@@ -411,6 +433,7 @@ button {
 :root[data-phone="true"] {
   --furniture-boost: 1.6;
   --furniture-clearance: 34px;
+  --dialog-boost: 1.6;
 }
 
 /*
@@ -434,6 +457,13 @@ button {
  */
 [data-app-scaled] {
   zoom: var(--furniture-scale);
+
+  /*
+   * The options bar, Quit and the clock are dialogs inside a wrapper that is
+   * already zoomed by `--furniture-scale`. Inheriting the dialog boost as well
+   * would multiply the two and render them at 2.56x.
+   */
+  --dialog-boost: 1;
 }
 
 /**
