@@ -491,7 +491,7 @@ button {
   --furniture-boost: 1.3;
   --furniture-clearance: 34px;
   --dialog-boost: 1.3;
-  --picker-nudge: calc(13.4px / var(--dialog-boost, 1));
+  --picker-nudge: calc(15.5px / var(--dialog-boost, 1));
   --links-nudge: calc(30px / var(--dialog-boost, 1));
 
   /*
