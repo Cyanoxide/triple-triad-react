@@ -295,6 +295,22 @@
     // room for each option's cursor to sit beside it
     // wide enough that a full-size cursor clears the option beside it
     gap: 3.8rem;
+
+    /*
+     * **Tighter on a phone, because 3.8rem does not fit there.**
+     *
+     * Five options means four gutters — 243 design px of gap before a single
+     * glyph — against a row of about 407 inside the capped panel. The flex line
+     * overflows, and `justify-content: center` spills it evenly out of both
+     * ends, which is the row running past the panel edges.
+     *
+     * The gap is sized to clear a keyboard cursor beside each option. A phone
+     * has no keyboard, so the space is being reserved for something that cannot
+     * happen there.
+     */
+    :global(:root[data-phone="true"]) & {
+        gap: 2rem;
+    }
 }
 
 .tradeOption {

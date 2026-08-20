@@ -163,6 +163,31 @@ function GameContent() {
    * The board would otherwise sit there frozen, waiting for a turn that can
    * never arrive, so the game is put away and the menu comes back.
    */
+  /**
+   * Leaving a game in progress.
+   *
+   * Multiplayer hands the room back and lets the teardown below do the rest —
+   * dropping the session is what returns both players to the menu, so doing any
+   * of it here as well would only race that effect.
+   *
+   * Single player has no session to drop, so it performs the same teardown
+   * directly. The steps match deliberately: a game abandoned from either mode
+   * should leave the app in the same state, which is all the way back at the
+   * question rather than in the menu of whichever mode was being played.
+   */
+  const quitGame = useCallback(() => {
+    if (session) {
+      void finishMultiplayer(null);
+      return;
+    }
+
+    dispatch({ type: "RESET_GAME" });
+    dispatch({ type: "SET_IS_GAME_ACTIVE", payload: false });
+    dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
+    dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
+    setMode(null);
+  }, [session, dispatch]);
+
   const hadSession = useRef(false);
   useEffect(() => {
     if (session) { hadSession.current = true; return; }
@@ -485,14 +510,20 @@ function GameContent() {
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
       </div>
 
-      {/* Quitting a game in progress. Only shown during a multiplayer game —
-          the single-player one already has its own menu — and placed beside the
-          options bar so it needs no new furniture on the board. */}
+      {/* Quitting a game in progress, in either mode, placed beside the options
+          bar so it needs no new furniture on the board.
+
+          It used to be multiplayer only, on the grounds that a single-player
+          game has its own menu — but that menu is the one *before* a game, and
+          once the board is up there is no way back to it. On a desktop that is
+          survivable: Escape cancels, and there is always a refresh. On a phone
+          there is no Escape, and an installed app has no address bar to reload
+          from, so a single-player game could not be left at all. */}
       {/* Not once the rewards are being handed over: leaving at that point
           would be a way to keep cards you had just lost. A refresh may still
           manage it — the cards move on each client rather than on the server —
           but there is no need to put a button on it. */}
-      {session && isGameActive && !isRewardSelectionOpen && (
+      {isGameActive && !isRewardSelectionOpen && (
         <div className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10" data-app-scaled>
           <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("select", isSoundEnabled); setConfirmingQuit(true); }}>
@@ -500,10 +531,12 @@ function GameContent() {
             </button>
           </SimpleDialog>
 
-          {/* Quitting ends the other player's game too, so it asks first */}
+          {/* It asks first either way: in multiplayer because leaving ends the
+              other player's game too, in single player because a board part
+              way through is not a thing to discard on one stray tap. */}
           {confirmingQuit && (
             <ConfirmationDialog
-              handleConfirmation={() => { setConfirmingQuit(false); void finishMultiplayer(null); }}
+              handleConfirmation={() => { setConfirmingQuit(false); quitGame(); }}
               handleDenial={() => { playSound("back", isSoundEnabled); setConfirmingQuit(false); }}
             />
           )}
