@@ -93,9 +93,16 @@ export const metadata: Metadata = {
  * inset, translucent removes the reserved strip, and between them the page
  * owns the whole screen. Neither is much use without the other.
  *
- * `themeColor` is the card back's own dark, sampled from `cardback.png` — the
- * same value the manifest gives `theme_color` and `background_color`, so the
- * splash screen, the status bar and the icon ground are one colour.
+ * `themeColor` is `#434546`, the dark end of the dialogs' own gradient
+ * (`linear-gradient(125deg, #434546, #696c69)`), so the browser's chrome
+ * matches the menus. It was the card back's `#161418`, and before that Safari
+ * was tinting itself off the page's tan ground, which looks wrong without the
+ * texture that normally sits on it — the colour reads as parchment only in
+ * company.
+ *
+ * The manifest keeps `#161418` for `background_color`: that is the splash
+ * screen behind the icon while the app starts, and it should match the icon's
+ * own ground rather than the browser chrome.
  */
 export const viewport: Viewport = {
   width: "device-width",
@@ -104,7 +111,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#161418",
+  themeColor: "#434546",
 };
 
 export default function RootLayout({
