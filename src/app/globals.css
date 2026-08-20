@@ -422,17 +422,26 @@ button {
   --dialog-boost: 1;
   --dialog-max-width: none;
   /*
-   * A hand-tuned drop for the two rows that sit under something else — the
-   * player picker below the location one, and the landing page's links below
-   * the mode box. Both cleared their neighbour by only a few pixels once the
-   * dialogs grew.
+   * **Design pixels, not real ones.**
    *
-   * Real pixels, like the width cap: it is a judgement made by looking at a
-   * phone, so it should be the same gap on every phone rather than the same
-   * fraction of a canvas. Divided by both zooms because it is added inside a
-   * box that sits in both. Zero on a desktop, where nothing moved.
-   */
-  --dialog-nudge: 0px;
+   * Two rows sit under something else — the player picker below the location
+   * one, and the landing page's links below the mode box — and the boost made
+   * their neighbours taller without moving them, so they closed up.
+   *
+   * The first version of this was 20 *real* pixels, which was wrong twice
+   * over. Too big: 20 real px is `20 / --app-scale` in design terms, about 32
+   * where the pair needed 13. And unstable: `--app-scale` falls as the window
+   * narrows, so the gap grew the smaller the screen got, when the whole point
+   * of a design pixel is that it does not.
+   *
+   * Two variables rather than one, because the pairs need different amounts:
+   * the pickers want to nearly touch, the links want daylight under the box.
+   *
+   * Divided by the boost because they are added inside dialogs, which zoom
+   * absolute lengths. Tuned against a boost of 1.3 — if that changes, so do
+   * these, since what they are correcting for is the growth the boost causes.
+   */  --picker-nudge: 0px;
+  --links-nudge: 0px;
 
   /*
    * **Where the mode box sits, measured from the middle rather than as a
@@ -482,7 +491,8 @@ button {
   --furniture-boost: 1.3;
   --furniture-clearance: 34px;
   --dialog-boost: 1.3;
-  --dialog-nudge: calc(20px / var(--app-scale, 1) / var(--dialog-boost, 1));
+  --picker-nudge: calc(13.4px / var(--dialog-boost, 1));
+  --links-nudge: calc(30px / var(--dialog-boost, 1));
 
   /*
    * **A ceiling in real pixels, not design ones.**
