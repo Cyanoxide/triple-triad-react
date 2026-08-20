@@ -169,13 +169,37 @@ body.crt-effect::after {
   z-index: 11;
 }
 
+/*
+ * The page texture, painted past the edges of its own box.
+ *
+ * The insets are **negative safe areas**, not zero. `height: 100%` on html and
+ * body is meant to make the background box and the box the app is scaled to
+ * the same box, and on a desktop it does — but in an installed app with
+ * `viewport-fit=cover` and a translucent status bar the page owns the safe
+ * areas too, and the bottom one measured short: the strip over the home
+ * indicator came out flat `#8b6230` from the canvas rather than textured.
+ * Rather than depend on which of the three viewports `100%` resolves to on a
+ * given phone, the painting simply reaches past the box on every side.
+ *
+ * Where there is no safe area the value is 0 and this is the original rule
+ * exactly, so nothing changes on a desktop or in a browser tab.
+ *
+ * **Still `absolute`, and still in the same stacking context.** Making this
+ * `fixed` covers the strip too and costs two things that took a round trip to
+ * find: `background-size: cover` re-resolves against the visual viewport, so
+ * the texture goes off-centre and is cut along the bottom; and the layer is
+ * composited on its own, which is where the board's `balamb.png` loses the
+ * `mix-blend-mode: soft-light` it blends into this with. Negative offsets grow
+ * the box without moving it out of the flow it belongs to — `cover` still
+ * resolves against a rectangle of the same shape, only slightly larger.
+ */
 body::before {
   content: "";
   position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  top: calc(0px - env(safe-area-inset-top));
+  left: calc(0px - env(safe-area-inset-left));
+  right: calc(0px - env(safe-area-inset-right));
+  bottom: calc(0px - env(safe-area-inset-bottom));
   background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), radial-gradient(50% 50%, #fbf8e1ee 1%, #fbf8e100 60%), url("/assets/bg.png");
   background-blend-mode: soft-light, hard-light;
   background-size: cover;
