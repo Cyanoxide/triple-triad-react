@@ -421,6 +421,18 @@ button {
    */
   --dialog-boost: 1;
   --dialog-max-width: none;
+  /*
+   * A hand-tuned drop for the two rows that sit under something else — the
+   * player picker below the location one, and the landing page's links below
+   * the mode box. Both cleared their neighbour by only a few pixels once the
+   * dialogs grew.
+   *
+   * Real pixels, like the width cap: it is a judgement made by looking at a
+   * phone, so it should be the same gap on every phone rather than the same
+   * fraction of a canvas. Divided by both zooms because it is added inside a
+   * box that sits in both. Zero on a desktop, where nothing moved.
+   */
+  --dialog-nudge: 0px;
 
   --furniture-margin: calc(1.5rem / var(--furniture-boost));
   --furniture-clearance: 0px;
@@ -432,9 +444,20 @@ button {
 }
 
 :root[data-phone="true"] {
-  --furniture-boost: 1.6;
+  /*
+   * 1.3, matching --dialog-boost. It was 1.6, chosen before the dialogs had a
+   * boost of their own; keeping the two the same means the corner furniture
+   * and the panels read as one size of UI rather than two.
+   *
+   * The corner gaps do not move with it. --furniture-margin divides by the
+   * boost and --furniture-clearance is a real measurement of the screen's
+   * curve, so both survive the change: the boxes get smaller, their distance
+   * from the corner stays 34px.
+   */
+  --furniture-boost: 1.3;
   --furniture-clearance: 34px;
   --dialog-boost: 1.3;
+  --dialog-nudge: calc(20px / var(--app-scale, 1) / var(--dialog-boost, 1));
 
   /*
    * **A ceiling in real pixels, not design ones.**

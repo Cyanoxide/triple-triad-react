@@ -39,7 +39,7 @@
      * question, and one to look at on the device.
      */
     zoom: var(--dialog-boost, 1);
-    top: calc(74% + 100px / var(--dialog-boost, 1));
+    top: calc(74% + 100px / var(--dialog-boost, 1) + var(--dialog-nudge, 0px));
     left: 50%;
     translate: -50% 0;
     display: flex;
