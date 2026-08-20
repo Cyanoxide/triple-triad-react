@@ -63,7 +63,26 @@
  */
 html {
   overflow: hidden;
-  height: 100%;
+  /*
+   * **The window, including the safe areas.**
+   *
+   * `100%` alone resolves to the safe-area-*excluded* height in an installed
+   * app — measured on a phone, the box ended at about 90% of the screen, short
+   * by the sum of the two vertical insets and anchored at the top. Everything
+   * sized against it inherited that: the texture and the scanlines stopped
+   * early, and the corner furniture, which hangs off `#app`'s `h-full`, sat a
+   * tenth of the screen too high.
+   *
+   * Adding the insets back is the fix at the source rather than at each of the
+   * three symptoms. `body` is `100%` of this, `#app` is `h-full` of that, and
+   * `scaleApp` measures `documentElement.clientHeight` — so the box the app is
+   * scaled to, the box its background paints, and the box its furniture is
+   * pinned to become the same box again, which is what `height: 100%` was
+   * always meant to guarantee.
+   *
+   * With no safe areas this is `calc(100% + 0px + 0px)` — the original rule.
+   */
+  height: calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom));
   background: #8b6230;
 }
 
