@@ -27,7 +27,12 @@ const THEIRS = [6, 7, 8, 9, 10];
  * direct rule reads as "this card changed hands", so the mix here decides how
  * many cards move each way.
  */
-const finishedBoard = (flippedToYou: number, flippedToThem: number): BoardType => {
+const finishedBoard = (
+    flippedToYou: number,
+    flippedToThem: number,
+    yours: number[] = YOURS,
+    theirs: number[] = THEIRS,
+): BoardType => {
     const cells: CardType[] = [];
 
     for (let i = 0; i < 9; i++) {
@@ -36,7 +41,7 @@ const finishedBoard = (flippedToYou: number, flippedToThem: number): BoardType =
         const owner: PlayerType = takenByYou ? "blue" : takenByThem ? "red" : (i % 2 ? "blue" : "red");
 
         cells.push({
-            cardId: takenByYou ? THEIRS[i % 5] : YOURS[i % 5],
+            cardId: takenByYou ? theirs[i % 5] : yours[i % 5],
             uniqueId: `preview-${i}`,
             position: [Math.floor(i / 3), i % 3],
             currentOwner: owner,
@@ -54,6 +59,12 @@ type Scenario = {
     flippedToYou: number;
     flippedToThem: number;
     score: [number, number];
+    /**
+     * Hands, when the scenario needs particular cards in them. Defaults are
+     * five each with nothing in common.
+     */
+    yours?: number[];
+    theirs?: number[];
 };
 
 const SCENARIOS: Record<string, Scenario> = {
@@ -64,6 +75,22 @@ const SCENARIOS: Record<string, Scenario> = {
     // The interesting one: cards move both ways in a single sequence, so the
     // label has to change direction card by card
     direct: { winner: "blue", tradeRule: "direct", flippedToYou: 3, flippedToThem: 3, score: [4, 6] },
+    /**
+     * The same card in both hands, at the same hand index, moving both ways.
+     *
+     * Card 3 is third in each hand. A confirmed reward is an id and a position,
+     * and both rows are tested against the same list — so this is the case
+     * where one confirmed card matches in the player's row *and* the
+     * opponent's, and the won and lost animations run on the same beat.
+     *
+     * Only the direct rule can produce it, and only when the duplicate happens
+     * to sit at the same index in both hands, which is why it survived: it
+     * cannot be reached by playing unless you are unlucky in a specific way.
+     */
+    directDuplicate: {
+        winner: "blue", tradeRule: "direct", flippedToYou: 3, flippedToThem: 3, score: [4, 6],
+        yours: [1, 2, 3, 4, 5], theirs: [6, 7, 3, 9, 10],
+    },
     // Everything changes hands
     all: { winner: "blue", tradeRule: "all", flippedToYou: 5, flippedToThem: 0, score: [2, 8] },
 };
@@ -84,11 +111,14 @@ export const installPreview = (dispatch: Dispatch) => {
         dispatch({ type: "SET_RULES", payload: ["open"] });
         dispatch({ type: "SET_TRADE_RULE", payload: scenario.tradeRule });
         dispatch({ type: "SET_ENEMY_ID", payload: 1 });
-        dispatch({ type: "SET_PLAYER_HAND", payload: generateCardsFromIds(YOURS, "blue") });
-        dispatch({ type: "SET_ENEMY_HAND", payload: generateCardsFromIds(THEIRS, "red") });
+        const yours = scenario.yours ?? YOURS;
+        const theirs = scenario.theirs ?? THEIRS;
+
+        dispatch({ type: "SET_PLAYER_HAND", payload: generateCardsFromIds(yours, "blue") });
+        dispatch({ type: "SET_ENEMY_HAND", payload: generateCardsFromIds(theirs, "red") });
         dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: [] });
         dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: [] });
-        dispatch({ type: "SET_BOARD", payload: finishedBoard(scenario.flippedToYou, scenario.flippedToThem) });
+        dispatch({ type: "SET_BOARD", payload: finishedBoard(scenario.flippedToYou, scenario.flippedToThem, yours, theirs) });
         dispatch({ type: "SET_SCORE", payload: scenario.score });
         dispatch({ type: "SET_WIN_STATE", payload: scenario.winner });
         dispatch({ type: "SET_IS_REWARD_SELECTION_OPEN", payload: true });
