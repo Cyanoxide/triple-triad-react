@@ -1,0 +1,108 @@
+"use client";
+
+import type { BoardType, CardType, PlayerType } from "../context/GameTypes";
+import { generateCardsFromIds } from "./general";
+
+/**
+ * Development-only shortcuts for putting the game straight into a state that
+ * normally takes a full match to reach.
+ *
+ * The reward screen is the reason this exists. Getting to it means playing nine
+ * moves and then winning or losing the right way round, and some of what it
+ * does — a trade that sends cards in both directions — only happens under one
+ * rule. That is a slow loop for something that is mostly animation, and a slow
+ * loop is how animation bugs survive.
+ *
+ * Everything here is gated on NODE_ENV, so none of it exists in a build.
+ */
+
+type Dispatch = (action: { type: string; payload?: unknown }) => void;
+
+/** Five cards each, enough for the reward screen to have something to show */
+const YOURS = [1, 2, 3, 4, 5];
+const THEIRS = [6, 7, 8, 9, 10];
+
+/**
+ * A finished board. `initialOwner` and `currentOwner` differing is what the
+ * direct rule reads as "this card changed hands", so the mix here decides how
+ * many cards move each way.
+ */
+const finishedBoard = (flippedToYou: number, flippedToThem: number): BoardType => {
+    const cells: CardType[] = [];
+
+    for (let i = 0; i < 9; i++) {
+        const takenByYou = i < flippedToYou;
+        const takenByThem = i >= flippedToYou && i < flippedToYou + flippedToThem;
+        const owner: PlayerType = takenByYou ? "blue" : takenByThem ? "red" : (i % 2 ? "blue" : "red");
+
+        cells.push({
+            cardId: takenByYou ? THEIRS[i % 5] : YOURS[i % 5],
+            uniqueId: `preview-${i}`,
+            position: [Math.floor(i / 3), i % 3],
+            currentOwner: owner,
+            initialOwner: (takenByYou || takenByThem) ? (owner === "blue" ? "red" : "blue") : owner,
+        });
+    }
+
+    return [cells.slice(0, 3), cells.slice(3, 6), cells.slice(6, 9)];
+};
+
+type Scenario = {
+    /** Who won. "blue" is you. */
+    winner: PlayerType;
+    tradeRule: string;
+    flippedToYou: number;
+    flippedToThem: number;
+    score: [number, number];
+};
+
+const SCENARIOS: Record<string, Scenario> = {
+    // You win and pick a card off them
+    win: { winner: "blue", tradeRule: "one", flippedToYou: 4, flippedToThem: 1, score: [3, 7] },
+    // You lose and they take one of yours
+    loss: { winner: "red", tradeRule: "one", flippedToYou: 1, flippedToThem: 4, score: [7, 3] },
+    // The interesting one: cards move both ways in a single sequence, so the
+    // label has to change direction card by card
+    direct: { winner: "blue", tradeRule: "direct", flippedToYou: 3, flippedToThem: 3, score: [4, 6] },
+    // Everything changes hands
+    all: { winner: "blue", tradeRule: "all", flippedToYou: 5, flippedToThem: 0, score: [2, 8] },
+};
+
+export const installPreview = (dispatch: Dispatch) => {
+    if (process.env.NODE_ENV !== "development" || typeof window === "undefined") return;
+
+    const rewards = (name: keyof typeof SCENARIOS = "direct") => {
+        const scenario = SCENARIOS[name];
+        if (!scenario) {
+            console.warn(`No such scenario. Try: ${Object.keys(SCENARIOS).join(", ")}`);
+            return;
+        }
+
+        dispatch({ type: "SET_IS_MENU_OPEN", payload: false });
+        dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
+        dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
+        dispatch({ type: "SET_RULES", payload: ["open"] });
+        dispatch({ type: "SET_TRADE_RULE", payload: scenario.tradeRule });
+        dispatch({ type: "SET_ENEMY_ID", payload: 1 });
+        dispatch({ type: "SET_PLAYER_HAND", payload: generateCardsFromIds(YOURS, "blue") });
+        dispatch({ type: "SET_ENEMY_HAND", payload: generateCardsFromIds(THEIRS, "red") });
+        dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: [] });
+        dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: [] });
+        dispatch({ type: "SET_BOARD", payload: finishedBoard(scenario.flippedToYou, scenario.flippedToThem) });
+        dispatch({ type: "SET_SCORE", payload: scenario.score });
+        dispatch({ type: "SET_WIN_STATE", payload: scenario.winner });
+        dispatch({ type: "SET_IS_REWARD_SELECTION_OPEN", payload: true });
+
+        console.info(
+            `Reward screen: "${name}" — ${scenario.winner === "blue" ? "you win" : "you lose"}, ` +
+            `trade rule "${scenario.tradeRule}". Reload to get out.`,
+        );
+    };
+
+    const api = {
+        rewards,
+        scenarios: () => Object.keys(SCENARIOS),
+    };
+
+    (window as unknown as { preview: typeof api }).preview = api;
+};

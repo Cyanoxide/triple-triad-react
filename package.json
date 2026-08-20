@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "npm run dev:api & next dev --turbopack",
     "build": "next build",
+    "build:static": "STATIC_EXPORT=1 next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dev:api": "php -S 127.0.0.1:8100 -t public",
+    "dev:web": "next dev --turbopack"
   },
   "dependencies": {
     "next": "15.1.6",

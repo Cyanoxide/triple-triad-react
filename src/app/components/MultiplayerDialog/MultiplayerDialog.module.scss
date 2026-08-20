@@ -1,0 +1,319 @@
+@use "../../styles/dialog.module.scss";
+
+.lobby {
+    min-width: 420px;
+    padding: 1.5rem 1.75rem;
+    // Under the CRT scanlines (body::after, z-index 11), which is where the
+    // rest of the dialogs sit. At 60 the lobby floated above the effect and
+    // looked like it belonged to a different screen.
+    z-index: 10;
+    text-align: center;
+}
+
+.section {
+    margin-bottom: 0.5rem;
+}
+
+.label {
+    opacity: 0.75;
+    margin-bottom: 0.6rem;
+    display: flex;
+    justify-content: center;
+}
+
+/**
+ * The code is the thing people read aloud, so it is spaced out rather than run
+ * together — "9 V 7 P 6" survives a bad microphone in a way "9V7P6" does not.
+ */
+.code {
+    display: flex;
+    justify-content: center;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+/**
+ * The field you actually type into. The nine spans above are the field you can
+ * see; this lies over them so a tap has something to focus, which is the only
+ * way a phone raises its keyboard.
+ *
+ * Transparent, not `display: none` or `visibility: hidden` — either of those
+ * would take it out of the focus order and put us back where we started. The
+ * text is pushed out of sight with a transparent colour and caret rather than
+ * by moving the box, because the box has to stay under your thumb.
+ *
+ * 16px is the smallest iOS will focus without zooming the page in. The viewport
+ * asks it not to, and it does not always listen.
+ */
+.codeInput {
+    position: absolute;
+    // Taller than the row it covers. The drawn field is only 18 design pixels
+    // high — it is a line of sprite glyphs — which is a thin thing to hit with a
+    // thumb. Measured against its neighbours: this reaches up over the label,
+    // which is not interactive, and stops short of Join and Back below.
+    top: -12px;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: transparent;
+    caret-color: transparent;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+    // Safari draws its own rounded box and inner shadow otherwise
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.codeSlot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.2rem;
+    opacity: 0.4;
+
+    &[data-filled="true"] {
+        opacity: 1;
+    }
+
+    // The slot waiting for the next character blinks its own underscore. A
+    // drawn block was too heavy — it read as a filled slot rather than an empty
+    // one waiting to be typed into.
+    &[data-caret="true"] {
+        animation: codeCaret 1s steps(2, end) infinite;
+    }
+}
+
+@keyframes codeCaret {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.15; }
+}
+
+.divider {
+    // 2px, not 1: a single-pixel line under the animated CRT scanlines lands
+    // on and off the dark bands as they move, and reads as a flicker
+    height: 2px;
+    margin: 1.1rem 0;
+    background: #8b8e8d;
+}
+
+.row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.1rem;
+
+    // The auto margins that centre a lone button push a pair to the edges here,
+    // where the row is already doing the centring
+    .action {
+        margin-inline: 0;
+    }
+}
+
+.action {
+    /**
+     * Relative and only as wide as its label, so the shared dialog styling
+     * hangs the hand cursor beside the text. Left as a full-width block it
+     * anchored to the panel instead and the cursor floated off on its own.
+     */
+    position: relative;
+    width: max-content;
+    margin-inline: auto;
+
+    &:disabled {
+        opacity: 0.35;
+        pointer-events: none;
+    }
+}
+
+// Quieter than the main actions: a convenience, not the primary path
+.link {
+    display: inline-flex;
+    justify-content: center;
+    opacity: 0.7;
+    margin: 0 auto;
+}
+
+.rules {
+    text-align: left;
+    display: inline-block;
+}
+
+.rules li span {
+    display: flex;
+}
+
+.status {
+    margin-top: 1.1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.problem {
+    margin-top: 0.9rem;
+    display: flex;
+    justify-content: center;
+    opacity: 0.9;
+}
+
+/**
+ * Sized by its content rather than pinned to a number.
+ *
+ * It used to be a fixed 530px, which the rows filled to the pixel — 474 of 474
+ * — so it only held together while every glyph measured exactly what it does
+ * in Chrome. On iOS the same text comes out a shade wider and the rules and
+ * trade options spilled out of the panel. Nothing here depends on the total
+ * any more: the grid's two equal columns keep the width steady as options are
+ * switched on and off, and the panel is whatever that comes to.
+ */
+.rulesScreen {
+    width: max-content;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.ruleList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    // The column gap has to hold a cursor: the right-hand column's hangs into
+    // it, and at the shared -55px it sat on top of the left column's On/Off
+    gap: 0.15rem 3.6rem;
+    margin-bottom: 0.4rem;
+}
+
+/**
+ * A tighter cursor for the options laid out in rows and columns. The shared one
+ * is sized for a button standing alone with the whole panel to its left, and at
+ * that offset it sits on top of the next column.
+ *
+ * The long selectors are deliberate. The shared rule is
+ * `.dialog button[data-focused=true]::after`, so anything shorter than three
+ * classes plus an element loses to it and nothing here applies at all — which
+ * is exactly what happened the first time.
+ */
+.ruleList button.ruleToggle[data-focused="true"]::after,
+.tradeRow button.tradeOption[data-focused="true"]::after {
+    // The shared cursor's own size — it should read as the same cursor here as
+    // everywhere else. Only its placement changes: centred on the option's line
+    // rather than hung off the text's top edge, and pulled in far enough to sit
+    // in the column gap instead of on top of the column beside it.
+    left: -52px;
+    width: 45px;
+    height: 28px;
+    top: 50%;
+    margin-top: -14px;
+}
+
+.ruleToggle {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 1.2rem;
+}
+
+/**
+ * The rule that gets a section to itself, centred between two dividers.
+ *
+ * `width: auto` on the toggle, against the grid's `width: 100%`: stretched to
+ * the panel it would push its On/Off out to the right edge and the pair would
+ * not read as centred however the list around it was aligned. Sized to its own
+ * contents, the label and the state stay together and the pair centres.
+ */
+.deckRuleList {
+    display: flex;
+    justify-content: center;
+
+    .ruleToggle {
+        width: auto;
+    }
+}
+
+.deckRuleList button.ruleToggle[data-focused="true"]::after {
+    // Matching the grid's cursor rather than the shared one — same reasoning,
+    // and the same three-classes-plus-an-element needed to beat it
+    left: -52px;
+    width: 45px;
+    height: 28px;
+    top: 50%;
+    margin-top: -14px;
+}
+
+// Off is dimmed rather than hidden, so the whole rule set stays readable at once
+.toggleState {
+    opacity: 0.4;
+    // a fixed lane, so "On" and "Off" do not shift the label beside them
+    min-width: 2.4rem;
+    display: flex;
+    justify-content: flex-end;
+
+    &[data-on="true"] {
+        opacity: 1;
+    }
+}
+
+.tradeRow {
+    display: flex;
+    justify-content: center;
+    // room for each option's cursor to sit beside it
+    // wide enough that a full-size cursor clears the option beside it
+    gap: 3.8rem;
+}
+
+.tradeOption {
+    position: relative;
+
+    /**
+     * The dimming is on the label, not the button. On the button it took the
+     * cursor down with it — a pseudo-element is a child, so it inherits the
+     * opacity — and hovering an unselected rule showed a greyed-out cursor.
+     */
+    > * {
+        opacity: 0.4;
+    }
+
+    &[data-on="true"] > * {
+        opacity: 1;
+    }
+
+    /**
+     * All Cards pins this row to "None", so the row is shown decided rather
+     * than hidden — you can see what the rule did instead of the choice
+     * vanishing. The one that is on stays legible; the rest go further down
+     * than the ordinary unselected 0.4 so the row reads as settled.
+     */
+    &[data-locked] > * {
+        opacity: 0.18;
+    }
+
+    &[data-locked][data-on="true"] > * {
+        opacity: 0.75;
+    }
+}
+
+/**
+ * The rule between hosting and joining, broken by an "or". Without it "Host
+ * Game" sat alone above a line and read as a heading for what followed rather
+ * than as the first of two choices.
+ */
+.dividerOr {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin: 1.1rem 0;
+
+    .divider {
+        flex: 1;
+        margin: 0;
+    }
+}
+
+.or {
+    display: flex;
+    opacity: 0.75;
+}

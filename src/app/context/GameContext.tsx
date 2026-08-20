@@ -1,6 +1,7 @@
 import { createContext, use, useReducer, useEffect, ReactNode } from "react";
 import { gameReducer, initialState } from "./GameReducer";
 import { GameContextType } from "./GameTypes";
+import { multiplayer } from "../hooks/multiplayerSession";
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -33,6 +34,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         if (!state.isGameActive) return;
+
+        /**
+         * Against another player the opening turn is not ours to flip. Both
+         * clients would toss their own coin and could disagree about who starts,
+         * so the room decides it once and the page applies it.
+         */
+        if (multiplayer.get().session) return;
 
         if (state.turn === null) {
             dispatch({ type: "SET_TURN", payload: Math.random() < 0.5 ? "red" : "blue" });

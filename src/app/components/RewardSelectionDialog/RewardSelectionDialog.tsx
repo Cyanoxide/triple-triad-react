@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import styles from './RewardSelectionDialog.module.scss';
 import { useGameContext } from "../../context/GameContext";
 import { PlayerType, CardType } from "../../context/GameTypes";
@@ -6,7 +6,10 @@ import Card from '../Card/Card';
 import cards from '../../../data/cards.json';
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import playSound, { stopLoadedSound } from "../../utils/sounds";
+import { finishMultiplayer, multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
+import { sendRewards } from "../../utils/rooms";
 import textToSprite from "../../utils/textToSprite";
+import Ellipsis from "../Ellipsis/Ellipsis";
 import { useCursorNav, markKeyboardNavigation } from "../../hooks/useCursorNav";
 
 interface RewardSelectionDialogProps {
@@ -14,15 +17,68 @@ interface RewardSelectionDialogProps {
     bgm: HTMLAudioElement | undefined;
 }
 
+/**
+ * Everything on this screen runs at this fraction of its written time.
+ *
+ * **`$speed` in `RewardSelectionDialog.module.scss` has to match.** The waits
+ * below are counted against those animations — when a card is centred, when it
+ * has gone — so if the two drift the sounds land on the wrong beat and the
+ * screen closes over a card still moving.
+ */
+const REWARD_SPEED = 0.9;
+const beat = (ms: number) => Math.round(ms * REWARD_SPEED);
+
+/** Where in the card's travel it is centred and holding, as a fraction of the
+ *  `card-preview-*` keyframes — the 40% mark. Tapping skips ahead to here. */
+const CENTRED_AT = 0.4;
+
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
     const { playerCards, playerHand, enemyId, enemyHand, lostCards, winState, score, tradeRule, isSoundEnabled, isCardGalleryOpen, board, dispatch } = useGameContext();
 
     type RewardType = { id: number; uniqueId: string | null | undefined, level: number, player: PlayerType, position: number }
 
+    const { session, incomingRewards } = useMultiplayer();
+
     const isManualSelect = (winState === "blue" && ["one", "diff"].includes(tradeRule as string));
+
+    /**
+     * Only "one" and "diff" need anything sent. "all" and "direct" are decided
+     * by the board, so both clients reach the same answer on their own and an
+     * exchange would be pure ceremony.
+     */
+    const tradeNeedsExchange = !!session && ["one", "diff"].includes(tradeRule as string);
+
+    /** Waiting to be told which cards were taken, rather than inventing them */
+    const awaitingOpponentPicks = tradeNeedsExchange && winState === "red";
 
     const [playerRewardSelection, setPlayerRewardSelection] = useState<RewardType[]>(enemyHand.map((card, index) => ({ id: card.cardId, uniqueId: card.uniqueId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "red", position: index })));
     const [enemyRewardSelection, setEnemyRewardSelection] = useState<RewardType[]>(playerHand.map((card, index) => ({ id: card.cardId, uniqueId: card.uniqueId, level: cards.find(currentCard => card && currentCard.id === card.cardId)?.level ?? 0, player: "blue", position: index })));
+
+    /**
+     * Waits that can be brought forward.
+     *
+     * A tap skips the card to the middle of the screen, which means every
+     * animation *and* every pending wait has to move by the same amount or the
+     * sounds and the hand-over drift out of step with what is on screen. So the
+     * waits are registered rather than fired and forgotten.
+     */
+    const rewardScreen = useRef<HTMLDivElement>(null);
+
+    const pending = useRef<{ id: number; run: () => void; fireAt: number }[]>([]);
+
+    const after = useCallback((ms: number, run: () => void) => {
+        const entry = { id: 0, run, fireAt: performance.now() + ms };
+        entry.id = window.setTimeout(() => {
+            pending.current = pending.current.filter((p) => p !== entry);
+            run();
+        }, ms);
+        pending.current.push(entry);
+    }, []);
+
+    useEffect(() => () => {
+        pending.current.forEach((p) => window.clearTimeout(p.id));
+        pending.current = [];
+    }, []);
 
     const [isSelectionConfirmed, setIsSelectionConfirmed] = useState(false);
     const [selectedRewards, setSelectedRewards] = useState<Record<'won' | 'lost', RewardType[]>>({ "won": [], "lost": [] });
@@ -57,9 +113,68 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             break;
     }
 
+    /**
+     * Tap to bring the card straight to the middle.
+     *
+     * The card's own animation says how far there is left to go: its
+     * `card-preview-*` keyframes reach the centre at `CENTRED_AT`, so the gap
+     * between that and where it has got to is the amount to skip. **Every
+     * running animation on the screen is moved by that same amount**, not just
+     * the card — the label slides in on its own timeline and would otherwise
+     * arrive late — and so is every pending wait.
+     *
+     * Nothing is cut short: the card still holds in the middle and still leaves
+     * the way it would have. Only the wait to get there goes.
+     */
+    const skipToCentre = useCallback(() => {
+        if (!isSelectionConfirmed) return;
+        const screen = rewardScreen.current;
+        if (!screen) return;
+
+        /**
+         * Only the ones still going. A finished animation stays on the element
+         * because these are all `forwards`, so asking for the first
+         * `card-preview` finds the *last card's* spent one, whose time is
+         * already past the centre — and every card after the first stopped
+         * being skippable.
+         */
+        const running = screen.getAnimations({ subtree: true }).filter((a) => a.playState === "running");
+        const preview = running.find((a) => (a as CSSAnimation).animationName?.includes("card-preview"));
+        if (!preview) return;
+
+        const timing = preview.effect?.getComputedTiming();
+        const duration = Number(timing?.duration ?? 0);
+        const delay = Number(timing?.delay ?? 0);
+        if (!duration) return;
+
+        const centred = delay + duration * CENTRED_AT;
+        const jump = centred - Number(preview.currentTime ?? 0);
+        if (jump <= 0) return;
+
+        running.forEach((animation) => {
+            animation.currentTime = Number(animation.currentTime ?? 0) + jump;
+        });
+
+        pending.current.forEach((p) => {
+            window.clearTimeout(p.id);
+            p.fireAt -= jump;
+            p.id = window.setTimeout(() => {
+                pending.current = pending.current.filter((q) => q !== p);
+                p.run();
+            }, Math.max(0, p.fireAt - performance.now()));
+        });
+    }, [isSelectionConfirmed]);
+
     const resetGame = (updatedPlayerCards: Record<number, number>) => {
         stopLoadedSound(victorySound);
         stopLoadedSound(bgm);
+
+        // The cards have changed hands, so the room has done its job. Ending it
+        // here returns both players to the lobby able to start another game,
+        // rather than leaving a finished room polling in the background.
+        if (session) {
+            void finishMultiplayer(winState === "blue" ? "You won that game." : "You lost that game.");
+        }
 
         dispatch({ type: "RESET_GAME" });
 
@@ -100,6 +215,14 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         if (selectedRewards.won.length === 0) resetGame(playerCards);
         playSound("select", isSoundEnabled);
 
+        // Position travels with the id: the winner picked from the opponent's
+        // hand, and index i there is index i of the hand they submitted, so the
+        // loser can find exactly the same cards
+        if (tradeNeedsExchange && session) {
+            void sendRewards(session.code, session.token,
+                selectedRewards.won.map((reward) => ({ id: reward.id, position: reward.position }))
+            ).catch(() => { });
+        }
 
         setIsSelectionConfirmed(true);
     }
@@ -219,9 +342,31 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         return selectedCards;
     }
 
+    /**
+     * The loser applies what the winner actually chose. Without this the local
+     * "best card" routine would pick for them, and the two players would
+     * disagree about which cards changed hands.
+     */
     const areRewardsConfirmed = useRef(false);
     useEffect(() => {
-        if (areRewardsConfirmed.current || isManualSelect) return;
+        if (!awaitingOpponentPicks || areRewardsConfirmed.current || !incomingRewards) return;
+
+        const taken = enemyRewardSelection.filter((card) =>
+            incomingRewards.some((pick) => pick.id === card.id && pick.position === card.position));
+        if (!taken.length) return;
+
+        areRewardsConfirmed.current = true;
+        setEnemyRewardSelection((previous) => previous.map((card) =>
+            taken.some((pick) => pick.id === card.id && pick.position === card.position)
+                ? { ...card, player: "red" } : card));
+        setSelectedRewards({ won: [], lost: taken });
+        setIsSelectionConfirmed(true);
+        playSound("flip", isSoundEnabled);
+        multiplayer.setIncomingRewards(null);
+    }, [incomingRewards, awaitingOpponentPicks, enemyRewardSelection, isSoundEnabled]);
+
+    useEffect(() => {
+        if (areRewardsConfirmed.current || isManualSelect || awaitingOpponentPicks) return;
 
         const selectionMethod = (["all", "direct"].includes(tradeRule as string) || winState === "blue") ? "sequential" : "best";
         const autoRewards = autoSelectRewards(selectionMethod);
@@ -286,32 +431,32 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
         setSelectedReward(reward);
         setSelectedRewards(rewardsList);
 
-        setTimeout(() => {
+        after(beat((playerWinState === "lost") ? 500 : 0), () => {
             playSound("place", isSoundEnabled);
-        }, (playerWinState === "lost") ? 500 : 0);
+        });
 
-        setTimeout(() => {
+        after(beat((playerWinState === "lost") ? 3000 : 2500), () => {
             playSound((playerWinState === "won") ? "success" : "place", isSoundEnabled);
-        }, (playerWinState === "lost") ? 3000 : 2500);
+        });
 
         confirmedList.push(reward);
         setConfirmedCards(confirmedList);
 
-        setTimeout(() => {
+        after(beat(2800), () => {
             setSelectedReward(undefined);
-        }, 2800);
+        });
 
         if (!rewardsList.won.length && !rewardsList.lost.length) {
-            setTimeout(() => {
+            after(beat(4500), () => {
                 resetGame(updatedPlayerCards);
-            }, 4500);
+            });
         }
     }
 
 
     useEffect(() => {
         if (!isSelectionConfirmed) return;
-        setTimeout(processRewards, (confirmedCards.length) ? 3000 : 1500);
+        after(beat((confirmedCards.length) ? 3000 : 1500), processRewards);
     }, [isSelectionConfirmed, confirmedCards]);
 
 
@@ -321,11 +466,43 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
 
     const infoMessage = (rewardType === "lost") ? "lost" : "acquired";
 
+    /**
+     * Which way the label flies in, matched to the card it is naming rather
+     * than to who won overall.
+     *
+     * A card you gain leaves upwards and drops back in from the top, so the
+     * label drops in with it; one you lose leaves downwards and rises back, so
+     * the label rises. Keyed to the winner they agreed by luck in a plain win
+     * or loss, and disagreed the moment a trade sent cards both ways — the
+     * direct rule does exactly that — leaving the label sliding one way while
+     * the card it belonged to went the other.
+     */
+    const labelDirection = rewardType === "lost" ? "red" : rewardType === "won" ? "blue" : winState;
+
+    /**
+     * Nothing has been taken yet when the loser arrives here, so naming a card
+     * gives "undefined card lost". Against another player the wait is real —
+     * the winner is still choosing — so say that instead. On your own it is
+     * only the beat before the automatic pick lands, so the line stays blank
+     * rather than flashing a message that is gone again immediately.
+     */
+    const waitingForPicks = (isSelectionConfirmed || winState === "red") && !selectedRewardName && awaitingOpponentPicks;
+
+    const headingText = (isSelectionConfirmed || winState === "red")
+        ? (selectedRewardName
+            ? `${selectedRewardName} card ${infoMessage}`
+            : awaitingOpponentPicks ? "Waiting for your opponent to choose" : "")
+        : `Select ${winAmount} card(s) you want`;
+
     return (
-        <div className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}>
-            <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={winState}>
+        <div
+            ref={rewardScreen}
+            onClick={skipToCentre}
+            className={`${styles.rewardSelectionContainer} flex flex-col items-center justify-center top-0 z-10 w-screen h-screen`}
+        >
+            <div className={`${styles.rewardSelectionDialog} ${(isSelectionConfirmed && !selectedRewardName) ? "invisible" : ""}`} data-dialog="rewardSelectionInfo" data-animation={selectedRewardName} data-player={labelDirection}>
                 <h4 className={styles.meta} data-sprite="info.">Info.</h4>
-                <h3>{textToSprite((isSelectionConfirmed || (winState === "red")) ? `${selectedRewardName} card ${infoMessage}` : `Select ${winAmount} card(s) you want`)}</h3>
+                <h3 className={styles.headingLine}>{textToSprite(headingText)}{waitingForPicks && <Ellipsis />}</h3>
             </div>
 
             <div className="flex justify-center mb-7">

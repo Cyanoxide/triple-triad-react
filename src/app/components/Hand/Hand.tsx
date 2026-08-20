@@ -13,13 +13,45 @@ interface HandProps {
 }
 
 const Hand: React.FC<HandProps> = ({ className, player }) => {
-    const { currentPlayerHand, currentEnemyHand, turn, turnNumber, selectedCardId, score, isMenuOpen, isGameActive, isSoundEnabled, dispatch } = useGameContext();
+    const { currentPlayerHand, currentEnemyHand, currentPlayerCards, turn, turnNumber, selectedCardId, score, isMenuOpen, isCardSelectionOpen, isGameActive, isSoundEnabled, rules, dispatch } = useGameContext();
     const cards = (player === "red") ? currentEnemyHand : currentPlayerHand;
     const handFocus = useSyncExternalStore(gameNav.subscribe, gameNav.getFocus, () => null);
 
     const handleSelectCard = (card: CardType, player: PlayerType) => {
-        playSound("select", isSoundEnabled);
         if (player === "red") return;
+
+        /**
+         * While the hand is being chosen, a card in it is one you have already
+         * picked, and tapping it puts it back. Cancel does the same thing, but
+         * only from a keyboard — there is no way to reach it on a phone, and no
+         * other way to change your mind.
+         */
+        if (isCardSelectionOpen) {
+            const index = currentPlayerHand.findIndex((held) =>
+                held.uniqueId ? held.uniqueId === card.uniqueId : held.cardId === card.cardId);
+            if (index === -1) return;
+
+            const remaining = currentPlayerHand.filter((_, at) => at !== index);
+            const returned = { ...currentPlayerCards };
+            returned[card.cardId] = (returned[card.cardId] ?? 0) + 1;
+
+            playSound("back", isSoundEnabled);
+            dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: remaining });
+            // Under All Cards the pool is worked out from the hand, so taking a
+            // card back restores it by itself. Crediting the collection too
+            // would hand you a card you do not own.
+            if (!rules?.includes("allCards")) dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: returned });
+            return;
+        }
+
+        /**
+         * Only on your own turn. A card picked up out of turn could not be
+         * played, but it still lit up and made the select sound, which read as
+         * the game having accepted something it had not.
+         */
+        if (turn !== "blue" || !isGameActive) return;
+
+        playSound("select", isSoundEnabled);
 
         dispatch({
             type: "SET_SELECTED_CARD_ID",

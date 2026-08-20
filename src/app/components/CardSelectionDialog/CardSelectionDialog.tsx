@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styles from "./CardSelectionDialog.module.scss";
 import { useGameContext } from "../../context/GameContext";
 import { CardType } from "../../context/GameTypes";
@@ -7,11 +7,14 @@ import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog";
 import Card from "../Card/Card";
 import Image from "next/image";
 import playSound from "../../utils/sounds";
+import { finishMultiplayer, multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
+import { submitHand } from "../../utils/rooms";
 import { setAiPlayerCards } from "../../utils/aiCardSelection";
 import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
 import { generateCardFromId } from "../../utils/general";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
+import Ellipsis from "../Ellipsis/Ellipsis";
 import { useCursorNav, markKeyboardNavigation } from "../../hooks/useCursorNav";
 import { paginationNav } from "../../hooks/paginationNav";
 
@@ -26,13 +29,35 @@ interface CardSelectionDialogProps {
 const ITEMS_PER_PAGE = 11;
 
 const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview = true, showMissingCards = false, modifier, pagination = "cards", onCancel }) => {
-    const { playerCards, currentPlayerCards, previewCardId, currentPlayerHand, enemyId, lostCards, score, isCardSelectionOpen, isCardGalleryOpen, isSoundEnabled, currentPages, slideDirection, rules, dispatch } = useGameContext();
+    const { playerCards, currentPlayerCards, previewCardId, currentPlayerHand, enemyId, lostCards, isCardSelectionOpen, isCardGalleryOpen, isSoundEnabled, currentPages, slideDirection, rules, dispatch } = useGameContext();
 
     const hand: CardType[] = [...currentPlayerHand];
     const allCards: Record<number, number> = Object.fromEntries(
         cardList.map(card => [card.id, 0])
     );
-    const cards: Record<number, number> = { ...currentPlayerCards };
+
+    /**
+     * The "All Cards" rule opens the whole game up: you field anything, not
+     * only what you own.
+     *
+     * The pool is derived from the hand rather than kept in `currentPlayerCards`
+     * and decremented like a real collection. Your collection has nothing to do
+     * with this game, and writing a pretend one into state would then have to be
+     * unwritten — `handleDenial` and the hand's own "take a card back" both put
+     * cards *back* into it. One of everything, minus what you are already
+     * holding, is the same rule stated once and needs no undoing.
+     *
+     * One of each rather than unlimited: five copies of the same card is not a
+     * hand, it is a bug report.
+     */
+    const allCardsRule = !!rules?.includes("allCards") && !isCardGalleryOpen;
+
+    const cards: Record<number, number> = allCardsRule
+        ? Object.fromEntries(cardList.map((card) => [
+            card.id,
+            currentPlayerHand.some((held) => held.cardId === card.id) ? 0 : 1,
+        ]))
+        : { ...currentPlayerCards };
 
     if (showMissingCards) {
         for (const id of Object.keys(allCards)) {
@@ -42,18 +67,75 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         }
     }
 
+    const { session, handSent, room } = useMultiplayer();
+
+    // The random draw is a one-off. Its effect can re-run — the rules arrive
+    // over the network, so they can land after the screen has already opened —
+    // and without this the second run would deal a second hand.
+    const drawnRandomly = useRef(false);
+
     const cardsTotal = Object.values(playerCards).reduce((acc, quantity) => acc + quantity, 0);
     const [addedStartingCardsFlag, setAddedStartingCardsFlag] = useState(false);
+    const [sendFailed, setSendFailed] = useState(false);
+    const [confirmingLeave, setConfirmingLeave] = useState(false);
     const hasPlayedBefore = localStorage.getItem("playerCards");
 
+    // Random deals the hand, so there is nothing on this screen to use
+    const randomDraw = !!session && !!rules?.includes("random") && !isCardGalleryOpen;
+
+    const waitingMessage = !session || isCardGalleryOpen ? null
+        : sendFailed ? "Could not send your hand. Try again."
+            : handSent ? "Waiting for your opponent"
+                : randomDraw ? "Your hand has been dealt at random"
+                    : null;
+
+    // The two that are genuinely waiting on someone get the moving dots; the
+    // failure is not waiting for anything
+    const waitingEllipsis = !!waitingMessage && !sendFailed;
+
     const gameStart = () => {
-        const enemyCards = setAiPlayerCards(enemyId, lostCards, cards);
+        /**
+         * Against another player nobody deals for anybody: the five cards just
+         * chosen are sent, and the opponent sends theirs. The board opens when
+         * the room says both are in, which the page watches for — so this stops
+         * here rather than starting the game itself.
+         */
+        if (session) {
+            /**
+             * The room only takes a hand while it is asking for one. The rules
+             * reach this client as soon as it is in the room, which is before
+             * the guest has accepted them, so a random draw can be ready to
+             * send while the room is still in the lobby — and that submission
+             * comes back rejected. Waiting for the phase means the draw sits
+             * here until it is wanted instead of being thrown away.
+             */
+            if (room?.phase !== "hands") return false;
+
+            dispatch({ type: "SET_PLAYER_HAND", payload: hand });
+            playSound("spin", isSoundEnabled);
+            void submitHand(session.code, session.token, hand.map((card) => card.cardId))
+                // Marked only once the room has it. Marking up front meant a
+                // rejected hand still showed "waiting for your opponent", with
+                // nothing on its way and no way out but a refresh.
+                .then(() => multiplayer.markHandSent())
+                .catch(() => {
+                    playSound("error", isSoundEnabled);
+                    setSendFailed(true);
+                });
+            return true;
+        }
+
+        // The real collection, not the pool: this decides whether the enemy
+        // offers its rare card, and the answer is about what you own rather
+        // than what this game happens to let you field
+        const enemyCards = setAiPlayerCards(enemyId, lostCards, allCardsRule ? playerCards : cards);
         dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
         dispatch({ type: "SET_IS_GAME_ACTIVE", payload: true });
         dispatch({ type: "SET_PLAYER_HAND", payload: hand });
         dispatch({ type: "SET_ENEMY_HAND", payload: enemyCards || [] })
         dispatch({ type: "SET_CURRENT_ENEMY_HAND", payload: enemyCards || [] })
         playSound("spin", isSoundEnabled);
+        return true;
     }
 
     const handleCardSelection = (cardId: number, quantity: number) => {
@@ -63,7 +145,6 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             const card = generateCardFromId(cardId, "blue");
             if (card) hand.push(card);
 
-            score[1] += 1;
             cards[cardId] -= 1;
         }
         if (currentPlayerHand.length < 5) {
@@ -72,22 +153,27 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         }
 
         dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: hand });
-        dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
+        // Under All Cards the pool is worked out from the hand, so there is
+        // nothing to store — and storing it would overwrite the real collection
+        // this game is deliberately ignoring.
+        if (!allCardsRule) dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: cards });
     }
 
     const setCardPreview = (id: number) => {
-        const previewValue = !(Object.keys(playerCards).find(cardId => cardId === String(id))) ? null : id;
-        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: previewValue });
+        // Ownership is the wrong question under All Cards — every card in the
+        // list is yours to pick, so every card in the list previews
+        const owned = allCardsRule || !!Object.keys(playerCards).find(cardId => cardId === String(id));
+        dispatch({ type: "SET_PREVIEW_CARD_ID", payload: owned ? id : null });
     };
 
     const handleConfirmation = () => {
         playSound("select", isSoundEnabled);
+        setSendFailed(false);
         gameStart();
     }
 
     const handleDenial = () => {
         hand.length = 0;
-        score[1] = 0;
 
         playSound("back", isSoundEnabled);
 
@@ -155,13 +241,27 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                 const removed = newHand.pop();
                 const newCards = { ...currentPlayerCards };
                 if (removed) newCards[removed.cardId] = (newCards[removed.cardId] ?? 0) + 1;
-                score[1] -= 1;
                 playSound("back", isSoundEnabled);
                 dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: newHand });
-                dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: newCards });
+                // Putting a card back is the hand shrinking, and under All Cards
+                // the pool follows the hand on its own. Handing it to the
+                // collection as well would credit you a card you do not own.
+                if (!allCardsRule) dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: newCards });
                 return;
             }
             playSound("back", isSoundEnabled);
+
+            /**
+             * Backing all the way out of a hand you are choosing for another
+             * player means leaving the room — there is no half-way state where
+             * you are in a game but not dealing into it. Since it ends their
+             * game as well as yours, it asks first.
+             */
+            if (session) {
+                setConfirmingLeave(true);
+                return;
+            }
+
             markKeyboardNavigation();
             dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
             dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
@@ -173,7 +273,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         if (!pos || pos.group !== "list") return;
         const entry = pageItems[Math.min(pos.index, pageItems.length - 1)];
         if (entry) setCardPreview(Number(entry[0]));
-    }, [currentPage]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [currentPage]);
 
     const cardContent = (item: { id: number, location: string, player: string, additionalDesc: string }, quantity: number, pageIndex: number) => (
         <div
@@ -181,7 +281,11 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             onClick={() => handleCardSelection(item.id, quantity)}
             onMouseEnter={() => focus({ group: "list", index: pageIndex })}
             data-focused={isFocused("list", pageIndex) && (isGalleryInstance || currentPlayerHand.length < 5)}
-            className={`${styles.cardListItem} flex justify-between ${!(Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "opacity-0" : quantity ? "cursor-pointer" : "opacity-50"}`}
+            /* Ownership decides whether a row is drawn at all — the gallery
+               lists every card in the game and hides the ones you have never
+               held. Under All Cards that is the wrong question and would blank
+               almost the whole list, so the pool answers it instead. */
+            className={`${styles.cardListItem} flex justify-between ${!(allCardsRule || Object.keys(playerCards).find(cardId => cardId === String(item.id))) ? "opacity-0" : quantity ? "cursor-pointer" : "opacity-50"}`}
             data-slide-direction={(slideDirection && slideDirection[0] === pagination) ? slideDirection[1] : null}
             style={isCardGalleryOpen ? { zoom: 1.27 } : undefined}
         >
@@ -197,19 +301,26 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
 
 
     useEffect(() => {
-        if (rules && rules.includes("random") && isCardSelectionOpen) {
-            const currentPlayerCards = { ...playerCards };
+        if (rules && rules.includes("random") && isCardSelectionOpen && !drawnRandomly.current) {
+            const held = { ...cards };
+            const drawable = Object.keys(held).filter((id) => held[Number(id)] > 0);
 
-            while (hand.length < 5) {
-                const cardIdIndex = Math.floor(Math.random() * Object.keys(currentPlayerCards).length);
-                const cardId: number = Number(Object.keys(currentPlayerCards)[cardIdIndex]);
+            /**
+             * Bounded rather than "until the hand is full". The draw only counts
+             * a card once the selection accepts it, so a collection that cannot
+             * fill five — or one that disagrees with what is actually held —
+             * used to leave this spinning with the tab locked up.
+             */
+            while (hand.length < 5 && drawable.length) {
+                const index = Math.floor(Math.random() * drawable.length);
+                const cardId = Number(drawable[index]);
 
-                if (currentPlayerCards[cardId] > 0) {
-                    handleCardSelection(cardId, currentPlayerCards[cardId]);
-                    currentPlayerCards[cardId]--;
-                }
+                handleCardSelection(cardId, held[cardId]);
+                held[cardId]--;
+                if (held[cardId] <= 0) drawable.splice(index, 1);
             }
-            gameStart();
+
+            if (hand.length === 5 && gameStart()) drawnRandomly.current = true;
         }
 
 
@@ -232,12 +343,12 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                 setAddedStartingCardsFlag(false);
             }, 3000);
         }
-    }, [isCardSelectionOpen]);
+    }, [isCardSelectionOpen, rules, room?.phase, currentPlayerCards]);
 
 
     return (
         <>
-            <div className={`${styles.cardSelectionDialog} cardSelection ${(isCardSelectionOpen || isCardGalleryOpen) ? "" : "hidden"}`} data-dialog={modifier || "cardSelection"}>
+            <div className={`${styles.cardSelectionDialog} cardSelection ${((isCardSelectionOpen || isCardGalleryOpen) && !waitingMessage) ? "" : "hidden"}`} data-dialog={modifier || "cardSelection"}>
                 <div className="flex justify-between">
                     <h4 className={styles.meta} data-sprite="cards">Cards
                         <span className={`${styles.meta} ml-2 ${(Object.entries(playerCards).length > 1) ? "" : "hidden"}`.trim()} data-sprite="p.">P.
@@ -249,11 +360,26 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
                 <DialogPagination items={Object.entries(cards)} itemsPerPage={ITEMS_PER_PAGE} renderItem={([cardId, quantity]: [number, number], globalIndex: unknown) =>
                     cardContent({ id: Number(cardId), location: '', player: '', additionalDesc: '' }, quantity, Number(globalIndex) - (currentPage - 1) * ITEMS_PER_PAGE)} pagination={pagination} />
 
-                {currentPlayerHand.length === 5 && !isCardGalleryOpen && <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
+                {/* Once a hand is away there is nothing to confirm or undo — it
+                    is with the other player, so say so rather than offering a
+                    button that would send it twice */}
+                {confirmingLeave
+                    ? <ConfirmationDialog
+                        handleConfirmation={() => { setConfirmingLeave(false); void finishMultiplayer(null); }}
+                        handleDenial={() => { playSound("back", isSoundEnabled); setConfirmingLeave(false); }}
+                    />
+                    : !waitingMessage && currentPlayerHand.length === 5 && !isCardGalleryOpen &&
+                        <ConfirmationDialog handleConfirmation={handleConfirmation} handleDenial={handleDenial} />}
                 {showPreview && previewCardId && <div key={previewCardId} className={`${styles.cardSelectionPreview} absolute`}>
                     <Card id={previewCardId} player="blue" />
                 </div>}
             </div>
+            {waitingMessage &&
+                <SimpleDialog className={styles.handStatus}>
+                    {textToSprite(waitingMessage)}
+                    {waitingEllipsis && <Ellipsis />}
+                </SimpleDialog>
+            }
             {hasPlayedBefore && addedStartingCardsFlag && !isCardGalleryOpen &&
                 <SimpleDialog>
                     <div className="mb-2">{textToSprite("You don't have enough cards to play.")}</div>

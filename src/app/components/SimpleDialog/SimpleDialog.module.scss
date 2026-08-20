@@ -5,28 +5,108 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    translate: -50% -50%;
     min-width: 225px;
+
+    /**
+     * The multiplayer launcher: a small box of its own on the title screen,
+     * sitting under the menu dialog rather than inside it.
+     */
+    &[data-dialog="multiplayer"] {
+        // Beside the menu rather than below it: the vertical space under the
+        // info dialog already belongs to the location and player rows
+        top: 50%;
+        left: calc(50% + 175px);
+        translate: -50% -50%;
+        min-width: 0;
+        width: max-content;
+        padding: 0.35rem 1.4rem;
+    }
+
+    /**
+     * Quitting a game in progress. Its own value rather than reusing the
+     * launcher's: that one is absolutely placed beside the title menu, and
+     * sharing it put this box in the middle of the board instead of where its
+     * wrapper asked for.
+     */
+    /**
+     * Quit, and the clock along the bottom edge. Both are placed by their
+     * wrappers rather than centring themselves, and both match the height of
+     * the options bar opposite so the bottom of the screen reads as one row.
+     *
+     * The padding is symmetrical and the content centred in it: the text is
+     * sprite glyphs whose line box is taller than the glyphs themselves, which
+     * left the label sitting high and to the left of the middle.
+     */
+    &[data-dialog="quit"],
+    &[data-dialog="timer"] {
+        position: static;
+        translate: none;
+        min-width: 0;
+        width: max-content;
+        height: 2.5rem;
+        padding: 0 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
     &[data-dialog="options"] {
         opacity: .35;
-        transform: translate(-100%, -100%);
+        /**
+         * The individual property, not `transform`, so it replaces the base
+         * dialog's centring rather than stacking on top of it. Overriding only
+         * `transform` left both applied: the box kept a -50% shift of its own
+         * width, which is nothing much while it is a 42px button and a wide
+         * gap on its right once it expands to 300px.
+         */
+        translate: -100% -100%;
         height: 2.5rem;
         padding: 1px;
-        width: max-content;
-        transition: all 0.5s ease-in-out;
         min-width: 0;
         overflow: hidden;
-        width: 300px;
+        /**
+         * **`max-width` opens and closes it, not `width`.**
+         *
+         * It used to be a hard `width: 300px`, which is wider than the row
+         * actually needs and left a band of empty panel after "OFF". The width
+         * is the content's own now and `max-width` does the animating — a
+         * width cannot transition to `max-content`, but a max-width can be a
+         * plain number while the box stays content-sized underneath it.
+         */
+        width: max-content;
+        max-width: 400px;
+        transition: max-width 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        /**
+         * **No `clip-path` here.** One was added to help Safari clip the
+         * collapsed bar and it took the black edge with it: that edge is the
+         * dialog's `outline`, which is painted *outside* the border box, and a
+         * clip path clips to the border box. Losing it left the grey panel
+         * running to its own edges — which reads as stretched when open and
+         * not-quite-square when shut.
+         */
 
         &[data-expanded="false"] {
-            width: 42px;
-            transition: width 0.2s ease-in;
+            /**
+             * The same as the height, so the shut button is square. It was
+             * 42px against a 2.5rem bar, which is 40 — near enough to look
+             * like a mistake rather than a choice.
+             *
+             * `max-width` rather than `width`, because the width stays
+             * `max-content` in both states so the open/close can animate; the
+             * row is far wider than this, so the clamp decides the size
+             * exactly.
+             */
+            max-width: 2.5rem;
+            transition: max-width 0.2s ease-in;
 
             img:first-child {
                 box-shadow: none;
                 border: none;
                 transform: scaleX(-100%);
+                // Even padding in a square button, and less of it, so the arrow
+                // keeps its size in the narrower box
+                padding: .2rem .35rem;
             }
         }
 
@@ -41,6 +121,15 @@
 
         img {
             width: auto;
+            /**
+             * **`contain`, not the default `fill`.** These icons are not
+             * square — the expand arrow is 30x36 — and the lane they sit in is
+             * sized by the bar's height and its own padding, so the box and the
+             * image disagree about their proportions and `fill` stretches the
+             * artwork to fit. `contain` fits the image inside the box instead
+             * and leaves the ratio alone.
+             */
+            object-fit: contain;
             margin: 0;
             padding: .2rem .4rem .2rem .5rem;
             border-right: 2px solid #030303;

@@ -3,12 +3,15 @@
         "open": "Open",
         "elemental": "Elemental",
         "random": "Random",
+        "allCards": "All Cards",
         "same": "Same",
         "plus": "Plus",
         "suddenDeath": "Sudden Death",
-        "sameWall": "Same Wall"
+        "sameWall": "Same Wall",
+        "autoplay": "Auto Play"
     },
     "tradeRules": {
+        "none": "None",
         "one": "One",
         "diff": "Diff.",
         "direct": "Direct",

@@ -2,6 +2,8 @@ $rotate: -17.5deg;
 $z-offset: 6px;
 
 .indicatorContainer {
+
+
     &[data-type="starting-player-indicator"] {
         position: absolute;
         top: calc(50% + 30px);

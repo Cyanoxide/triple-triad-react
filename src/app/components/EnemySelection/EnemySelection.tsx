@@ -26,7 +26,13 @@ const EnemySelectionDialog = ({ focused = false }: EnemySelectionProps) => {
         if (enemy.rules in ruleSets) {
             dispatch({ type: "SET_RULES", payload: ruleSets[enemy.rules as keyof typeof ruleSets] || [] });
 
-            const tradeRuleKeys = Object.keys(tradeRules.tradeRules);
+            /**
+             * "None" is a real rule but not one to be handed out at random —
+             * rolling it would mean playing a whole game for nothing, which is
+             * a change to single player rather than a rule of it. It exists for
+             * the multiplayer picker, and for All Cards, which forces it.
+             */
+            const tradeRuleKeys = Object.keys(tradeRules.tradeRules).filter((rule) => rule !== "none");
             dispatch({ type: "SET_TRADE_RULE", payload: tradeRuleKeys[Math.floor(Math.random() * tradeRuleKeys.length)] });
         }
 

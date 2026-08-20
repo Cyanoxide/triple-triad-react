@@ -5,7 +5,7 @@
     position: absolute;
     top: 50%;
     left: calc(50% - 175px);
-    transform: translate(-50%, -50%);
+    translate: -50% -50%;
     width: 288px;
     min-height: 300px;
 
@@ -13,7 +13,7 @@
         position: relative;
         left: 0;
         top: 0;
-        transform: none;
+        translate: none;
         height: 100%;
         width: auto;
         min-height: 0;
@@ -71,4 +71,26 @@
     100% {
         transform: rotateY(359deg) rotateX(-20deg);
     }
+}
+// Shown in place of the confirm/deny buttons once a hand has been sent
+.waiting {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.75rem;
+    opacity: 0.8;
+}
+
+/**
+ * The hand's status is its own box rather than a line inside the card list.
+ * Sitting in the list made it look like part of the choosing, when in fact
+ * there is nothing left to choose.
+ */
+.handStatus {
+    display: flex;
+    justify-content: center;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    text-align: center;
+    white-space: nowrap;
 }

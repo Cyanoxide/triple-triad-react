@@ -10,6 +10,8 @@ import { getEnemyMove } from '../../utils/ai';
 import SimpleDialog from '../SimpleDialog/SimpleDialog';
 import Indicator from '../Indicator/Indicator';
 import playSound from "../../utils/sounds";
+import { multiplayer, useMultiplayer } from "../../hooks/multiplayerSession";
+import { sendMove } from "../../utils/rooms";
 import textToSprite from '../../utils/textToSprite';
 import elementsList from "../../../data/elements.json";
 import BoardMessage from "../BoardMessage/BoardMessage";
@@ -20,8 +22,43 @@ interface BoardProps {
     className?: string;
 }
 
+/** How long a player has before a move is made for them */
+const MOVE_TIMEOUT = 120000;
+
+/** The pause between the clock showing 0:00 and the card actually going down */
+const AUTOPLAY_GRACE_MS = 1000;
+
+/**
+ * Development can shorten it with `window.__moveTimeout = 5000`, because
+ * waiting two minutes to find out whether a two-minute timer works is not a
+ * practical way to test it.
+ */
+const moveTimeout = () => {
+    if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
+        const override = (window as unknown as { __moveTimeout?: number }).__moveTimeout;
+        if (typeof override === "number" && override > 0) return override;
+    }
+    return MOVE_TIMEOUT;
+};
+
+/**
+ * Mulberry32. Small, and identical in both tabs for a given seed, which is the
+ * only property that matters here — this is for agreeing on a board, not for
+ * anything that has to be unguessable.
+ */
+const seededRandom = (seed: number) => {
+    let state = seed >>> 0;
+    return () => {
+        state = (state + 0x6d2b79f5) >>> 0;
+        let t = Math.imul(state ^ (state >>> 15), 1 | state);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+};
+
 const Board: React.FC<BoardProps> = ({ className }) => {
     const debug = false;
+    const { session, pendingMoves } = useMultiplayer();
     const { currentPlayerHand, currentEnemyHand, selectedCardId, turn, turnNumber, turnState, score, board, isGameActive, isSoundEnabled, rules, elements, winState, isMenuOpen, isCardSelectionOpen, isCardGalleryOpen, isRewardSelectionOpen, dispatch } = useGameContext();
     const [sameFlag, setSameFlag] = useState(false);
     const [plusFlag, setPlusFlag] = useState(false);
@@ -92,20 +129,32 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
     const determineElementalBoardCells = () => {
         if (!rules || !rules?.includes("elemental")) return;
+
+        /**
+         * Against another player the squares come from the room's seed rather
+         * than from Math.random. Each client used to roll its own, so the two
+         * boards had elements in different places — and since the modifier
+         * changes a card's values, the same move flipped different cards on
+         * each screen and the scores drifted apart. Same and Plus made it
+         * obvious, because they turn on values matching exactly.
+         */
+        const seed = multiplayer.get().seed;
+        const random = seed === null ? Math.random : seededRandom(seed);
+
         const position = new Set<string>();
 
         for (let i = 0; i <= 2; i++) {
-            if (position.size && Math.random() < 0.6) continue;
+            if (position.size && random() < 0.6) continue;
 
-            const row = Math.floor(Math.random() * 3);
-            const col = Math.floor(Math.random() * 3);
+            const row = Math.floor(random() * 3);
+            const col = Math.floor(random() * 3);
             const pos = `${row},${col}`;
             position.add(pos);
         }
 
         const result: { [key: string]: (typeof elementsList)[number] } = {};
         position.forEach((pos) => {
-            const element = elementsList[Math.floor(Math.random() * elementsList.length)];
+            const element = elementsList[Math.floor(random() * elementsList.length)];
             result[pos] = element;
         });
 
@@ -431,6 +480,16 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         placeCard(rowIndex, colIndex, selectedCard);
         playSound("place", isSoundEnabled);
         swapTurn();
+
+        // Tell the other player. Sent after it has been played locally, so the
+        // board never waits on the network to respond to your own move.
+        if (session) {
+            void sendMove(session.code, session.token, {
+                cardId: selectedCard.cardId,
+                row: rowIndex,
+                col: colIndex,
+            }).catch(() => playSound("error", isSoundEnabled));
+        }
     }, [board, selectedCardId, turn, grabCardFromHand, placeCard, swapTurn]);
 
 
@@ -552,6 +611,9 @@ const Board: React.FC<BoardProps> = ({ className }) => {
 
 
     useEffect(() => {
+        // Red is another person in a multiplayer game, not the computer
+        if (multiplayer.get().session) return;
+
         if (turn === "red" && turnNumber <= ((debug) ? 1 : 9)) {
             // The player's cursor hides while the AI takes its turn
             gameNav.setFocus(null);
@@ -632,6 +694,131 @@ const Board: React.FC<BoardProps> = ({ className }) => {
     }, [turn]);
 
 
+    /**
+     * Nobody waits forever for a turn.
+     *
+     * After MOVE_TIMEOUT a move is played for whoever is holding things up.
+     * Only the player whose turn it is runs this clock and only for their own
+     * move — if both sides timed out independently they would each play a card
+     * and the boards would diverge. The opponent simply receives it as a normal
+     * move, so nothing else needs to know a timeout happened.
+     *
+     * The card and cell are chosen at random rather than well: this is a
+     * nudge for someone who has walked away, not a substitute player.
+     */
+    useEffect(() => {
+        // Off unless the host switched it on. Without the rule a game simply
+        // waits, which is what someone playing at their own pace would want.
+        if (!rules?.includes("autoplay")) { multiplayer.setAutoplayAt(null); return; }
+        if (!session || winState || !isGameActive) {
+            multiplayer.setAutoplayAt(null);
+            return;
+        }
+
+        const wait = moveTimeout();
+
+        /**
+         * The clock is shown on the opponent's turn as well, so the wait always
+         * has a number against it rather than only when you are the one
+         * holding things up. Only their own client will actually play for them
+         * — this side is display alone, started from the moment the turn
+         * arrived here, so it can run a beat behind theirs over a slow link.
+         */
+        if (turn !== "blue") {
+            multiplayer.setAutoplayAt(Date.now() + wait);
+            return;
+        }
+
+        if (!currentPlayerHand.length) {
+            multiplayer.setAutoplayAt(null);
+            return;
+        }
+
+        multiplayer.setAutoplayAt(Date.now() + wait);
+
+        /**
+         * A beat between the clock reaching zero and the card being played, so
+         * the move does not land in the same instant the number hits 0:00 —
+         * there is nothing to read in a countdown whose end you never see.
+         */
+        const timeout = setTimeout(() => {
+            multiplayer.setAutoplayAt(null);
+            const empty: [number, number][] = [];
+            board.forEach((row, rowIndex) => row.forEach((cell, colIndex) => {
+                if (!cell) empty.push([rowIndex, colIndex]);
+            }));
+            if (!empty.length) return;
+
+            const card = currentPlayerHand[Math.floor(Math.random() * currentPlayerHand.length)];
+            const [row, col] = empty[Math.floor(Math.random() * empty.length)];
+            if (!card) return;
+
+            grabCardFromHand(card, "blue");
+            placeCard(row, col, card);
+            playSound("place", isSoundEnabled);
+            swapTurn();
+
+            void sendMove(session.code, session.token, { cardId: card.cardId, row, col })
+                .catch(() => { });
+        }, wait + AUTOPLAY_GRACE_MS);
+
+        return () => clearTimeout(timeout);
+    }, [turn, session, winState, isGameActive, turnNumber, rules]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
+    /**
+     * A move from the other player.
+     *
+     * It runs through grabCardFromHand and placeCard exactly as a local move
+     * does, so the flips, the sounds and the timing are the ones already built
+     * — nothing about a remote move is drawn differently.
+     *
+     * The card is matched by id rather than by uniqueId: each client generates
+     * its own uniqueIds when it builds the opponent's hand, so they never agree
+     * across the wire. Two copies of the same card are interchangeable anyway.
+     *
+     * The timer is held in a ref and deliberately *not* cleared when the effect
+     * re-runs. Consuming the move updates the store, which re-renders this
+     * component and changes these dependencies — a cleanup that cleared the
+     * timeout would cancel the very move it had just scheduled, and the move
+     * would disappear with nothing to show for it.
+     */
+    const remoteMoveTimer = useRef<number | null>(null);
+
+    useEffect(() => () => {
+        if (remoteMoveTimer.current) clearTimeout(remoteMoveTimer.current);
+    }, []);
+
+    useEffect(() => {
+        if (!session || turn !== "red" || winState) return;
+        if (remoteMoveTimer.current) return;
+
+        // Looked at before it is taken: if the card cannot be found yet — the
+        // opponent's hand may not have been applied — leaving it queued means
+        // the next render tries again rather than dropping it
+        const move = multiplayer.peekMove();
+        if (!move) return;
+
+        const card = currentEnemyHand.find((candidate) => candidate.cardId === move.cardId);
+        if (!card) return;
+
+        multiplayer.takeMove();
+        gameNav.setFocus(null);
+
+        // A short beat, so the card does not appear the instant a poll returns
+        remoteMoveTimer.current = window.setTimeout(() => {
+            remoteMoveTimer.current = null;
+            grabCardFromHand(card, "red");
+            placeCard(move.row, move.col, card);
+            playSound("place", isSoundEnabled);
+            swapTurn();
+            if (posRef.current?.group === "hand") {
+                gameNav.setFocus({ player: "blue", index: posRef.current.index });
+            }
+        }, 400);
+    }, [pendingMoves, turn, session, winState, currentEnemyHand]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
     useEffect(() => {
         const redScore = board.flat().filter(card => card?.currentOwner === "red").length + currentEnemyHand.length;
         const blueScore = board.flat().filter(card => card?.currentOwner === "blue").length + currentPlayerHand.length;
@@ -639,7 +826,18 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         dispatch({ type: "SET_SCORE", payload: [redScore, blueScore] });
 
         setWinState([redScore, blueScore])
-    }, [board]);
+        /**
+         * Recomputed when a game starts as well as when the board changes.
+         *
+         * On `board` alone it was never recomputed at kickoff — the board does
+         * not change, it is nine empty cells before and after — so the score on
+         * screen was whatever card selection had left in the array. That screen
+         * used to add to it as you picked, one per card, straight into the
+         * state object: invisible at the time, since the score is hidden until
+         * a game is on, and then shown as the opening score. Those writes are
+         * gone and this no longer depends on them.
+         */
+    }, [board, isGameActive]);
 
     const [showStartingPlayerIndicator, setShowStartingPlayerIndicator] = useState(false);
 

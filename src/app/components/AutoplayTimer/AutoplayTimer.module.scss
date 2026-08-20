@@ -1,0 +1,61 @@
+/**
+ * Its own box on the bottom edge, the same height as the quit box and the
+ * options bar either side of it, so the three read as one row of furniture.
+ */
+/**
+ * Out of the way until it has something worth saying. Faded rather than
+ * unmounted, so it does not shift the row as it comes and goes.
+ */
+.wrap {
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+    pointer-events: none;
+
+    // Solid whenever it is up. Half-there read as a rendering fault rather
+    // than as a deliberately quiet notice; the quiet part is that it is not
+    // there at all most of the time.
+    &[data-shown="true"],
+    &[data-urgent="true"] {
+        opacity: 1;
+    }
+}
+
+.timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+}
+
+/**
+ * Both halves are given a lane wide enough for the widest thing that goes in
+ * them, so the box holds its size. The sprite glyphs are not all the same
+ * width — a clock full of 1s is narrower than one full of 8s — so without this
+ * the whole box breathed in and out as the seconds went by, and jumped again
+ * when the turn changed from "Your move" to "Their move".
+ */
+.label {
+    display: flex;
+    justify-content: flex-start;
+    // Measured, not guessed: "Their move" is the wider of the two at 108
+    // design pixels, so this is that plus a hair
+    min-width: 112px;
+    opacity: 0.75;
+}
+
+.clock {
+    display: flex;
+    justify-content: flex-end;
+    // widest clock reading is 48
+    min-width: 50px;
+
+    [data-urgent="true"] & {
+        animation: pulse 1s steps(2, end) infinite;
+    }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.45; }
+    100% { opacity: 1; }
+}

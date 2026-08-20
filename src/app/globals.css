@@ -5,6 +5,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /*
+   * How soft the CRT filter is — on a desktop only; see below for why a phone
+   * gets none of it.
+   */
+  --crt-blur: 0.3px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,9 +21,28 @@
 
 /* Clamp the document so layout overflow (a WebKit zoom artifact) can never
    grow the scrollable area and trigger mobile Safari's shrink-to-fit */
+/*
+ * **The background here is a diagnostic as much as a fix**, for the strip along
+ * the bottom edge on a phone. `height: 100%` on the body turned it from black
+ * to grey, which says the black *was* the page — body's `var(--background)`
+ * under a dark scheme — and that what is left is something else.
+ *
+ * A background on the root element is the next thing to rule out. The root's
+ * background propagates to the canvas, which is what paints any region of the
+ * viewport no box reaches; only body declared one before, so body's colour was
+ * doing that job. If the strip turns this parchment colour, it was the canvas
+ * and this is the fix. **If it stays grey it is the browser's own furniture and
+ * no stylesheet can reach it** — which is worth knowing, because the only lever
+ * left after that is `viewport-fit=cover` plus `env(safe-area-inset-*)` padding
+ * on every edge, and that is a much bigger change than the problem.
+ *
+ * The colour is sampled from the rendered page's own bottom edge, which is
+ * darker than the texture's average because of the vignette drawn over it.
+ */
 html {
   overflow: hidden;
   height: 100%;
+  background: #8b6230;
 }
 
 body {
@@ -30,7 +54,30 @@ body {
   text-shadow: 2px 2px 0 #212121;
   overflow: hidden;
   display: flex;
-  height: 100vh;
+  /*
+   * **`100%`, not `100vh`.** The two are the same on a desktop and are not on a
+   * phone, and where they differ this is the black strip along the bottom edge.
+   *
+   * `scaleApp` sizes the app against `documentElement.clientHeight` — the
+   * layout viewport — but the page texture is `body::before`, which covers the
+   * *body box*. At `100vh` that box can come up short of the layout viewport,
+   * so the app is drawn over ground its own background does not reach, and what
+   * shows through is the bare page: black, under a dark colour scheme.
+   *
+   * `height: 100%` resolves against html, which is `100%` of the layout
+   * viewport, so the background box and the box the app is scaled to are the
+   * same box by construction.
+   *
+   * This is the sober version of a fix that did work: `body::before` was made
+   * `position: fixed`, which covered the strip because fixed is laid out
+   * against the viewport rather than the body. It also re-resolved
+   * `background-size: cover` against a different rectangle and put the layer on
+   * its own compositing layer, which threw the texture off-centre and cost the
+   * board's emblem its `mix-blend-mode`. Moving the *box* rather than the
+   * *painting* gets the same coverage with none of that. **Do not reach for
+   * `position: fixed` here again.**
+   */
+  height: 100%;
 }
 
 /* No double-tap or pinch zoom; the app scales itself. Safari only honours
@@ -39,6 +86,57 @@ html,
 body,
 body * {
   touch-action: manipulation;
+}
+
+/**
+ * The CRT filter's softness — **one blur, on the body**.
+ *
+ * Two earlier placements were wrong, and each was wrong for its own reason:
+ *
+ * 1. **A filter on each panel, link, card face, pip and cursor.** They
+ *    compounded — a card inside a panel got the panel's blur and then its own —
+ *    and **WebKit has a floor**: measured against a sharp edge at dpr 3, every
+ *    radius from 0.05px to 0.5px gave the same 6 device pixels of spread. Blink
+ *    renders nothing below 0.5px, which is why Chrome looked clean while iOS
+ *    was unreadable. Each stacked layer cost a full ~2 CSS pixels whatever the
+ *    number said.
+ * 2. **A single filter on `#app`.** No compounding, but a filter *isolates*:
+ *    `mix-blend-mode` blends with the backdrop only as far as the nearest
+ *    stacking context. The board's `balamb.png` blends into the page texture,
+ *    which is `body::before` and therefore **outside** `#app` — so the emblem
+ *    lost its blend the moment `#app` became an isolation boundary.
+ *
+ * On `body` both of those go away: one pass, and the texture and everything
+ * that blends into it are inside the same boundary.
+ *
+ * **Safe for the cards even though `filter` flattens a `preserve-3d` element**:
+ * what flattens is the filtered element's own `transform-style`, and `.card`
+ * declares its own `preserve-3d` much further down, so its two faces keep their
+ * context. Verified — a face-down card still shows its back and the spinning
+ * preview still has one. Do not move this down onto the cards.
+ */
+body.crt-effect {
+  filter: blur(var(--crt-blur));
+}
+
+/**
+ * **No blur on a phone.**
+ *
+ * A phone draws the same artwork into a third of the pixels, so a blur that is
+ * a gentle haze on a monitor is a smear in the hand — and it cannot be dialled
+ * down to compensate, because **WebKit has a floor**: measured at dpr 1, every
+ * radius from 0.1px to 1px gives the same 4 CSS pixels of spread. Since every
+ * browser on iOS is WebKit, there is no number between "this much" and "none",
+ * so a phone gets none.
+ *
+ * Keyed on `data-phone`, which `scaleApp` sets from the viewport's shorter side
+ * — the same switch the canvas sizes itself by — rather than repeating that
+ * threshold as a media query here.
+ *
+ * The scanlines are untouched: they are `body::after` and their own thing.
+ */
+:root[data-phone="true"] body.crt-effect {
+  filter: none;
 }
 
 body.crt-effect::after {
@@ -103,3 +201,340 @@ button {
     background-position: 0px 15px;
   }
 }
+/**
+ * Behind the multiplayer lobby. Under the CRT scanlines (11) like the dialogs
+ * it dims for, and above the title screen's own panels.
+ */
+.multiplayerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9;
+}
+
+/**
+ * The "want to play a game of cards?" screen.
+ *
+ * The grid is faded out and the logo kept. The board's slot art is drawn per
+ * cell: the centre one is the Triple Triad logo and the rest are the corners
+ * of the playing grid, so hiding them all — which is what this rule did at
+ * first — took the logo with it.
+ *
+ * Opacity rather than `content: none`, so the grid fades back in when a mode is
+ * chosen instead of appearing between one frame and the next. The transition
+ * lives on the cells themselves so it runs in both directions.
+ *
+ * The dialog sits low for the same reason the grid goes: centred, it covered
+ * the logo it is supposed to be standing under.
+ */
+#app [data-position]::before {
+  transition: opacity 450ms ease;
+}
+
+#app[data-screen="mode"] [data-position]::before {
+  opacity: 0;
+}
+
+/* The centre cell is the logo rather than part of the grid, so it stays */
+#app[data-screen="mode"] [data-position="1,1"]::before {
+  opacity: 1;
+}
+
+/* Pinned to the window rather than to the board, but scaled with it */
+[data-app-scaled] {
+  zoom: var(--app-scale, 1);
+}
+
+/**
+ * Phones get taller rows in the dialogs.
+ *
+ * Everything is scaled to fit the canvas, so a menu row that is comfortable on
+ * a monitor comes out a couple of millimetres tall in a hand. The padding is in
+ * design pixels and scales with the rest, which is the point: it buys back
+ * height in proportion rather than a fixed amount that would look wrong at one
+ * size or the other.
+ */
+/**
+ * A phone held upright stacks the hands above and below the board.
+ *
+ * Three columns across a 390px screen leaves the board about half of it. Above
+ * and below, the board gets the whole width and everything is drawn half again
+ * larger. Only for a phone in portrait — a tablet has the room for the real
+ * layout and keeps it.
+ *
+ * The hand is a stack of overlapping cards, so turning it on its side means
+ * moving the overlap from the top edge to the leading edge, and lifting the
+ * chosen card towards the board rather than across to it.
+ *
+ * `[data-selectable][data-player]` is the hand's own container: the class on it
+ * is a CSS module and its real name is a hash, so it cannot be named from here.
+ * The `[data-player]` half is not decoration — every *board cell* also carries
+ * `data-selectable`, and a bare `[data-selectable]` here silently sized all
+ * nine of them like a hand row.
+ */
+:root[data-stacked="true"] #app > .flex.h-full {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The order classes already read red, board, blue — in a column that is the
+   opponent above, the board, and your own hand below */
+/*
+ * Only the hands. The board keeps its own width — it was in this rule too, and
+ * with `auto` the grid stretched to over twice its size and ran off both sides
+ * of the screen.
+ */
+:root[data-stacked="true"] #app > .flex.h-full > *:nth-child(1),
+:root[data-stacked="true"] #app > .flex.h-full > *:nth-child(2) {
+  width: auto;
+}
+
+:root[data-stacked="true"] #app > .flex.h-full > * {
+  /* Sized to their contents. Left to stretch, the three of them shared the
+     full height between them and the hands ended up pinned to the top and
+     bottom edges of the screen with the board marooned in the middle. */
+  flex: 0 0 auto;
+  height: auto;
+  /* The board carries `m-auto`, and auto margins in a flex line swallow the
+     free space before justify-content ever sees it — which pinned the hands to
+     the top and bottom edges of the screen. */
+  margin: 0;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player] {
+  flex-direction: row;
+  min-height: 0;
+  padding-top: 0;
+}
+
+/*
+ * Clear of the board, and clear of the score that now sits outside the row.
+ *
+ * By position in the markup, not by first and last: the three are written red,
+ * blue, board and put in visual order by their `order` classes, so `:last-child`
+ * is the board and gave the gap to the wrong side.
+ */
+:root[data-stacked="true"] #app > .flex.h-full > *:nth-child(1) {
+  margin-bottom: 54px;
+}
+
+:root[data-stacked="true"] #app > .flex.h-full > *:nth-child(2) {
+  margin-top: 54px;
+}
+
+/*
+ * A fixed overlap, not a percentage. The column layout's -48% resolves against
+ * the container's *width*, which was a stable 150px there; here the container
+ * sizes to its contents, so a percentage of it feeds back into itself and the
+ * two hands came out 640 and 130 design pixels wide from the same rule.
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player] > div {
+  margin-top: 0;
+  margin-left: -62px;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player] > div:first-child {
+  margin-left: 0;
+}
+
+/*
+ * Choosing a card slides it out of the stack, exactly as on desktop — turned
+ * through ninety degrees with the rest of the layout, so it goes towards the
+ * board rather than across to it. Up out of your own hand at the bottom, down
+ * out of the opponent's at the top.
+ *
+ * Nothing else moves. Two earlier attempts made the neighbours give way instead
+ * — first by sliding them aside, then by redistributing the overlap so the row
+ * kept its width — and both looked worse than the thing they replaced. The row
+ * holds five 128px cards in 392px, so there is barely any slack to move around,
+ * and every version of "make room" spent it somewhere that showed.
+ *
+ * **Short of the desktop slide, and deliberately.** Desktop moves the card half
+ * its own width. There are only 54 design pixels between the hand and the board
+ * here, and the chosen card's name box sits in that gap — 57 above the row at
+ * rest — so the card has to stop clear of *that*, not just of the board. It is
+ * the tighter of the two constraints by a long way.
+ *
+ * `transform`, not `translate`, and `!important`: it is overriding the module's
+ * own `translateX(±50%)`, which is itself `!important`. Same property or they
+ * compose and the card goes diagonally.
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"] > div[data-selected="true"] {
+  transform: translateY(-18px) !important;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player="red"] > div[data-selected="true"] {
+  transform: translateY(18px) !important;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-selected="true"] {
+  transition: transform 140ms ease-out;
+}
+
+/*
+ * The score sits under a vertical hand. Laid out as a row it lands on top of
+ * the middle card, so it moves clear of the row — above the opponent's, below
+ * your own. It is the hand's next sibling, and carries data-sprite, which is
+ * the only handle on it from here.
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player="red"] + [data-sprite] {
+  top: -56px;
+  bottom: auto;
+}
+
+:root[data-stacked="true"] #app [data-selectable][data-player="blue"] + [data-sprite] {
+  bottom: -56px;
+}
+
+/*
+ * Level with the middle of the card it points at. Its offset is measured for a
+ * column, where the next card is below rather than beside it.
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player] > div[data-focused="true"] [data-player]::after {
+  top: 50%;
+  margin-top: -14px;
+}
+
+/*
+ * The coin-flip arrow at kickoff points at whoever starts, and stacked that is
+ * up or down rather than left or right — another 90 degrees on top of the
+ * module's own `rotate(90deg)`.
+ *
+ * The keyframes have to be restated, not just the base rule. Both of the
+ * module's animations set `transform` in full and fill forwards, so a plain
+ * declaration here is overwritten the moment the animation starts and then held
+ * overwritten. Only `animation-name` is switched — the direction, timing and
+ * the 1440/1260 degree spins are inherited from the module.
+ *
+ * The offsets go with it, and they are not a mirror of the module's. Rotating
+ * about a `top` origin moves the box as well as turning it: at 90 degrees the
+ * centre lands half a width along and half a width up, at 180 it lands a whole
+ * width along and not up at all. These put it back on the middle of the board,
+ * where desktop has it.
+ */
+:root[data-stacked="true"] #app [data-type="starting-player-indicator"] {
+  top: calc(50% + 3px);
+  left: calc(50% - 57px);
+  transform: rotate(180deg) translate(-50%, -50%);
+}
+
+:root[data-stacked="true"] #app [data-type="starting-player-indicator"][data-starting-player="red"] {
+  animation-name: rotate-red-stacked;
+}
+
+:root[data-stacked="true"] #app [data-type="starting-player-indicator"][data-starting-player="blue"] {
+  animation-name: rotate-blue-stacked;
+}
+
+@keyframes rotate-red-stacked {
+  from {
+    transform: rotate(180deg) rotateX(0deg) translate(-50%, -50%);
+  }
+
+  to {
+    transform: rotate(180deg) rotateX(1440deg) translate(-50%, -50%);
+  }
+}
+
+@keyframes rotate-blue-stacked {
+  from {
+    transform: rotate(180deg) rotateX(0deg) translate(-50%, -50%);
+  }
+
+  to {
+    transform: rotate(180deg) rotateX(1260deg) translate(-50%, -50%);
+  }
+}
+
+/*
+ * Whose turn it is, pushed out to the edge of the screen: above the opponent's
+ * score at the top, below yours at the bottom, and flipped so it points into
+ * the board from either end. Allowed to run off a short screen — it is a
+ * marker, and the half of it that shows still reads.
+ */
+:root[data-stacked="true"] #app [data-type="turn-indicator"] {
+  top: auto;
+}
+
+:root[data-stacked="true"] #app [data-player="red"] ~ [data-type="turn-indicator"],
+:root[data-stacked="true"] #app [data-type="turn-indicator"]:has(~ [data-player="red"]) {
+  top: -150px;
+}
+
+:root[data-stacked="true"] #app [data-type="turn-indicator"]:has(~ [data-player="blue"]) {
+  top: auto;
+  bottom: -150px;
+  scale: 1 -1;
+}
+
+/*
+ * The card gallery gets nearly the whole screen on a phone.
+ *
+ * It is two halves side by side, and each is `w-1/2` — which a flex item is
+ * free to overrun, because its `min-width` is `auto` and sprite text does not
+ * wrap. Inset by the desktop's 5rem on each side there is not enough width left
+ * for the card names, so the list pushed past its half and squashed the panel
+ * beside it, **by a different amount on each page**, since each page's longest
+ * name differs. That is the width jumping about as you turn the page.
+ *
+ * Giving it the room back is the fix rather than letting the halves shrink:
+ * they cannot shrink, because there is nothing inside them that can.
+ */
+:root[data-phone="true"] [class*="cardGalleryContainer"] > div {
+  width: calc(100% - 2rem);
+  margin: 1rem;
+}
+
+/*
+ * Card selection sits left of centre to leave room for the preview card beside
+ * it. There is no room beside it on a phone held upright, so it centres and the
+ * preview goes underneath.
+ */
+:root[data-stacked="true"] #app [data-dialog="cardSelection"] {
+  left: 50%;
+}
+
+/* Above the list, not below it, where it would sit on your own hand */
+:root[data-stacked="true"] #app [data-dialog="cardSelection"] [class*="cardSelectionPreview"] {
+  left: 50%;
+  translate: -50% 0;
+  bottom: calc(100% + 20px);
+  top: auto;
+}
+
+/*
+ * The hand keeps its row whether or not there is anything in it. Choosing your
+ * first card used to bring the row into existence and shove the board and the
+ * other hand down the screen.
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player] {
+  min-height: 164px;
+}
+
+/*
+ * No z-index, no scale, no shadow — desktop has none of them and neither does
+ * this. Raising the chosen card above its neighbours was tried and looked
+ * wrong: the stack has an order, and a card jumping to the front of it while
+ * the ones in front stay put breaks the sense that they are lying on each
+ * other. The part of it that has slid clear of the row is enough to read.
+ */
+
+
+/*
+ * The row is a fixed width — five cards at the overlap they sit at — so it does
+ * not grow as a hand is chosen or shrink as it is played out. The cards centre
+ * within it, and the row itself never moves.
+ */
+:root[data-stacked="true"] #app [data-selectable][data-player] {
+  width: 392px;
+  justify-content: center;
+}
+
+/*
+ * The logo across the middle is the centre cell's art at 2.75, and it keeps
+ * that here. It was cut to 1.75 because it ran off both edges of the screen —
+ * which was the 392px cell, not the scale: 392 x 2.75 is 1078 design pixels.
+ * At the right cell size it is 352 against a 535 board, the desktop
+ * proportion, and shrinking it just made the board look empty.
+ */

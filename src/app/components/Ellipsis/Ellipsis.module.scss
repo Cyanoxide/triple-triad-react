@@ -1,0 +1,7 @@
+.ellipsis {
+    display: inline-flex;
+
+    > span[data-shown="false"] {
+        visibility: hidden;
+    }
+}

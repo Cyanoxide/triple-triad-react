@@ -1,4 +1,36 @@
+/**
+ * Every box opens out of nothing at its own centre.
+ *
+ * This animates the `scale` property rather than `transform`. The boxes place
+ * themselves differently — some with translate(-50%, -50%), the card gallery
+ * and the in-game quit box with none at all — so a transform keyframe would
+ * have to know which, and would throw the ones it guessed wrong about across
+ * the screen. `scale` composes with whatever transform each box already has,
+ * and its origin is the element's own middle, which is the point to grow from.
+ *
+ * The short delay is there so the box does not start growing in the same frame
+ * as whatever was on screen before it leaves.
+ */
+@keyframes boxOpen {
+    from {
+        scale: 0;
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    to {
+        scale: 1;
+        opacity: 1;
+    }
+}
+
 .dialog {
+    animation: boxOpen 200ms cubic-bezier(0.2, 0.9, 0.3, 1) 120ms both;
+
+
     background: linear-gradient(125deg, #434546, #696c69);
     box-shadow: inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
     outline: 2px solid #000;

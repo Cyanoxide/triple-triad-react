@@ -132,6 +132,21 @@ p {
     top: 8px;
     right: 7px;
     image-rendering: pixelated;
+    /**
+     * Turns away with the rest of the face.
+     *
+     * Everything drawn on the front sits in `.card__front`'s own 3D context —
+     * it is `preserve-3d` — so each is culled by its own `backface-visibility`.
+     * The numbers and the frame have always had it; this was the one thing
+     * without, and an opponent's element was readable on a face-down card.
+     *
+     * **Do not take `preserve-3d` off `.card__front` to "simplify" this.** That
+     * was tried: it flattens the face, its children stop being culled
+     * individually, and the numbers and this badge start showing through the
+     * card back everywhere — on the board, on the reward screen and through the
+     * spinning preview.
+     */
+    backface-visibility: hidden;
 
     &[data-sprite="thunder"] {
         background-position-x: 0;

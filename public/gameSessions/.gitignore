@@ -1,0 +1,3 @@
+# Live rooms are runtime state, not source. The directory itself is tracked
+# (via .htaccess) so it ships with the export and arrives already protected.
+*.json

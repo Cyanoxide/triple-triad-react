@@ -35,6 +35,11 @@
     // The shared cursor, shown on whichever hand card is focused
     // (blue via keyboard/hover, red while the AI picks its card)
     >div[data-focused=true] [data-player]::after {
+        // Softened with everything else under the CRT filter. Cursors drawn
+        // inside a panel already inherit it from `.dialog`; the hand is not a
+        // panel, so it asks for its own.
+
+
         content: "";
         position: absolute;
         top: 16px;
@@ -44,7 +49,10 @@
         width: 45px;
         height: 28px;
         margin-top: 50px;
-        z-index: 4;
+        // Above the board's cards, which also sit at 4 and won the tie by
+        // coming later in the document — the cursor hangs over the board from
+        // the hand beside it, so it disappeared behind the nearest card
+        z-index: 5;
         image-rendering: pixelated;
     }
 }
