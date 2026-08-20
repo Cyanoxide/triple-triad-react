@@ -1,4 +1,47 @@
 .cardGalleryContainer {
+    /*
+     * **The gallery opts out of the dialog width cap, and takes a gentler
+     * boost than the rest of the UI.**
+     *
+     * Both are set here rather than on the panels because they are custom
+     * properties: everything inside inherits them, and the gallery has five
+     * dialogs in it — the two titles, the card details, the statistics, and
+     * the name bar along the bottom.
+     *
+     * `--dialog-max-width` exists to stop a centred box running off a phone.
+     * Nothing here is a centred box: this is a two-column layout meant to span
+     * the width, and the name bar along the bottom is meant to span it
+     * completely. Capping it at 380px cut it short of its own row.
+     *
+     * `--dialog-boost` is lower because this screen has no slack. Sprite text
+     * does not wrap, so a long card name cannot reflow — it just makes its row
+     * wider, and at 1.3 the longest names pushed the layout off the screen. The
+     * gallery was already the widest thing in the app before any of this.
+     *
+     * **1, i.e. no boost at all**, and that is a deliberate retreat rather than
+     * a value someone liked. At 1.3 the longest name — `Fastitocalon-F`, and
+     * `Caterchipillar` behind it — ran over the NUM. column beside it, and the
+     * element label ran over the card art. Both are text outgrowing a column
+     * that cannot grow with it.
+     *
+     * 1.15 was tried as a middle. It could not be *verified*: reproducing the
+     * collision needs a card selected and a collection holding the long names,
+     * and a fresh profile has neither, so every measurement here came back
+     * clean while the phone showed otherwise. Shipping an unverifiable guess
+     * into the one screen with no slack is not worth it — 1 is the geometry
+     * this screen was designed and previously measured at.
+     *
+     * Raising it is a real option, but the thing to check is the *longest*
+     * name against the count beside it, not a screenshot of page one.
+     */
+    --dialog-max-width: none;
+
+    // Phone only. Unscoped this also enlarged the gallery on a desktop, which
+    // is not meant to move at all.
+    :global(:root[data-phone="true"]) & {
+        --dialog-boost: 1;
+    }
+
     width: 100%;
     height: 100%;
     background: #000000dd;
