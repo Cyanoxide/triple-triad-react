@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
   --foreground: #171717;
   /*
    * How soft the CRT filter is — on a desktop only; see below for why a phone
@@ -14,7 +13,6 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
@@ -22,19 +20,18 @@
 /* Clamp the document so layout overflow (a WebKit zoom artifact) can never
    grow the scrollable area and trigger mobile Safari's shrink-to-fit */
 /*
- * **The background here is a diagnostic as much as a fix**, for the strip along
- * the bottom edge on a phone. `height: 100%` on the body turned it from black
- * to grey, which says the black *was* the page — body's `var(--background)`
- * under a dark scheme — and that what is left is something else.
+ * **The ground, declared once.**
  *
- * A background on the root element is the next thing to rule out. The root's
- * background propagates to the canvas, which is what paints any region of the
- * viewport no box reaches; only body declared one before, so body's colour was
- * doing that job. If the strip turns this parchment colour, it was the canvas
- * and this is the fix. **If it stays grey it is the browser's own furniture and
- * no stylesheet can reach it** — which is worth knowing, because the only lever
- * left after that is `viewport-fit=cover` plus `env(safe-area-inset-*)` padding
- * on every edge, and that is a much bigger change than the problem.
+ * The root's background propagates to the canvas, which paints every region of
+ * the viewport no box reaches. `body` used to declare one too, and body's was
+ * doing that job — `var(--background)`, which follows the phone's appearance
+ * setting. That is what the bar along the screen edge always was: black on a
+ * phone in dark mode, white on one in light. Two reports, one rule. Body is
+ * transparent now and this is the only ground.
+ *
+ * It matters more since `viewport-fit=cover` and a translucent status bar,
+ * because the page now owns the safe areas rather than iOS insetting the
+ * layout out of them and filling the remainder itself.
  *
  * The colour is sampled from the rendered page's own bottom edge, which is
  * darker than the texture's average because of the vignette drawn over it.
@@ -47,7 +44,25 @@ html {
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  /*
+   * **No background here.** The ground is declared once, on `html`.
+   *
+   * This used to be `var(--background)`, which is `#fff` in a light colour
+   * scheme and `#0a0a0a` in a dark one — and it was the bar along the screen
+   * edge, in both its reported colours. The notes above recorded a *black*
+   * strip; the same rule paints it *white* on a phone set to light. It was
+   * never two bugs.
+   *
+   * Transparent lets the canvas show instead, and the canvas takes its colour
+   * from the root element — `#8b6230`, sampled off the rendered page's own
+   * edge. So any region the texture does not reach comes out parchment rather
+   * than a colour chosen by the phone's appearance setting.
+   *
+   * `body::before` still paints the texture over the body box as before; this
+   * only governs what shows where that box does not reach, which with
+   * `viewport-fit=cover` plus a translucent status bar is the safe areas.
+   */
+  background: transparent;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 13px;
   letter-spacing: 0;
