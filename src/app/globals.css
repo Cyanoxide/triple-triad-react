@@ -95,6 +95,28 @@ body {
   overflow: hidden;
   display: flex;
   /*
+   * **Centres the app in the *window*, not in the layout viewport.**
+   *
+   * Measured on an iPhone: `innerHeight` 932, `clientHeight` 873. The layout
+   * viewport is short by the status bar inset and sits at the top, so `#app`
+   * — `h-full` of this box — centres its contents at y=436 while the screen's
+   * middle is y=466. The board sat about 30px high. It always did; the flat
+   * strip along the bottom hid it until the texture reached down there.
+   *
+   * `box-sizing: border-box` (Tailwind's preflight) means this padding comes
+   * out of the 100% height rather than adding to it: the box still ends at
+   * 873, but its content runs 59..873, whose middle is 466. The window's.
+   *
+   * Padding rather than a transform, deliberately — a transform on `#app`
+   * would make it the containing block for the fixed corner furniture inside
+   * it, which is the exact thing `position: fixed` was introduced to escape.
+   *
+   * Landscape is untouched: there is no top inset there, so this is 0. Which
+   * matters, because landscape has no vertical slack to give — portrait has
+   * ~190px.
+   */
+  padding-top: env(safe-area-inset-top);
+  /*
    * **`100%`, not `100vh`.** The two are the same on a desktop and are not on a
    * phone, and where they differ this is the black strip along the bottom edge.
    *
