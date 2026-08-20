@@ -361,36 +361,47 @@ button {
   /*
    * **The margin is divided by the boost, because `zoom` scales it too.**
    *
-   * `--furniture-boost` enlarges these boxes on a phone by multiplying their
-   * `zoom`, and `zoom` multiplies *every* length inside — including the offset
-   * that holds the box off the screen edge. So making the icon 1.6x bigger
-   * silently made its margin 1.6x wider as well, which is why it looked
-   * stranded. Dividing here cancels that: the box grows, the margin does not.
+   * `--furniture-boost` enlarges these boxes by multiplying their `zoom`, and
+   * `zoom` multiplies *every* length inside — including the offset holding the
+   * box off the screen edge. Making the icon 1.6x bigger silently made its
+   * margin 1.6x wider. Dividing cancels that: the box grows, the margin does
+   * not.
    *
-   * **And the two terms are a `max`, not a sum.**
+   * **`--furniture-clearance` is a corner radius, not a safe area.**
    *
-   * `1.5rem` is a desktop measurement — with no safe area to sit on, something
-   * has to hold the box off the edge. A phone already has one. Adding them
-   * stacked a margin the hardware had already provided, putting the options
-   * bar 58px from the bottom edge to clear 34px of home indicator. Taking the
-   * larger says what is actually meant: hold it off by the design margin, or
-   * by the hardware, whichever asks for more.
+   * These four boxes sit in the corners, and the only hardware a corner has to
+   * clear is the curve of the screen. `env(safe-area-inset-*)` describes
+   * something else: the home indicator, centred along the bottom, and the
+   * Dynamic Island, centred along one edge. Neither is anywhere near a corner.
    *
-   * One gap per corner, taken as the larger of the two insets that corner
-   * touches, so the two offsets stay equal and the box sits on the diagonal
-   * rather than being pushed up but not in. The safe areas are asymmetric — in
-   * portrait the home indicator gives the bottom about 34px and the right
-   * none.
+   * Using the insets made that plain. Measured on an iPhone in landscape:
+   * bottom inset 20px, right inset 59px — so taking the larger of the pair, as
+   * evenness requires, gave the bottom-right box 59px of clearance to avoid an
+   * island at the middle of the edge. In portrait the same expression gave
+   * 34px, which looks right. The box was not asking for a safe area; it was
+   * asking for a corner radius, and a corner radius does not change when the
+   * phone is turned.
+   *
+   * So it is one number in real pixels, divided by the scale like any other
+   * hardware measurement. 34px matches what portrait already looked right at.
+   * Raise it to back the boxes off, lower it to tuck them in; below about 16px
+   * they start being clipped by the curve, which is where this began.
+   *
+   * `--furniture-margin` still floors it, for a desktop and for any phone
+   * whose corners are square.
    */
   --furniture-margin: calc(1.5rem / var(--furniture-boost));
+  --furniture-clearance: 0px;
 
-  --furniture-gap-tr: max(var(--furniture-margin), calc(max(env(safe-area-inset-top), env(safe-area-inset-right)) / var(--furniture-scale)));
-  --furniture-gap-br: max(var(--furniture-margin), calc(max(env(safe-area-inset-bottom), env(safe-area-inset-right)) / var(--furniture-scale)));
-  --furniture-gap-bl: max(var(--furniture-margin), calc(max(env(safe-area-inset-bottom), env(safe-area-inset-left)) / var(--furniture-scale)));
+  --furniture-gap: max(
+    var(--furniture-margin),
+    calc(var(--furniture-clearance) / var(--furniture-scale))
+  );
 }
 
 :root[data-phone="true"] {
   --furniture-boost: 1.6;
+  --furniture-clearance: 34px;
 }
 
 /*
