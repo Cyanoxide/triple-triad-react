@@ -27,7 +27,19 @@
  */
 .links {
     position: absolute;
-    top: calc(74% + 100px);
+    /*
+     * Scaled with the dialogs even though this is not one. It is the same kind
+     * of thing to the hand — a row of small targets on the landing screen —
+     * and left alone it stayed tiny while the box above it grew.
+     *
+     * The 100px is divided because `zoom` multiplies absolute lengths (the 74%
+     * it is added to is left alone; percentages are not scaled). That holds
+     * this row where it was rather than letting it drift as the boost changes.
+     * Whether *where it was* still clears the taller box above is a separate
+     * question, and one to look at on the device.
+     */
+    zoom: var(--dialog-boost, 1);
+    top: calc(74% + 100px / var(--dialog-boost, 1));
     left: 50%;
     translate: -50% 0;
     display: flex;

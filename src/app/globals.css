@@ -420,6 +420,7 @@ button {
    * and the rest were left alone.
    */
   --dialog-boost: 1;
+  --dialog-max-width: none;
 
   --furniture-margin: calc(1.5rem / var(--furniture-boost));
   --furniture-clearance: 0px;
@@ -433,7 +434,21 @@ button {
 :root[data-phone="true"] {
   --furniture-boost: 1.6;
   --furniture-clearance: 34px;
-  --dialog-boost: 1.6;
+  --dialog-boost: 1.3;
+
+  /*
+   * **A ceiling in real pixels, not design ones.**
+   *
+   * What matters is whether a box runs off the screen, and that is a question
+   * about the phone rather than about the canvas. A dialog sits inside two
+   * zooms — `#app`'s `--app-scale` and its own `--dialog-boost` — so dividing
+   * by both turns 380 real pixels into the design-pixel figure that renders as
+   * 380. The mode dialog is 470 design px and was the first to overflow.
+   *
+   * Phone only. On a desktop this is `none`, so nothing is capped and the
+   * dialogs keep the widths they were designed at.
+   */
+  --dialog-max-width: calc(380px / var(--app-scale, 1) / var(--dialog-boost, 1));
 }
 
 /*

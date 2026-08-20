@@ -33,6 +33,7 @@
     // Bigger on a phone; 1 everywhere else, and 1 again inside
     // [data-app-scaled], whose furniture is already scaled. See globals.css.
     zoom: var(--dialog-boost, 1);
+    max-width: var(--dialog-max-width, none);
 
 
     background: linear-gradient(125deg, #434546, #696c69);
