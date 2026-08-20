@@ -37,7 +37,34 @@
 
 
     background: linear-gradient(125deg, #434546, #696c69);
-    box-shadow: inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
+    /*
+     * Three layers, and the third is a seam fix rather than a decoration.
+     *
+     * The first two are the bevel: a light inner edge top-left, a dark one
+     * bottom-right. The dark one carries a 1px blur, so it does not reach the
+     * box's own edge as a hard line — and the `outline` is painted outside the
+     * border box, not touching it either. Between them sits a hairline of the
+     * element's own background, and the gradient is at its lightest exactly
+     * there, bottom-right.
+     *
+     * At an integer device pixel ratio nothing shows. At a fractional one —
+     * Safari zoomed on a desktop, or any phone — that hairline lands on a
+     * partly-covered pixel and reads as a pale line between the shadow and the
+     * outline. Measured on the mode dialog's right edge, luminance running
+     * outward: `58, 58, 103, 77, 0` at 2.5x, where 103 is the gradient. At 1x
+     * and 2x it is `59, 58, 0`, with no such pixel.
+     *
+     * `inset 0 0 0 1px #363536` is a hard, unblurred ring that reaches the
+     * edge, so there is nothing light left to show through. It sits *last*, so
+     * the light bevel still paints over it at the top-left — verified
+     * byte-identical on that edge.
+     *
+     * Two other fixes were measured and rejected. Moving the outline into this
+     * box-shadow made it worse, seaming at ratios that had been clean.
+     * `outline-offset: -1px` was clean but pulls the outline inward over the
+     * box, which is a visible change to every dialog.
+     */
+    box-shadow: inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536, inset 0 0 0 1px #363536;
     outline: 2px solid #000;
     color: #fff;
     padding: 16px 18px 14px;
