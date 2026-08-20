@@ -3,6 +3,31 @@
 @tailwind utilities;
 
 :root {
+  /*
+   * **How far the full-page layers reach past the body box.**
+   *
+   * `body::before` (the texture) and `body.crt-effect::after` (the scanlines)
+   * are meant to cover the window. They cover the *body box*, and in an
+   * installed app that box comes up short: measured on a phone, the scanlines
+   * stopped at 90% of the screen and the flat canvas colour showed below.
+   *
+   * The shortfall is the **sum of both vertical insets**, and the box is
+   * anchored at the top — so clearing the bottom one alone leaves exactly the
+   * top one uncovered. That was the second, smaller bar: texture to 95%, then
+   * tan. Hence `top + bottom` on the bottom edge.
+   *
+   * Overshooting is free — `html` is `overflow: hidden`, so anything past the
+   * window is clipped — while undershooting is the visible bug. When there are
+   * no safe areas every value is 0 and these are the original `inset: 0` rules
+   * exactly, so a desktop and a browser tab are untouched.
+   */
+  --page-bleed-top: calc(0px - env(safe-area-inset-top));
+  --page-bleed-left: calc(0px - env(safe-area-inset-left));
+  --page-bleed-right: calc(0px - env(safe-area-inset-right));
+  --page-bleed-bottom: calc(
+    0px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  );
+
   --foreground: #171717;
   /*
    * How soft the CRT filter is — on a desktop only; see below for why a phone
@@ -157,10 +182,10 @@ body.crt-effect {
 body.crt-effect::after {
   content: '';
   position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  top: var(--page-bleed-top);
+  left: var(--page-bleed-left);
+  right: var(--page-bleed-right);
+  bottom: var(--page-bleed-bottom);
   background: repeating-linear-gradient(0deg, #111 0px, #111 1px, transparent 2px, transparent 5px);
   background-size: 100% 3px;
   animation: lines 3s ease-out infinite;
@@ -196,10 +221,10 @@ body.crt-effect::after {
 body::before {
   content: "";
   position: absolute;
-  top: calc(0px - env(safe-area-inset-top));
-  left: calc(0px - env(safe-area-inset-left));
-  right: calc(0px - env(safe-area-inset-right));
-  bottom: calc(0px - env(safe-area-inset-bottom));
+  top: var(--page-bleed-top);
+  left: var(--page-bleed-left);
+  right: var(--page-bleed-right);
+  bottom: var(--page-bleed-bottom);
   background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), radial-gradient(50% 50%, #fbf8e1ee 1%, #fbf8e100 60%), url("/assets/bg.png");
   background-blend-mode: soft-light, hard-light;
   background-size: cover;
