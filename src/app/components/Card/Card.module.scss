@@ -33,6 +33,25 @@
             backface-visibility: hidden;
             transform-style: preserve-3d;
             background-image: url("/assets/cardback.png");
+            /*
+             * **The card back's own edge colour, showing under the image.**
+             *
+             * This box is `inset: 0` of `.card__front`, and at a fractional
+             * scale its painted edge can land a sub-pixel short of the box
+             * behind it — which is `.card`, carrying the player gradient. What
+             * showed through was a pale strip down one side of a face-down
+             * card, and only on a phone, where the scale is fractional and the
+             * card is small enough for a sliver to read as a border.
+             *
+             * `rgb(16, 16, 24)` is sampled from the left column of
+             * `cardback.png`, so the sliver becomes indistinguishable from the
+             * art rather than a light line beside it.
+             *
+             * A colour rather than a geometry change on purpose: the image
+             * still covers the box exactly as before, nothing moves, and none
+             * of the 3D structure or backface culling is involved.
+             */
+            background-color: #101018;
             transform: rotateY(180deg);
             background-size: cover;
         }
