@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./styles/font.css";
@@ -59,6 +59,43 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * One viewport tag, declared here rather than by hand in the head.
+ *
+ * There used to be a hand-written `<meta name="viewport">` *and* the one Next
+ * emits by default, in that order — two tags, with the engine left to merge
+ * them. WebKit merges per property, so nothing was actually being lost, but
+ * the outcome depended on behaviour no spec pins down and the second tag was
+ * invisible in the source. Declaring the export means Next emits exactly one.
+ *
+ * An earlier comment here claimed Next could not express `minimum-scale`. It
+ * can: `minimumScale`, `maximumScale`, `userScalable` and `viewportFit` are
+ * all on the `Viewport` type. That was the only reason the tag was hand-rolled.
+ *
+ * `viewportFit: "cover"` matters only once the app is installed. In a browser
+ * tab iOS lays the page out across the whole viewport and this changes
+ * nothing. In **standalone** it does: without it iOS insets the layout
+ * viewport out of the safe areas and paints what is left over itself, which is
+ * the bar around the edges. `cover` leaves no such region.
+ *
+ * The status bar stays `black`, not `black-translucent`, so the web view still
+ * begins below the clock and nothing yet needs `env(safe-area-inset-*)`
+ * padding. Translucent is what would push the board under the status bar.
+ *
+ * `themeColor` is the card back's own dark, sampled from `cardback.png` — the
+ * same value the manifest gives `theme_color` and `background_color`, so the
+ * splash screen, the status bar and the icon ground are one colour.
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#161418",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -67,35 +104,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"></meta>
-        {/*
-          * Written by hand, not via the `viewport` export.
-          *
-          * Next 15 wants `themeColor` in an exported `viewport` object — but
-          * that export also owns the viewport meta above, and this one is
-          * hand-tuned (`maximum-scale`, `user-scalable=no`). Declaring the
-          * export to add one colour would mean handing Next the tag it is
-          * generated from, and it does not emit `minimum-scale` at all.
-          *
-          * `#161418` is the card back's own dark, sampled from
-          * `cardback.png` — the same value the manifest uses for
-          * `theme_color` and `background_color`, so the splash screen, the
-          * status bar and the icon ground are one colour.
-          */}
-        <meta name="theme-color" content="#161418"></meta>
-        {/*
-          * The legacy Apple spelling, by hand, because Next no longer emits it.
-          *
-          * `appleWebApp.capable: true` in the metadata export produces
-          * `<meta name="mobile-web-app-capable">` — the modern standard name,
-          * which is what Chrome reads. Safari has never read it. What Safari
-          * reads is this one, and without it a home screen launch on older iOS
-          * opens in a browser tab with the address bar still there.
-          *
-          * iOS 15.4 and up will also take `display: standalone` from the
-          * manifest, so on a current phone the two agree and this is
-          * redundant. It costs one tag to not depend on that.
-          */}
         <meta name="apple-mobile-web-app-capable" content="yes"></meta>
         {/*
           * The card back, fetched up front.
