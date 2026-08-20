@@ -291,6 +291,37 @@ button {
  * The dialog sits low for the same reason the grid goes: centred, it covered
  * the logo it is supposed to be standing under.
  */
+/**
+ * **Centres the app in the window, not in the layout viewport.**
+ *
+ * Measured on an iPhone: `innerHeight` 932, `clientHeight` 873. The layout
+ * viewport is short by the status bar inset and sits at the top, so `#app` —
+ * `h-full` of that box — centres its contents about 30px above the screen's
+ * middle. In portrait only; landscape has no top inset and `innerHeight`
+ * equals `clientHeight` there, measured 430 and 430.
+ *
+ * **A relative `top`, and nothing else.** `#app` already carries `relative`,
+ * so this is a paint offset: no box changes size, no percentage resolves
+ * differently, nothing reflows, and relative positioning does not become a
+ * containing block for the `fixed` corner furniture inside it.
+ *
+ * That is the whole point of doing it this way. The obvious version —
+ * `padding-top` on `body` — was tried and reverted: `scaleApp` puts `zoom` on
+ * `#app`, so padding on the unzoomed `body` moved the containing block that
+ * `#app`'s `height: 100%` resolves against, and that height is then multiplied
+ * by the zoom. iOS also applies `env()` after the first layout pass, so the
+ * board emblem and the meta links landed against a box that had since changed
+ * and only came right when a rotation re-ran `scaleApp`. **Do not reach for
+ * padding or margin on body or #app here.**
+ *
+ * Divided by `--app-scale` because `#app` is zoomed: the shortfall is a real
+ * measurement of the screen, so it must survive the zoom as the same number of
+ * real pixels. Half of it, because centring splits the difference.
+ */
+#app {
+  top: calc(env(safe-area-inset-top) / 2 / var(--app-scale, 1));
+}
+
 #app [data-position]::before {
   transition: opacity 450ms ease;
 }
