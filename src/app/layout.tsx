@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     * costs a failed request when it is absent, and declaring it is free.
     */
   icons: {
-    apple: "/apple-touch-icon.png",
+    apple: "/icons/180.png",
   },
 };
 

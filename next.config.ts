@@ -87,7 +87,6 @@ const withSerwist = withSerwistInit({
     "assets/**/*.{png,gif,svg}",
     "assets/audio/!(bgm|victory).mp3",
     "icons/*.png",
-    "apple-touch-icon.png",
     "manifest.json",
   ],
 });
