@@ -437,6 +437,14 @@ button {
    * Two variables rather than one, because the pairs need different amounts:
    * the pickers want to nearly touch, the links want daylight under the box.
    *
+   * **The picker figure has to clear two outlines before any of it shows.**
+   * `.dialog` carries `outline: 2px solid #000`, which paints *outside* the
+   * border box and takes no part in layout — so the gap between two boxes is
+   * eaten from both sides before a pixel of it is visible. At a boost of 1.3
+   * each outline renders about 2.6 real px, so a geometric gap under 5.2 shows
+   * as nothing at all. It measured 2.59 and looked like contact, which is
+   * exactly what it was: the outlines overlapped by 2.6.
+   *
    * Divided by the boost because they are added inside dialogs, which zoom
    * absolute lengths. Tuned against a boost of 1.3 — if that changes, so do
    * these, since what they are correcting for is the growth the boost causes.
@@ -498,14 +506,22 @@ button {
    * 25px on a 430 phone. The corner furniture sitting 34px in read as a
    * different margin from everything else on the screen.
    *
-   * Floored at 16px, which is roughly what a corner of this radius needs on the
+   * **The same margin the capped dialogs leave**, so the corner furniture sits
+   * on the screen's margin rather than one of its own.
+   *
+   * Clamped at both ends anyway. An earlier version derived this from the
+   * window — `(100vw - 380px) / 2` — which came to 232px in landscape and
+   * pushed the furniture a third of the way across the screen, over the logo.
+   * Reading the margin directly cannot do that, and the clamp is belt and
+   * braces for a margin someone later makes large.
+   *
+   * Floored at 16px, roughly what a corner of this radius needs on the
    * diagonal: below that the curve starts clipping the box, which is where this
-   * began. On a narrow phone the cap does not bind and the floor is what
-   * applies.
+   * began. That floor is what a phone too narrow for the cap gets.
    */
-  --furniture-clearance: max(16px, calc((100vw - 380px) / 2));
+  --furniture-clearance: clamp(16px, var(--dialog-margin), 34px);
   --dialog-boost: 1.3;
-  --picker-nudge: calc(16.7px / var(--dialog-boost, 1));
+  --picker-nudge: calc(24.2px / var(--dialog-boost, 1));
   --links-nudge: calc(30px / var(--dialog-boost, 1));
 
   /*
@@ -514,13 +530,23 @@ button {
    * What matters is whether a box runs off the screen, and that is a question
    * about the phone rather than about the canvas. A dialog sits inside two
    * zooms — `#app`'s `--app-scale` and its own `--dialog-boost` — so dividing
-   * by both turns 380 real pixels into the design-pixel figure that renders as
-   * 380. The mode dialog is 470 design px and was the first to overflow.
+   * by both turns a real-pixel figure into the design-pixel one that renders
+   * as it.
+   *
+   * **A margin, not a width.** It was a flat 380px, which happens to be right
+   * on a 430-wide phone and is badly wrong in landscape: the window is 844
+   * there, and squeezing the rules panel into 380 forced it into one tall
+   * column that ran off the bottom of a 390-high screen. Expressed as
+   * "the window less a margin" it is 380 on that phone by arithmetic, and
+   * leaves landscape the room it actually has.
    *
    * Phone only. On a desktop this is `none`, so nothing is capped and the
    * dialogs keep the widths they were designed at.
    */
-  --dialog-max-width: calc(380px / var(--app-scale, 1) / var(--dialog-boost, 1));
+  --dialog-margin: 25px;
+  --dialog-max-width: calc(
+    (100vw - 2 * var(--dialog-margin)) / var(--app-scale, 1) / var(--dialog-boost, 1)
+  );
 }
 
 /*
