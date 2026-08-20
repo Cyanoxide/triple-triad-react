@@ -360,7 +360,25 @@ button {
   --furniture-boost: 1.6;
 }
 
-/* Pinned to the window rather than to the board, but scaled with it */
+/*
+ * Pinned to the window rather than to the board, but scaled with it.
+ *
+ * **`position: fixed` in the markup, not `absolute`** — and that is what the
+ * line above has always claimed. `absolute` worked only while `#app` happened
+ * to fill the window.
+ *
+ * It does not in an installed app. Measured on an iPhone: `innerHeight` 932,
+ * `documentElement.clientHeight` 873. The layout viewport is short by 59 — the
+ * status bar inset — and sits at the top, so 59px of screen hangs below the
+ * box everything absolute is measured against. The options bar came out 117px
+ * above the screen's bottom edge instead of 58: its correct 58px offset, plus
+ * that orphan strip.
+ *
+ * Two of these boxes sit inside `#app` and one after it, so `absolute` gave
+ * them two different containing blocks and neither was the window. `fixed`
+ * gives all three the visual viewport, which is the full 932, and the offsets
+ * below then mean what they say.
+ */
 [data-app-scaled] {
   zoom: var(--furniture-scale);
 }

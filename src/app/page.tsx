@@ -493,7 +493,7 @@ function GameContent() {
           manage it — the cards move on each client rather than on the server —
           but there is no need to put a button on it. */}
       {session && isGameActive && !isRewardSelectionOpen && (
-        <div className="absolute left-[var(--furniture-gap-bl)] bottom-[var(--furniture-gap-bl)] text-3xl z-10" data-app-scaled>
+        <div className="fixed left-[var(--furniture-gap-bl)] bottom-[var(--furniture-gap-bl)] text-3xl z-10" data-app-scaled>
           <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("select", isSoundEnabled); setConfirmingQuit(true); }}>
               {textToSprite("Quit")}
@@ -521,7 +521,7 @@ function GameContent() {
           pixels. A corner needs neither. This is the pattern already proven by
           the two boxes along the bottom. */}
       {session && isGameActive && !isRewardSelectionOpen && (
-        <div className="absolute right-[var(--furniture-gap-tr)] top-[var(--furniture-gap-tr)] text-3xl z-10 pointer-events-none" data-app-scaled>
+        <div className="fixed right-[var(--furniture-gap-tr)] top-[var(--furniture-gap-tr)] text-3xl z-10 pointer-events-none" data-app-scaled>
           <AutoplayTimer />
         </div>
       )}
@@ -531,7 +531,7 @@ function GameContent() {
           the document, so an equal z-index leaves this one on top. The CRT
           scanlines are also 11 and are `body::after`, later still, so they keep
           their place over everything. */}
-      <div className="absolute right-[var(--furniture-gap-br)] bottom-[var(--furniture-gap-br)] text-3xl z-[11] flex items-center" data-app-scaled>
+      <div className="fixed right-[var(--furniture-gap-br)] bottom-[var(--furniture-gap-br)] text-3xl z-[11] flex items-center" data-app-scaled>
         <SimpleDialog metaTitle={null} dialog="options" data-expanded={isOptionsOpen}>
           <div className="flex items-center h-full">
             <Image src="/assets/menu-expand.png?v=1" onClick={handleToggleOptions} onMouseEnter={() => optionsNav.actions.focusOption?.(0)} data-focused={optionsFocus === 0} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" />
