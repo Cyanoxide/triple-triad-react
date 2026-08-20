@@ -25,11 +25,21 @@ const manifest = self.__SW_MANIFEST ?? [];
  * It cannot go in `additionalPrecacheEntries` in `next.config.ts`, because
  * that option replaces the generated manifest rather than extending it.
  *
- * The revision is the sorted list of the build's JS chunk names, every one of
- * which carries a content hash. So it changes exactly when the app's code
- * changes — which is also the only time the exported HTML changes — and stays
- * put when nothing has. A timestamp would have re-fetched the document on
- * every deploy whether or not it differed.
+ * The revision is the sorted list of the build's JS entries. Most carry a
+ * content hash, but the list also includes
+ * `/_next/static/<BUILD_ID>/_buildManifest.js`, and Next mints a fresh
+ * BUILD_ID on every build — verified: two consecutive builds of identical
+ * source gave `gneXwmryMGSFRvRL_lt-I` and `S8u124_lshav5aYe2Cc2i`.
+ *
+ * So this re-fetches the document on **every deploy**, not only when the code
+ * changes. That is the behaviour we want and it is worth being explicit about,
+ * because the alternative is a trap: a change that touches only `metadata` —
+ * an icon path, a title — alters `index.html` while leaving every content
+ * hash alone. Tie the revision to content hashes only and the worker would go
+ * on serving the old HTML for ever, and the symptom would be a metadata fix
+ * that appears not to have deployed.
+ *
+ * The cost is one HTML file per deploy.
  */
 const documentRevision = manifest
   .map((entry) => (typeof entry === "string" ? entry : entry.url))

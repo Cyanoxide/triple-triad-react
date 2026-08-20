@@ -240,9 +240,51 @@ button {
   opacity: 1;
 }
 
+/**
+ * The four boxes pinned to the window's corners — Quit, the move clock, the
+ * options bar — scaled with the board but positioned against the window.
+ *
+ * **The inset has two parts, and only one of them may scale.**
+ *
+ * `1.5rem` is a design measurement: it should shrink with everything else so
+ * the margin stays in proportion. `env(safe-area-inset-*)` is a real
+ * measurement of the hardware — the home indicator, the notch, the rounded
+ * corners — and must come out as the same number of real pixels whatever the
+ * canvas is doing.
+ *
+ * `zoom` multiplies every length in the box by the scale, so a real-pixel
+ * result of R has to be written as R / scale. Hence the division. Verified in
+ * Chromium and WebKit: at scale 0.5 with a 44px inset, `calc(1.5rem + 44px /
+ * 0.5)` lands the box exactly 56px from the edge (24 * 0.5 + 44).
+ *
+ * This only started mattering with `viewport-fit=cover`. Before it, iOS inset
+ * the layout viewport out of the safe areas itself and the corners could never
+ * reach the rounded edge — at the cost of the bar it painted around the page.
+ *
+ * **The boost is a separate axis from the safe area.** A phone renders the
+ * whole canvas at roughly a third of desktop, which leaves the options bar a
+ * couple of millimetres tall in the hand. `--furniture-boost` enlarges only
+ * these four boxes, not the board, the hands or the dialogs — the panel
+ * scaling that was tried and rejected. The insets divide by the boosted scale,
+ * so the safe-area clearance stays correct as the furniture grows.
+ */
+:root {
+  --furniture-boost: 1;
+  --furniture-scale: calc(var(--app-scale, 1) * var(--furniture-boost));
+
+  --furniture-top: calc(1.5rem + env(safe-area-inset-top) / var(--furniture-scale));
+  --furniture-right: calc(1.5rem + env(safe-area-inset-right) / var(--furniture-scale));
+  --furniture-bottom: calc(1.5rem + env(safe-area-inset-bottom) / var(--furniture-scale));
+  --furniture-left: calc(1.5rem + env(safe-area-inset-left) / var(--furniture-scale));
+}
+
+:root[data-phone="true"] {
+  --furniture-boost: 1.6;
+}
+
 /* Pinned to the window rather than to the board, but scaled with it */
 [data-app-scaled] {
-  zoom: var(--app-scale, 1);
+  zoom: var(--furniture-scale);
 }
 
 /**
