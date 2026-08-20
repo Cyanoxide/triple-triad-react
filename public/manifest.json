@@ -1,6 +1,6 @@
 {
-  "name": "Triple Triad",
-  "short_name": "Triad",
+  "name": "Triple Triad React",
+  "short_name": "Triple Triad React",
   "description": "The Final Fantasy VIII card game, in the browser.",
   "start_url": "/",
   "scope": "/",

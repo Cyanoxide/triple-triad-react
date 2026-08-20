@@ -31,15 +31,26 @@ export const metadata: Metadata = {
     * `apple-mobile-web-app-title`, and the home screen icon from
     * `apple-touch-icon` — the manifest's `icons` array is ignored.
     *
-    * `black` status bar, not `black-translucent`: translucent draws the page
-    * *under* the clock and battery, and this layout is scaled to
-    * `documentElement.clientHeight` with no safe-area padding anywhere. The
-    * top of the board would go under the status bar on a notched phone.
+    * **`black-translucent`, so there is no status bar strip to paint.**
+    *
+    * `black` and `default` both make iOS *reserve* a strip above the page and
+    * fill it itself, and in portrait it filled it white — the bar over the
+    * clock and the island. Translucent reserves nothing: the page runs the
+    * full height of the screen and the status bar is drawn over it, so what
+    * shows behind the clock is the page's own ground rather than a colour iOS
+    * chose. Landscape never showed it because there is no strip in landscape.
+    *
+    * This was avoided earlier for a reason that has since been dealt with:
+    * translucent puts the page under the clock, and nothing had safe-area
+    * padding. The corner furniture now does. The board cannot reach it either
+    * — measured at 390x844, the portrait canvas leaves 190px of slack above
+    * itself against an island of about 59px, and landscape fills the height
+    * but has 148px of horizontal slack against 44px side insets.
     */
   appleWebApp: {
     capable: true,
-    title: "Triad",
-    statusBarStyle: "black",
+    title: "Triple Triad React",
+    statusBarStyle: "black-translucent",
   },
   /*
     * Only `apple`. Not `icon`, and not `shortcut`.
@@ -78,9 +89,9 @@ export const metadata: Metadata = {
  * viewport out of the safe areas and paints what is left over itself, which is
  * the bar around the edges. `cover` leaves no such region.
  *
- * The status bar stays `black`, not `black-translucent`, so the web view still
- * begins below the clock and nothing yet needs `env(safe-area-inset-*)`
- * padding. Translucent is what would push the board under the status bar.
+ * It pairs with `black-translucent` in the metadata below: `cover` removes the
+ * inset, translucent removes the reserved strip, and between them the page
+ * owns the whole screen. Neither is much use without the other.
  *
  * `themeColor` is the card back's own dark, sampled from `cardback.png` — the
  * same value the manifest gives `theme_color` and `background_color`, so the
