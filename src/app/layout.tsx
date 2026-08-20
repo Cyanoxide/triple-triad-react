@@ -16,6 +16,31 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Triple Triad React",
+  /*
+    * The manifest is a plain file in `public/`, not `app/manifest.ts`.
+    *
+    * The file convention generates a route, and `output: export` has to
+    * pre-render it — one more thing to go wrong in the export for a document
+    * that is nine static lines. In `public/` it is copied verbatim by every
+    * build, static or not, and the PHP host serves it as-is.
+    */
+  manifest: "/manifest.json",
+  /*
+    * iOS reads none of the manifest's display settings. `standalone` there
+    * comes from `apple-mobile-web-app-capable`, the title from
+    * `apple-mobile-web-app-title`, and the home screen icon from
+    * `apple-touch-icon` — the manifest's `icons` array is ignored.
+    *
+    * `black` status bar, not `black-translucent`: translucent draws the page
+    * *under* the clock and battery, and this layout is scaled to
+    * `documentElement.clientHeight` with no safe-area padding anywhere. The
+    * top of the board would go under the status bar on a notched phone.
+    */
+  appleWebApp: {
+    capable: true,
+    title: "Triad",
+    statusBarStyle: "black",
+  },
 };
 
 export default function RootLayout({
@@ -27,6 +52,21 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"></meta>
+        {/*
+          * Written by hand, not via the `viewport` export.
+          *
+          * Next 15 wants `themeColor` in an exported `viewport` object — but
+          * that export also owns the viewport meta above, and this one is
+          * hand-tuned (`maximum-scale`, `user-scalable=no`). Declaring the
+          * export to add one colour would mean handing Next the tag it is
+          * generated from, and it does not emit `minimum-scale` at all.
+          *
+          * `#161418` is the card back's own dark, sampled from
+          * `cardback.png` — the same value the manifest uses for
+          * `theme_color` and `background_color`, so the splash screen, the
+          * status bar and the icon ground are one colour.
+          */}
+        <meta name="theme-color" content="#161418"></meta>
         {/*
           * The card back, fetched up front.
           *
