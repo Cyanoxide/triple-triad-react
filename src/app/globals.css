@@ -337,23 +337,34 @@ button {
   --furniture-scale: calc(var(--app-scale, 1) * var(--furniture-boost));
 
   /*
-   * One gap per corner, taken as the **larger** of the two insets that corner
-   * touches — not each edge's own.
+   * **The margin is divided by the boost, because `zoom` scales it too.**
    *
-   * The safe areas are asymmetric: in portrait the home indicator gives the
-   * bottom about 34px while the right gets nothing. Using each edge's own
-   * inset therefore pushed the options bar 34px up and 0px in, and it read as
-   * dropped rather than as sitting in the corner. Taking the max of the pair
-   * keeps the two gaps equal, so the box stays on the diagonal.
+   * `--furniture-boost` enlarges these boxes on a phone by multiplying their
+   * `zoom`, and `zoom` multiplies *every* length inside — including the offset
+   * that holds the box off the screen edge. So making the icon 1.6x bigger
+   * silently made its margin 1.6x wider as well, which is why it looked
+   * stranded. Dividing here cancels that: the box grows, the margin does not.
    *
-   * Per corner rather than one global maximum, because a single value would be
-   * driven by whichever edge is worst anywhere on the device — the status bar
-   * in portrait — and inset all four boxes by that much on edges with no
-   * hardware near them.
+   * **And the two terms are a `max`, not a sum.**
+   *
+   * `1.5rem` is a desktop measurement — with no safe area to sit on, something
+   * has to hold the box off the edge. A phone already has one. Adding them
+   * stacked a margin the hardware had already provided, putting the options
+   * bar 58px from the bottom edge to clear 34px of home indicator. Taking the
+   * larger says what is actually meant: hold it off by the design margin, or
+   * by the hardware, whichever asks for more.
+   *
+   * One gap per corner, taken as the larger of the two insets that corner
+   * touches, so the two offsets stay equal and the box sits on the diagonal
+   * rather than being pushed up but not in. The safe areas are asymmetric — in
+   * portrait the home indicator gives the bottom about 34px and the right
+   * none.
    */
-  --furniture-gap-tr: calc(1.5rem + max(env(safe-area-inset-top), env(safe-area-inset-right)) / var(--furniture-scale));
-  --furniture-gap-br: calc(1.5rem + max(env(safe-area-inset-bottom), env(safe-area-inset-right)) / var(--furniture-scale));
-  --furniture-gap-bl: calc(1.5rem + max(env(safe-area-inset-bottom), env(safe-area-inset-left)) / var(--furniture-scale));
+  --furniture-margin: calc(1.5rem / var(--furniture-boost));
+
+  --furniture-gap-tr: max(var(--furniture-margin), calc(max(env(safe-area-inset-top), env(safe-area-inset-right)) / var(--furniture-scale)));
+  --furniture-gap-br: max(var(--furniture-margin), calc(max(env(safe-area-inset-bottom), env(safe-area-inset-right)) / var(--furniture-scale)));
+  --furniture-gap-bl: max(var(--furniture-margin), calc(max(env(safe-area-inset-bottom), env(safe-area-inset-left)) / var(--furniture-scale)));
 }
 
 :root[data-phone="true"] {
