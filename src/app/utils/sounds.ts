@@ -67,6 +67,19 @@ const lastPlayed = new Map<sounds, number>();
 const blocked = new Map<HTMLAudioElement, boolean>();
 
 /**
+ * The long tracks the game currently means to be playing, and the ones paused
+ * because the app went into the background.
+ *
+ * A tab gets suspended when it is backgrounded; an installed app does not, so
+ * the music carried on playing over whatever the phone was doing next. Pausing
+ * has to be told apart from `stopped`: that marker means "the game stopped this
+ * on purpose, do not bring it back", which is the opposite of what is wanted
+ * here.
+ */
+const sounding = new Set<HTMLAudioElement>();
+const pausedForBackground = new Map<HTMLAudioElement, boolean>();
+
+/**
  * Elements the game stopped on purpose. pause() rejects whatever play() promise
  * was in flight, and that rejection arrives after the stop has been recorded, so
  * without this marker a deliberately stopped track puts itself back in the retry
@@ -154,6 +167,7 @@ const startEffect = (name: sounds, isLoop: boolean) => {
  */
 const startElement = (audio: HTMLAudioElement, isLoop: boolean) => {
     stopped.delete(audio);
+    sounding.add(audio);
 
     audio.loop = isLoop;
     audio.preload = "auto";
@@ -184,9 +198,21 @@ const unlock = () => {
     gestureSeen = true;
 
     const ctx = getContext();
-    if (ctx) {
-        if (ctx.state !== "running") void ctx.resume();
+    if (!ctx) {
+        // No Web Audio at all. Nothing to wait for, so stop listening.
+        standDown?.();
+    } else if (ctx.state === "running") {
+        standDown?.();
+    } else {
+        // Retried on the next gesture if this does not take. resume() can
+        // settle with the context still suspended, so the state is what is
+        // checked rather than the promise merely resolving.
+        void ctx.resume().then(() => {
+            if (ctx.state === "running") standDown?.();
+        });
+    }
 
+    if (ctx) {
         const source = ctx.createBufferSource();
         source.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
         source.connect(ctx.destination);
@@ -210,12 +236,31 @@ const unlock = () => {
  */
 const GESTURES = ["pointerdown", "touchend", "keydown"] as const;
 
+/**
+ * Stands the gesture listeners down. Null when none are armed.
+ *
+ * **The listeners come off when the context is *running*, not when the first
+ * gesture arrives.** They used to come off immediately, which assumes one
+ * gesture is always enough — and when it is not, nothing tries again and the
+ * effects are silent for the rest of the session. That is the shape of the
+ * fault reported in the installed app: the music plays, because it is an
+ * element and never touches the context, while every effect goes quiet.
+ *
+ * resume() is a promise, so success cannot be known inside the handler that
+ * asked for it. Each gesture retries and the winner clears the rest.
+ */
+let standDown: (() => void) | null = null;
+
 const armUnlock = () => {
-    const onGesture = () => {
-        unlock();
-        GESTURES.forEach((type) => window.removeEventListener(type, onGesture));
-    };
+    if (standDown) return;
+
+    const onGesture = () => unlock();
     GESTURES.forEach((type) => window.addEventListener(type, onGesture, { passive: true }));
+
+    standDown = () => {
+        GESTURES.forEach((type) => window.removeEventListener(type, onGesture));
+        standDown = null;
+    };
 };
 
 if (typeof window !== "undefined") {
@@ -228,7 +273,35 @@ if (typeof window !== "undefined") {
      * stops working for the rest of the visit.
      */
     document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState !== "visible") return;
+        if (document.visibilityState !== "visible") {
+            /**
+             * Going away. A backgrounded *tab* is suspended by the browser, so
+             * this never had to be handled — but an installed app is not, and
+             * the music kept playing over whatever came next.
+             *
+             * Not `stopped`: that means the game ended a track deliberately and
+             * it must not come back. These are meant to come back. The pause()
+             * rejects the in-flight play() with AbortError, which startElement
+             * already declines to retry.
+             */
+            sounding.forEach((audio) => {
+                if (!audio.paused) {
+                    pausedForBackground.set(audio, audio.loop);
+                    audio.pause();
+                }
+            });
+            return;
+        }
+
+        // Coming back: resume what the line above paused, unless the game has
+        // since stopped it. If the autoplay policy refuses, startElement files
+        // it under `blocked` and the next gesture picks it up.
+        const resuming = [...pausedForBackground.entries()];
+        pausedForBackground.clear();
+        resuming.forEach(([audio, isLoop]) => {
+            if (!stopped.has(audio)) startElement(audio, isLoop);
+        });
+
         if (context && context.state !== "running") {
             gestureSeen = false;
             armUnlock();
@@ -253,6 +326,8 @@ export const stopLoadedSound = (audio: HTMLAudioElement | undefined) => {
     // is still in flight, and that rejection lands after this line
     stopped.add(audio);
     blocked.delete(audio);
+    sounding.delete(audio);
+    pausedForBackground.delete(audio);
     audio.pause();
     audio.currentTime = 0;
     audio.loop = false;
@@ -268,6 +343,19 @@ const playSound = (soundName: sounds, isSoundEnabled: boolean, isLoop: boolean =
         if (audio) startElement(audio, isLoop);
         return;
     }
+
+    /**
+     * **Do not *construct* the context before a gesture.**
+     *
+     * This used to call getContext() first and check afterwards, so a hover
+     * before the first tap built the AudioContext outside any gesture. It is
+     * created in the unlock handler instead — the one place guaranteed to be
+     * gesture-backed — which is the arrangement iOS is happiest with.
+     *
+     * The cost is that the effects are not fetched and decoded until the first
+     * tap. `play` below already copes with a buffer that has not arrived.
+     */
+    if (!gestureSeen && !context) return;
 
     const ctx = getContext();
     if (!ctx) return;
