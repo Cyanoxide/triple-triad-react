@@ -5,7 +5,10 @@
 
     // Low enough to clear the logo it is standing under. Centred, the box sat
     // squarely over it and the screen was a grey panel on a texture.
-    top: 74%;
+    //
+    // Anchored to the middle rather than to a fraction of the window, so the
+    // gap to the logo does not grow as the window narrows. See --mode-anchor.
+    top: var(--mode-anchor, 74%);
 }
 
 .question {
@@ -39,7 +42,7 @@
      * question, and one to look at on the device.
      */
     zoom: var(--dialog-boost, 1);
-    top: calc(74% + 100px / var(--dialog-boost, 1) + var(--dialog-nudge, 0px));
+    top: calc(var(--mode-anchor, 74%) + 100px / var(--dialog-boost, 1) + var(--dialog-nudge, 0px));
     left: 50%;
     translate: -50% 0;
     display: flex;

@@ -434,6 +434,29 @@ button {
    */
   --dialog-nudge: 0px;
 
+  /*
+   * **Where the mode box sits, measured from the middle rather than as a
+   * fraction of the window.**
+   *
+   * It was `top: 74%`, and 74% of what turns out to matter: `#app` is `h-full`
+   * of the window, so its height in design pixels is `clientHeight / scale`.
+   * Narrow the window, the scale drops, that box gets *taller* in design terms,
+   * and 74% of it walks away from the 50% the logo is centred on. Measured on a
+   * desktop at 900 tall: the box sits 113 design px below centre at 1440 wide
+   * and 225 at 700. The logo does not move, so the gap between them doubles.
+   *
+   * A centre anchor plus a fixed offset holds the two together at any size. The
+   * offset is per canvas because 74% was a different distance in each — 0.24 x
+   * 750 on a desktop, 0.24 x 640 in phone landscape, and 0.24 x the taller box
+   * a width-limited portrait produces. Each value reproduces where that canvas
+   * already had it at its designed size.
+   *
+   * Divided by the boost because these are consumed inside dialogs, which zoom
+   * absolute lengths (the 50% they are added to is untouched — percentages are
+   * not scaled by zoom).
+   */
+  --mode-anchor: calc(50% + 180px / var(--dialog-boost, 1));
+
   --furniture-margin: calc(1.5rem / var(--furniture-boost));
   --furniture-clearance: 0px;
 
@@ -444,6 +467,8 @@ button {
 }
 
 :root[data-phone="true"] {
+  --mode-anchor: calc(50% + 154px / var(--dialog-boost, 1));
+
   /*
    * 1.3, matching --dialog-boost. It was 1.6, chosen before the dialogs had a
    * boost of their own; keeping the two the same means the corner furniture
@@ -472,6 +497,18 @@ button {
    * dialogs keep the widths they were designed at.
    */
   --dialog-max-width: calc(380px / var(--app-scale, 1) / var(--dialog-boost, 1));
+}
+
+/*
+ * Portrait phones stack, and their canvas is the tall one — so 74% was a
+ * longer drop there than in landscape.
+ *
+ * **After the `[data-phone]` block, not before.** The two selectors have the
+ * same specificity, so source order decides, and a portrait phone matches
+ * both. Written the other way round it silently took the landscape value.
+ */
+:root[data-stacked="true"] {
+  --mode-anchor: calc(50% + 331px / var(--dialog-boost, 1));
 }
 
 /*
