@@ -29,7 +29,8 @@
  * row of them among the modes would read as one.
  */
 /**
- * **Trial layout**: the links as boxes in the corner.
+ * **Trial layout**: the links as one bar in the corner, built like the options
+ * bar opposite it — a single box with the items divided inside it.
  *
  * Almost nothing here, and that is the point. They render through a portal as
  * a sibling of `#app`, so the wrapper in the markup is the options bar's own —
@@ -38,43 +39,74 @@
  * being corrected for a second zoom.
  */
 .links {
-    gap: 0.35rem;
+    display: flex;
 }
 
 /**
- * Sized to its own text, and tighter at the sides than Quit's 1.4rem: three
- * boxes in a row are made wide by their padding in a way one box is not. The
- * height stays Quit's 2.5rem, which is the options bar's height too.
+ * The bar itself. No padding of its own: the items reach its edges so their
+ * highlight fills the full height, the way the options bar's icons do.
  */
-.linkBox {
-    width: max-content !important;
-    padding: 0 0.7rem !important;
+.linkBar {
+    padding: 0 !important;
+    overflow: hidden;
 }
 
+/**
+ * The part that collapses.
+ *
+ * The options bar animates its *whole* width down to a square, which works
+ * because the one thing it keeps is an icon of known size. "Links" is text, and
+ * a collapsed width guessed in rem leaves a sliver of the next item showing
+ * whenever the guess is wide. Closing the group to zero needs no measurement.
+ *
+ * A large `max-width` rather than `none`, because a transition needs two
+ * lengths to move between — `none` is not one, and the bar would snap.
+ */
+.linkItems {
+    display: flex;
+    overflow: hidden;
+    max-width: 40rem;
+    transition: max-width 0.3s ease;
+}
 
+.linkBar[data-expanded="false"] .linkItems {
+    max-width: 0;
+}
 
-
+/**
+ * One item. Pointer cursor and a highlight rather than the game's cursor —
+ * these are links out of the app, not options within it, and pointing the hand
+ * at them made them look like a third way to start a game.
+ *
+ * The divider is the options bar's own pair: a dark border with a light line
+ * beside it, which reads as a groove rather than a drawn edge.
+ */
 .link {
-
-
-    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 0.7rem;
+    cursor: pointer;
+    white-space: nowrap;
     text-shadow: 2px 2px 0 #212121;
+    transition: background-color 0.2s ease-in;
 
-    &[data-focused="true"] {
-        // The dialog's own cursor rule cannot reach out here, so it is redrawn.
-        // Sat higher than the text it points at until the offset was nudged
-        // down — the shared one is positioned for a line inside a padded box.
-        &::after {
-            content: "";
-            position: absolute;
-            left: -52px;
-            top: 50%;
-            margin-top: -7px;
-            width: 45px;
-            height: 28px;
-            background-image: url("/assets/cursor.png");
-            background-size: cover;
-            image-rendering: pixelated;
-        }
+    &:hover,
+    &:active {
+        background-color: rgba(0, 0, 0, 0.25);
     }
+}
+
+.linkItems .link:not(:last-child) {
+    border-right: 2px solid #030303;
+    box-shadow: 1.5px 0 0 #7d7f7e;
+}
+
+/**
+ * The groove after "Links" belongs to the open state only. Shut, it would sit
+ * against the bar's own outline and read as a doubled edge.
+ */
+.linkBar[data-expanded="true"] .toggle {
+    border-right: 2px solid #030303;
+    box-shadow: 1.5px 0 0 #7d7f7e;
 }

@@ -54,6 +54,9 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
      * depends on the browser.
      */
     const [mounted, setMounted] = useState(false);
+
+    /** Shut to start with, like the options bar opposite it */
+    const [linksOpen, setLinksOpen] = useState(false);
     useEffect(() => setMounted(true), []);
 
     // Moving the cursor sounds the same however it was moved
@@ -87,19 +90,17 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
     const confirm = (id: string) => {
         playSound("select", isSoundEnabled);
 
-        const link = LINKS.find((entry) => entry.id === id);
-        if (link) {
-            // Opened the same way a click would, so the keyboard is not a
-            // second path with its own behaviour
-            window.open(link.href, "_blank", "noreferrer,noopener");
-            return;
-        }
-
         if (id === "single") onSingle(); else onMultiplayer();
     };
 
     useMenuCursor({
-        layout: [["single"], ["multi"], LINKS.map((link) => link.id)],
+        /*
+         * The links are not in here. They are ordinary links now — pointer
+         * cursor, a highlight on hover, opened by a click — so there is no
+         * game cursor to move onto them and nothing for the arrow keys to
+         * land on.
+         */
+        layout: [["single"], ["multi"]],
         selected,
         onSelect: moveCursor,
         onConfirm: confirm,
@@ -136,23 +137,43 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
           * DOM node goes, not where the React tree lives.
           */}
         {mounted && createPortal(
-            <div className={`fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10 flex items-end ${styles.links}`} data-app-scaled>
-                {LINKS.map((link) => (
-                    <SimpleDialog key={link.id} metaTitle={null} dialog="quit" className={styles.linkBox}>
-                        <a
-                            className={styles.link}
-                            href={link.href}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            data-focused={cursorEnabled && selected === link.id}
-                            onMouseEnter={() => moveCursor(link.id)}
-                            onPointerDown={() => setSelected(link.id)}
-                            onClick={() => playSound("select", isSoundEnabled)}
-                        >
-                            {textToSprite(link.label)}
-                        </a>
-                    </SimpleDialog>
-                ))}
+            <div className={`fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10 ${styles.links}`} data-app-scaled>
+                <SimpleDialog metaTitle={null} dialog="quit" className={styles.linkBar} data-expanded={linksOpen}>
+                    <button
+                        className={`${styles.link} ${styles.toggle}`}
+                        onClick={() => {
+                            playSound("select", isSoundEnabled);
+                            setLinksOpen((open) => !open);
+                        }}
+                    >
+                        {textToSprite("Links")}
+                    </button>
+
+                    {/*
+                      * The links in their own box, which is what collapses. The
+                      * options bar animates its whole width down to a square,
+                      * but that only works because the icon it keeps is a known
+                      * size — "Links" is text, and guessing its width in rem
+                      * would leave a sliver of the next item showing whenever
+                      * the guess was wide. Closing the group to zero instead
+                      * needs no measurement at all.
+                      */}
+                    <div className={styles.linkItems}>
+                        {LINKS.map((link) => (
+                            <a
+                                key={link.id}
+                                className={styles.link}
+                                href={link.href}
+                                target="_blank"
+                                rel="noreferrer noopener"
+                                tabIndex={linksOpen ? undefined : -1}
+                                onClick={() => playSound("select", isSoundEnabled)}
+                            >
+                                {textToSprite(link.label)}
+                            </a>
+                        ))}
+                    </div>
+                </SimpleDialog>
             </div>,
             document.body,
         )}
