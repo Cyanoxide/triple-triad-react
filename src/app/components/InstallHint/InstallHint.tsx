@@ -54,10 +54,18 @@ const InstallHint = () => {
 
     return (
         <div className={styles.installHint} data-app-scaled>
-            <SimpleDialog metaTitle={null} dialog="install">
-                <p>{textToSprite("Play fullscreen", "yellow")}</p>
-                <p className={styles.instruction}>{textToSprite("Tap Share, then")}</p>
-                <p className={styles.instruction}>{textToSprite("Add to Home Screen")}</p>
+            <SimpleDialog dialog="install">
+                {/*
+                  * Two lines because sprite text does not wrap — one string
+                  * this long would run out of the panel rather than break.
+                  */}
+                {/*
+                  * The third argument is the centring. `textToSprite` wraps its
+                  * glyphs in a flex span, so `text-align` on an ancestor cannot
+                  * reach them — the flag is what adds `justify-center`.
+                  */}
+                <p>{textToSprite("For the best mobile experience,", "white", true)}</p>
+                <p>{textToSprite("tap Share, then Add to Home Screen", "white", true)}</p>
                 <button onClick={dismiss}>{textToSprite("Close")}</button>
             </SimpleDialog>
         </div>

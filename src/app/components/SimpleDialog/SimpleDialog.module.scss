@@ -64,7 +64,11 @@
         position: static;
         translate: none;
         min-width: 0;
-        width: max-content;
+
+        // The mode dialog's width, so the two boxes on the title screen line up
+        // rather than being two different sizes of the same thing.
+        width: 470px;
+        max-width: var(--dialog-max-width, none);
     }
 
     &[data-dialog="options"] {

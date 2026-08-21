@@ -177,6 +177,29 @@ const startElement = (audio: HTMLAudioElement, isLoop: boolean) => {
     // again only creates another promise to mis-handle
     if (!audio.paused) return;
 
+    /**
+     * **Before the first gesture, do not ask at all.**
+     *
+     * Autoplay with sound is refused everywhere and cannot be worked around —
+     * a page has no way to make itself audible without an interaction, and an
+     * installed app is no different. What it *can* do is start in the right
+     * place when the interaction comes.
+     *
+     * Asking anyway is worse than waiting. The play can be accepted while the
+     * output stays silent, so the track runs on unheard and the music arrives
+     * thirty seconds in when the first tap lands — audible mid-phrase, which is
+     * the jarring part. Deferring means the element never advances before it
+     * can be heard, and `unlock` starts it from the top.
+     *
+     * `currentTime = 0` covers the case where it has already been started and
+     * stopped once, so the queued copy still begins at the beginning.
+     */
+    if (!gestureSeen) {
+        audio.currentTime = 0;
+        blocked.set(audio, isLoop);
+        return;
+    }
+
     void audio.play().then(
         () => { blocked.delete(audio); },
         (error: unknown) => {

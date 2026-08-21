@@ -1,5 +1,5 @@
 /**
- * Pinned to the middle of the bottom edge, scaled with the rest of the
+ * Pinned to the middle of the *top* edge, scaled with the rest of the
  * furniture.
  *
  * `fixed`, like the corner boxes, and for the same reason: the layout viewport
@@ -7,16 +7,16 @@
  * measures against a box that stops before the screen does. See the note on
  * `[data-app-scaled]` in globals.css.
  *
- * Centred rather than cornered because the corners are taken — the options bar
- * is bottom-right and Quit is bottom-left — and because this is the one piece
- * of furniture that wants reading rather than tapping.
+ * Centred, and at the top because that is where the room is: the logo sits in
+ * the middle, the mode box below it, and the links and the options bar along
+ * the bottom. The top edge is empty on every screen this appears on.
  *
  * The gap to the bottom edge is `--furniture-gap`, the same value those boxes
  * use, so the three sit on one line rather than at three different heights.
  */
 .installHint {
     position: fixed;
-    bottom: var(--furniture-gap);
+    top: var(--furniture-gap);
     left: 50%;
     translate: -50% 0;
     z-index: 11;
@@ -38,13 +38,4 @@
     button {
         margin-top: 0.2rem;
     }
-}
-
-/**
- * The two lines that spell out where the button is, quieter than the two that
- * say why. It is an instruction rather than an offer, and only wanted once the
- * offer has landed.
- */
-.instruction {
-    opacity: 0.7;
 }
