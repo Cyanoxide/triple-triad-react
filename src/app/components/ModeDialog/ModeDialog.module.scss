@@ -29,51 +29,28 @@
  * row of them among the modes would read as one.
  */
 /**
- * **Trial layout**: the links as boxes in the corner rather than a row of bare
- * text under the mode box.
+ * **Trial layout**: the links as boxes in the corner.
  *
- * `fixed` and on `--furniture-gap`, so they sit on the same margin as the
- * options bar rather than being measured from the board — the corner furniture
- * note in globals.css covers why the layout viewport cannot be trusted here.
- *
- * **The gap is divided by `--app-scale` as well.** These sit inside `#app`,
- * which `scaleApp` zooms, and `data-app-scaled` zooms them again — so a length
- * here is multiplied twice, where the real corner furniture is a sibling of
- * `#app` and is multiplied once. Without the division they came out 16px from
- * the edge against the options bar's 25.
- *
- * The whole stack is one commit, so dropping it takes the row back.
+ * Almost nothing here, and that is the point. They render through a portal as
+ * a sibling of `#app`, so the wrapper in the markup is the options bar's own —
+ * same `fixed`, same `--furniture-gap`, same `text-3xl`, same
+ * `data-app-scaled` — and it comes out the same size without a single length
+ * being corrected for a second zoom.
  */
 .links {
-    position: fixed;
-    left: calc(var(--furniture-gap) / var(--app-scale, 1));
-    bottom: calc(var(--furniture-gap) / var(--app-scale, 1));
-    display: flex;
-    align-items: flex-end;
     gap: 0.35rem;
-    z-index: 10;
 }
 
 /**
- * Each link in its own box, sized to its own text. The boxes were a column of
- * one width first, which read as a menu of three options rather than as three
- * separate links.
+ * Sized to its own text, and tighter at the sides than Quit's 1.4rem: three
+ * boxes in a row are made wide by their padding in a way one box is not. The
+ * height stays Quit's 2.5rem, which is the options bar's height too.
  */
 .linkBox {
     width: max-content !important;
-
-    /*
-     * The options bar's own height, 2.5rem — **divided by `--app-scale`** for
-     * the same reason the offsets are. These are zoomed twice, being inside
-     * `#app` as well as `data-app-scaled`, and the bar opposite them is zoomed
-     * once. Left as a plain 2.5rem they came out visibly shorter than it.
-     */
-    height: calc(2.5rem / var(--app-scale, 1)) !important;
-
-    // Tighter than Quit's 1.4rem: these are three boxes in a row rather than
-    // one on its own, and the padding is what makes the row wide.
-    padding: 0 calc(0.7rem / var(--app-scale, 1)) !important;
+    padding: 0 0.7rem !important;
 }
+
 
 
 

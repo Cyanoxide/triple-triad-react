@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import textToSprite from "../../utils/textToSprite";
 import playSound from "../../utils/sounds";
 import { useGameContext } from "../../context/GameContext";
@@ -46,6 +47,14 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
      * position you moved, the same as in the rest of the menus.
      */
     const [selected, setSelected] = useState("single");
+
+    /**
+     * The links render through a portal, and a portal needs a DOM node the
+     * server does not have. Mounted-only, like everything else here that
+     * depends on the browser.
+     */
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
 
     // Moving the cursor sounds the same however it was moved
     const moveCursor = (id: string) => setSelected((current) => {
@@ -112,33 +121,41 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
         </SimpleDialog>
 
         {/*
-          * **Trial layout.** The links as a stack of boxes in the corner,
-          * styled as Quit is, rather than a row of bare text under the mode
-          * box. Kept to one commit so it can be dropped whole if it does not
-          * look right.
+          * **Trial layout.** The links as boxes in the corner rather than a row
+          * of bare text under the mode box. One commit, so it drops whole.
           *
-          * `data-app-scaled` and `--furniture-gap` rather than this component's
-          * own positioning: it is furniture pinned to the window now, and it
-          * should sit on the same margin as the options bar opposite it.
+          * **Through a portal, so they are a sibling of `#app`.** Left inside
+          * it they were zoomed twice — once by `scaleApp` and again by
+          * `data-app-scaled` — where the real corner furniture is zoomed once,
+          * and every length had to be divided by `--app-scale` to compensate.
+          * Safari and Firefox then disagreed about the result. Rendering them
+          * where the options bar renders means the same markup as the options
+          * bar produces the same size, with nothing to correct.
+          *
+          * The cursor still belongs to this component: a portal moves where the
+          * DOM node goes, not where the React tree lives.
           */}
-        <div className={styles.links} data-app-scaled>
-            {LINKS.map((link) => (
-                <SimpleDialog key={link.id} metaTitle={null} dialog="quit" className={styles.linkBox}>
-                    <a
-                        className={styles.link}
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        data-focused={cursorEnabled && selected === link.id}
-                        onMouseEnter={() => moveCursor(link.id)}
-                        onPointerDown={() => setSelected(link.id)}
-                        onClick={() => playSound("select", isSoundEnabled)}
-                    >
-                        {textToSprite(link.label)}
-                    </a>
-                </SimpleDialog>
-            ))}
-        </div>
+        {mounted && createPortal(
+            <div className={`fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10 flex items-end ${styles.links}`} data-app-scaled>
+                {LINKS.map((link) => (
+                    <SimpleDialog key={link.id} metaTitle={null} dialog="quit" className={styles.linkBox}>
+                        <a
+                            className={styles.link}
+                            href={link.href}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            data-focused={cursorEnabled && selected === link.id}
+                            onMouseEnter={() => moveCursor(link.id)}
+                            onPointerDown={() => setSelected(link.id)}
+                            onClick={() => playSound("select", isSoundEnabled)}
+                        >
+                            {textToSprite(link.label)}
+                        </a>
+                    </SimpleDialog>
+                ))}
+            </div>,
+            document.body,
+        )}
         </>
     );
 };
