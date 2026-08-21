@@ -25,8 +25,8 @@ interface Props {
  */
 const LINKS = [
     { id: "github", label: "Github", href: "https://github.com/Cyanoxide/triple-triad-react" },
-    { id: "jamiepates.com", label: "Jamiepates.com", href: "https://jamiepates.com" },
     { id: "donate", label: "Donate", href: "https://ko-fi.com/cyanoxide" },
+    { id: "jamiepates.com", label: "Jamiepates.com", href: "https://jamiepates.com" },
 ] as const;
 
 /**
