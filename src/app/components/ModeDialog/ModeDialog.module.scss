@@ -75,7 +75,8 @@
     align-items: stretch;
     overflow: hidden;
     max-width: 40rem;
-    transition: max-width 0.3s ease;
+    // The options bar's own timing, so the two bars open at one speed
+    transition: max-width 0.5s ease-in-out;
 }
 
 .linkBar[data-expanded="false"] .linkItems {
@@ -93,6 +94,14 @@
 .link {
     display: flex;
     align-items: center;
+
+    /*
+     * `globals.css` gives every `button` a 4px margin top and bottom and a 21px
+     * height. The toggle is a button among anchors, so without this it sat off
+     * centre against them and against the options bar's own text — measured 9.3
+     * above the glyph and 8.8 below, where the options bar is 9 and 9.
+     */
+    margin: 0;
     height: 100%;
     padding: 0 0.7rem;
     cursor: pointer;
@@ -118,19 +127,21 @@
 }
 
 /**
- * The grooves belong to the sliding group, not to the open state.
+ * **Every groove is permanent.** Nothing here is switched by `[data-expanded]`.
  *
- * The one after "Links" used to be hung off `[data-expanded="true"]`, which
- * flips the instant the toggle is pressed while the group is still moving — so
- * the line vanished and came back around the animation. Put on the left of each
- * item instead, it is inside the box that collapses: it is clipped away as the
- * group closes and slides back in with it, with nothing to switch.
+ * The one after "Links" was hung off that attribute at first, and it flips the
+ * instant the toggle is pressed while the group is still moving — so the line
+ * vanished and came back around the animation. Moving it onto the items did not
+ * help either: "Links" then lost its own right-hand edge while shut and grew
+ * one as the group arrived.
  *
- * `inset` for the light half, because the pair has to read the same way round
- * as the options bar's — dark edge first, light line just inside it — and an
- * outer shadow on the left would put the light on the wrong side.
+ * Declared once and left alone, the toggle keeps its edge in both states and
+ * the group simply slides out from behind it. Shut, that groove sits just
+ * inside the bar's right edge, which is what it should look like — the box is
+ * closed on all four sides either way.
  */
-.linkItems .link {
-    border-left: 2px solid #030303;
-    box-shadow: inset 1.5px 0 0 #7d7f7e;
+.toggle,
+.linkItems .link:not(:last-child) {
+    border-right: 2px solid #030303;
+    box-shadow: 1.5px 0 0 #7d7f7e;
 }
