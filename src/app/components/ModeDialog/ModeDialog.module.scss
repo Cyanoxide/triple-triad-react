@@ -28,28 +28,37 @@
  * Under the box rather than inside it. They are not a third way to play, and a
  * row of them among the modes would read as one.
  */
+/**
+ * **Trial layout**: the links stacked in the corner instead of strung in a row
+ * under the mode box.
+ *
+ * `fixed` and on `--furniture-gap`, so they sit on the same margin as the
+ * options bar rather than being measured from the board — the corner furniture
+ * note in globals.css covers why the layout viewport cannot be trusted here.
+ *
+ * The whole stack is one commit, so dropping it takes the row back.
+ */
 .links {
-    position: absolute;
-    /*
-     * Scaled with the dialogs even though this is not one. It is the same kind
-     * of thing to the hand — a row of small targets on the landing screen —
-     * and left alone it stayed tiny while the box above it grew.
-     *
-     * The 100px is divided because `zoom` multiplies absolute lengths (the 74%
-     * it is added to is left alone; percentages are not scaled). That holds
-     * this row where it was rather than letting it drift as the boost changes.
-     * Whether *where it was* still clears the taller box above is a separate
-     * question, and one to look at on the device.
-     */
-    zoom: var(--dialog-boost, 1);
-    top: calc(var(--mode-anchor, 74%) + 100px / var(--dialog-boost, 1) + var(--links-nudge, 0px));
-    left: 50%;
-    translate: -50% 0;
+    position: fixed;
+    left: var(--furniture-gap);
+    bottom: var(--furniture-gap);
     display: flex;
-    // room for a cursor to sit beside the second one rather than on the first
-    gap: 4.4rem;
-    z-index: 3;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    z-index: 10;
 }
+
+/**
+ * Each link in its own box. `width: 100%` against the stack's `align-items:
+ * flex-start` would shrink each to its own text, so the boxes are sized to the
+ * widest by the stack itself and the text sits left inside them.
+ */
+.linkBox {
+    justify-content: flex-start !important;
+    width: 100% !important;
+}
+
 
 .link {
 

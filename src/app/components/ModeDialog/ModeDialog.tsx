@@ -111,20 +111,32 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
             </div>
         </SimpleDialog>
 
-        <div className={styles.links}>
+        {/*
+          * **Trial layout.** The links as a stack of boxes in the corner,
+          * styled as Quit is, rather than a row of bare text under the mode
+          * box. Kept to one commit so it can be dropped whole if it does not
+          * look right.
+          *
+          * `data-app-scaled` and `--furniture-gap` rather than this component's
+          * own positioning: it is furniture pinned to the window now, and it
+          * should sit on the same margin as the options bar opposite it.
+          */}
+        <div className={styles.links} data-app-scaled>
             {LINKS.map((link) => (
-                <a
-                    key={link.id}
-                    className={styles.link}
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    data-focused={cursorEnabled && selected === link.id}
-                    onMouseEnter={() => moveCursor(link.id)}
-                    onClick={() => playSound("select", isSoundEnabled)}
-                >
-                    {textToSprite(link.label)}
-                </a>
+                <SimpleDialog key={link.id} metaTitle={null} dialog="quit" className={styles.linkBox}>
+                    <a
+                        className={styles.link}
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        data-focused={cursorEnabled && selected === link.id}
+                        onMouseEnter={() => moveCursor(link.id)}
+                        onPointerDown={() => setSelected(link.id)}
+                        onClick={() => playSound("select", isSoundEnabled)}
+                    >
+                        {textToSprite(link.label)}
+                    </a>
+                </SimpleDialog>
             ))}
         </div>
         </>
