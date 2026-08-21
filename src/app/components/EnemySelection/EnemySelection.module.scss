@@ -3,7 +3,7 @@
 .enemySelectionDialog {
     @extend .dialog;
     position: absolute;
-    top: calc(50% + 249px / var(--dialog-boost, 1) + var(--picker-nudge, 0px));
+    top: calc(50% + 249px / var(--dialog-boost, 1) + var(--picker-nudge, 0px) - var(--picker-lift, 0px));
     left: 50%;
     translate: -50% -50%;
     width: 380px;

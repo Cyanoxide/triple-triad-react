@@ -528,6 +528,7 @@ button {
   --furniture-clearance: clamp(16px, var(--dialog-margin), 34px);
   --dialog-boost: 1.3;
   --picker-nudge: calc(24.2px / var(--dialog-boost, 1));
+  --picker-lift: 0px;
   --links-nudge: calc(30px / var(--dialog-boost, 1));
 
   /*
@@ -563,6 +564,26 @@ button {
  * same specificity, so source order decides, and a portrait phone matches
  * both. Written the other way round it silently took the landscape value.
  */
+/*
+ * **Landscape phones lift the two pickers.**
+ *
+ * The canvas is 900x640 there and fills the height exactly, so the pair sits
+ * as low as the design allows — and once the dialogs grew, the player box
+ * reached the bottom of the screen: measured 389 in a 390px window, with the
+ * Back button's own bottom edge at 365.
+ *
+ * 40 design pixels puts it level with that edge, so the lowest thing on the
+ * screen is the row of furniture rather than a dialog hanging past it.
+ *
+ * Design pixels, not real ones: in landscape the canvas height *is* the screen
+ * height, so a design pixel is a fixed fraction of it and this holds on a
+ * larger phone. Portrait is untouched — it has 190px of slack and the pickers
+ * are nowhere near the edge.
+ */
+:root[data-phone="true"]:not([data-stacked="true"]) {
+  --picker-lift: calc(40px / var(--dialog-boost, 1));
+}
+
 :root[data-stacked="true"] {
   --mode-anchor: calc(50% + 331px / var(--dialog-boost, 1));
 }
