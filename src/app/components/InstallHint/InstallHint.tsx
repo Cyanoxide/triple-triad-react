@@ -12,6 +12,19 @@ import styles from "./InstallHint.module.scss";
 const DISMISSED_KEY = "installHintDismissed";
 
 /**
+ * **Session storage, not local.**
+ *
+ * Dismissing this says "not now", not "never" — the offer is worth making
+ * again next time the game is opened, since the reason to install has not gone
+ * away. Session storage is exactly that scope: it survives navigation within
+ * the tab and is dropped when the tab closes.
+ *
+ * It also keeps the two states honest. Once installed, the app is standalone
+ * and the hint never renders at all, so the only person who sees it a second
+ * time is someone still in a browser.
+ */
+
+/**
  * A nudge towards installing, shown to iOS browsers only.
  *
  * **Why only iOS.** Android fires `beforeinstallprompt` and offers installing
@@ -36,7 +49,7 @@ const InstallHint = ({ onOpenChange }: Props) => {
     /**
      * Starts hidden and is turned on after mount.
      *
-     * Everything it depends on — the user agent, the display mode, localStorage
+     * Everything it depends on — the user agent, the display mode, session
      * — exists only in the browser, so deciding during render would make the
      * first client render disagree with the server's.
      */
@@ -46,7 +59,7 @@ const InstallHint = ({ onOpenChange }: Props) => {
         if (!isIOS()) return;
         // Already installed: this is the app, and it has nothing to advertise
         if (isStandalone()) return;
-        if (localStorage.getItem(DISMISSED_KEY) === "true") return;
+        if (sessionStorage.getItem(DISMISSED_KEY) === "true") return;
 
         setVisible(true);
         onOpenChange?.(true);
@@ -54,7 +67,7 @@ const InstallHint = ({ onOpenChange }: Props) => {
 
     const dismiss = () => {
         playSound("back", isSoundEnabled);
-        localStorage.setItem(DISMISSED_KEY, "true");
+        sessionStorage.setItem(DISMISSED_KEY, "true");
         setVisible(false);
         onOpenChange?.(false);
     };
