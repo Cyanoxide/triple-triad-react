@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import textToSprite from "../../utils/textToSprite";
 import playSound from "../../utils/sounds";
 import { useGameContext } from "../../context/GameContext";

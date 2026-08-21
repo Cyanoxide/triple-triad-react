@@ -583,6 +583,41 @@ function GameContent() {
         </Furniture>
       )}
 
+      {/*
+        * Back, on the two screens that stand between the title and a game: the
+        * single player menu and the multiplayer lobby.
+        *
+        * Both already have their own way out inside the dialog, so this is not
+        * about being stranded — it is that every other screen puts leaving in
+        * the bottom-left corner, and these two did not. On a phone especially,
+        * a corner that means "back" everywhere but here is worse than no
+        * corner at all.
+        *
+        * It does exactly what the dialog's own control does, rather than a
+        * second route with its own behaviour: the lobby hands the room back
+        * through `onExit`'s path, which is what returns both players to the
+        * menu.
+        */}
+      {isMenuOpen && mode === "single" && !isCardSelectionOpen && !isGameActive && (
+        <Furniture className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10">
+          <SimpleDialog metaTitle={null} dialog="quit">
+            <button onClick={() => { playSound("back", isSoundEnabled); setMode(null); }}>
+              {textToSprite("Back")}
+            </button>
+          </SimpleDialog>
+        </Furniture>
+      )}
+
+      {isMultiplayerOpen && !isCardSelectionOpen && !isGameActive && (
+        <Furniture className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10">
+          <SimpleDialog metaTitle={null} dialog="quit">
+            <button onClick={() => { playSound("back", isSoundEnabled); setIsMultiplayerOpen(false); setMode(null); }}>
+              {textToSprite("Back")}
+            </button>
+          </SimpleDialog>
+        </Furniture>
+      )}
+
       {/* Only on the title screen. It is an aside about the app rather than
           part of the game, so it has no business over a board — and the title
           screen is where someone is most likely to be deciding whether to keep
