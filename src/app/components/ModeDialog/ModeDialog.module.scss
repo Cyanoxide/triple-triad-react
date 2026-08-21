@@ -49,6 +49,14 @@
 .linkBar {
     padding: 0 !important;
     overflow: hidden;
+
+    /*
+     * **`stretch`, against the Quit style's `center`.** Centred, the items are
+     * as tall as their own text and `height: 100%` on them resolves against
+     * that rather than against the bar — so they stopped short of its edges and
+     * their highlight was a band floating in the middle.
+     */
+    align-items: stretch !important;
 }
 
 /**
@@ -64,6 +72,7 @@
  */
 .linkItems {
     display: flex;
+    align-items: stretch;
     overflow: hidden;
     max-width: 40rem;
     transition: max-width 0.3s ease;
@@ -97,16 +106,31 @@
     }
 }
 
-.linkItems .link:not(:last-child) {
-    border-right: 2px solid #030303;
-    box-shadow: 1.5px 0 0 #7d7f7e;
+/**
+ * The toggle is a `<button>` among `<a>`s, and needs none of a button's own
+ * chrome — the bar provides the box, the shared `.link` provides the rest.
+ */
+.toggle {
+    background: none;
+    border: 0;
+    font: inherit;
+    color: inherit;
 }
 
 /**
- * The groove after "Links" belongs to the open state only. Shut, it would sit
- * against the bar's own outline and read as a doubled edge.
+ * The grooves belong to the sliding group, not to the open state.
+ *
+ * The one after "Links" used to be hung off `[data-expanded="true"]`, which
+ * flips the instant the toggle is pressed while the group is still moving — so
+ * the line vanished and came back around the animation. Put on the left of each
+ * item instead, it is inside the box that collapses: it is clipped away as the
+ * group closes and slides back in with it, with nothing to switch.
+ *
+ * `inset` for the light half, because the pair has to read the same way round
+ * as the options bar's — dark edge first, light line just inside it — and an
+ * outer shadow on the left would put the light on the wrong side.
  */
-.linkBar[data-expanded="true"] .toggle {
-    border-right: 2px solid #030303;
-    box-shadow: 1.5px 0 0 #7d7f7e;
+.linkItems .link {
+    border-left: 2px solid #030303;
+    box-shadow: inset 1.5px 0 0 #7d7f7e;
 }

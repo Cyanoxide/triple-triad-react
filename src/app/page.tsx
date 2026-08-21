@@ -48,6 +48,13 @@ function GameContent() {
    * as a bug, and the keys would drive both.
    */
   const [installHintOpen, setInstallHintOpen] = useState(false);
+
+  /**
+   * The links bar's state lives here rather than in ModeDialog, because it and
+   * the options bar have to know about each other: they sit on the same row and
+   * on a narrow phone both open at once would overlap.
+   */
+  const [linksOpen, setLinksOpen] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
 
   /**
@@ -455,6 +462,8 @@ function GameContent() {
   const handleToggleOptions = () => {
     playSound("select", isSoundEnabled);
     setIsOptionsOpen(!isOptionsOpen);
+    // Only one of the two bars along the bottom is ever open
+    setLinksOpen(false);
   }
 
   const handleToggleScanlines = () => {
@@ -497,7 +506,13 @@ function GameContent() {
         {isCardGalleryOpen && <CardGallery />}
         <div>
           {isMenuOpen && mode === null && (
-            <ModeDialog onSingle={() => setMode("single")} onMultiplayer={openMultiplayer} cursorEnabled={!installHintOpen} />
+            <ModeDialog onSingle={() => setMode("single")} onMultiplayer={openMultiplayer} cursorEnabled={!installHintOpen}
+              linksOpen={linksOpen}
+              onLinksToggle={() => {
+                setLinksOpen((open) => !open);
+                setIsOptionsOpen(false);
+              }}
+            />
           )}
           {isMenuOpen && mode === "single" && <MenuDialog onQuit={() => setMode(null)} />}
           {isCardSelectionOpen && <CardSelectionDialog />}

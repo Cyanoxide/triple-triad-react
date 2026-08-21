@@ -18,6 +18,10 @@ interface Props {
      * keys would drive both.
      */
     cursorEnabled?: boolean;
+    /** Whether the links bar is open. Owned by the page, which also owns the
+     *  options bar — only one of the two is ever open at a time. */
+    linksOpen?: boolean;
+    onLinksToggle?: () => void;
 }
 
 /**
@@ -39,7 +43,7 @@ const LINKS = [
  * goes back to being only itself, and multiplayer gets a screen without the
  * location and player panels it never used.
  */
-const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = true }) => {
+const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = true, linksOpen = false, onLinksToggle }) => {
     const { isSoundEnabled } = useGameContext();
     /**
      * Where the cursor is, not where the pointer is. Moving off an option
@@ -54,9 +58,6 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
      * depends on the browser.
      */
     const [mounted, setMounted] = useState(false);
-
-    /** Shut to start with, like the options bar opposite it */
-    const [linksOpen, setLinksOpen] = useState(false);
     useEffect(() => setMounted(true), []);
 
     // Moving the cursor sounds the same however it was moved
@@ -143,7 +144,7 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
                         className={`${styles.link} ${styles.toggle}`}
                         onClick={() => {
                             playSound("select", isSoundEnabled);
-                            setLinksOpen((open) => !open);
+                            onLinksToggle?.();
                         }}
                     >
                         {textToSprite("Links")}
