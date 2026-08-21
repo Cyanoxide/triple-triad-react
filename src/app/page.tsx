@@ -41,6 +41,13 @@ function GameContent() {
 
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
+
+  /**
+   * Whether the install hint is on screen. It owns the cursor while it is, so
+   * the mode dialog behind it stands its own down — two cursors at once reads
+   * as a bug, and the keys would drive both.
+   */
+  const [installHintOpen, setInstallHintOpen] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
 
   /**
@@ -490,7 +497,7 @@ function GameContent() {
         {isCardGalleryOpen && <CardGallery />}
         <div>
           {isMenuOpen && mode === null && (
-            <ModeDialog onSingle={() => setMode("single")} onMultiplayer={openMultiplayer} />
+            <ModeDialog onSingle={() => setMode("single")} onMultiplayer={openMultiplayer} cursorEnabled={!installHintOpen} />
           )}
           {isMenuOpen && mode === "single" && <MenuDialog onQuit={() => setMode(null)} />}
           {isCardSelectionOpen && <CardSelectionDialog />}
@@ -564,7 +571,7 @@ function GameContent() {
           part of the game, so it has no business over a board — and the title
           screen is where someone is most likely to be deciding whether to keep
           this around. */}
-      {isMenuOpen && mode === null && <InstallHint />}
+      {isMenuOpen && mode === null && <InstallHint onOpenChange={setInstallHintOpen} />}
 
       {/* z-11 rather than z-10, so the bar stays reachable over the card
           gallery's dim — the gallery is z-11 too, and this comes after #app in

@@ -189,6 +189,51 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
         return !entry || !(Object.keys(playerCards).find(cardId => cardId === entry[0]));
     };
 
+    /**
+     * Backing out, one step at a time.
+     *
+     * FF8's own behaviour: cancel takes the last card back, and only once the
+     * hand is empty does it leave the screen. A named function rather than an
+     * inline handler because a phone has no Escape — the button on screen is
+     * the only way to reach any of this there.
+     */
+    const cancel = () => {
+            if (isGalleryInstance) {
+                onCancel?.();
+                return;
+            }
+            if (currentPlayerHand.length > 0) {
+                // FF8: cancel takes back the most recently picked card
+                const newHand = [...currentPlayerHand];
+                const removed = newHand.pop();
+                const newCards = { ...currentPlayerCards };
+                if (removed) newCards[removed.cardId] = (newCards[removed.cardId] ?? 0) + 1;
+                playSound("back", isSoundEnabled);
+                dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: newHand });
+                // Putting a card back is the hand shrinking, and under All Cards
+                // the pool follows the hand on its own. Handing it to the
+                // collection as well would credit you a card you do not own.
+                if (!allCardsRule) dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: newCards });
+                return;
+            }
+            playSound("back", isSoundEnabled);
+
+            /**
+             * Backing all the way out of a hand you are choosing for another
+             * player means leaving the room — there is no half-way state where
+             * you are in a game but not dealing into it. Since it ends their
+             * game as well as yours, it asks first.
+             */
+            if (session) {
+                setConfirmingLeave(true);
+                return;
+            }
+
+            markKeyboardNavigation();
+            dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
+            dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
+    };
+
     const { pos, focus, isFocused } = useCursorNav({
         groups: [{ id: "list", size: pageItems.length, isDisabled: isGalleryInstance ? isItemUnowned : undefined }],
         initial: null,
@@ -230,42 +275,7 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
             }
             handleCardSelection(Number(cardId), quantity);
         },
-        onCancel: () => {
-            if (isGalleryInstance) {
-                onCancel?.();
-                return;
-            }
-            if (currentPlayerHand.length > 0) {
-                // FF8: cancel takes back the most recently picked card
-                const newHand = [...currentPlayerHand];
-                const removed = newHand.pop();
-                const newCards = { ...currentPlayerCards };
-                if (removed) newCards[removed.cardId] = (newCards[removed.cardId] ?? 0) + 1;
-                playSound("back", isSoundEnabled);
-                dispatch({ type: "SET_CURRENT_PLAYER_HAND", payload: newHand });
-                // Putting a card back is the hand shrinking, and under All Cards
-                // the pool follows the hand on its own. Handing it to the
-                // collection as well would credit you a card you do not own.
-                if (!allCardsRule) dispatch({ type: "SET_CURRENT_PLAYER_CARDS", payload: newCards });
-                return;
-            }
-            playSound("back", isSoundEnabled);
-
-            /**
-             * Backing all the way out of a hand you are choosing for another
-             * player means leaving the room — there is no half-way state where
-             * you are in a game but not dealing into it. Since it ends their
-             * game as well as yours, it asks first.
-             */
-            if (session) {
-                setConfirmingLeave(true);
-                return;
-            }
-
-            markKeyboardNavigation();
-            dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
-            dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
-        },
+        onCancel: cancel,
     });
 
     // Keep the preview in sync with the card under the cursor after a page flip
@@ -348,6 +358,29 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
 
     return (
         <>
+            {/*
+              * Undo, or Quit once there is nothing to undo.
+              *
+              * The same `cancel` the Escape key runs, put on screen because a
+              * phone has no Escape and an installed app has no address bar to
+              * reload from — without it a hand being chosen could not be backed
+              * out of at all.
+              *
+              * Bottom-left, matching the Quit box during a game, so the corner
+              * means the same thing on both screens. The gallery is excluded:
+              * it borrows this component to draw a card list and has its own
+              * way out.
+              */}
+            {!isGalleryInstance && isCardSelectionOpen && !waitingMessage && (
+                <div className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10" data-app-scaled>
+                    <SimpleDialog metaTitle={null} dialog="quit">
+                        <button onClick={cancel}>
+                            {textToSprite(currentPlayerHand.length > 0 ? "Undo" : "Quit")}
+                        </button>
+                    </SimpleDialog>
+                </div>
+            )}
+
             <div className={`${styles.cardSelectionDialog} cardSelection ${((isCardSelectionOpen || isCardGalleryOpen) && !waitingMessage) ? "" : "hidden"}`} data-dialog={modifier || "cardSelection"}>
                 <div className="flex justify-between">
                     <h4 className={styles.meta} data-sprite="cards">Cards

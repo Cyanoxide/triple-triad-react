@@ -11,6 +11,12 @@ import styles from "./ModeDialog.module.scss";
 interface Props {
     onSingle: () => void;
     onMultiplayer: () => void;
+    /**
+     * False while something in front of this has the cursor — the install
+     * hint, on a phone. Two cursors on screen at once reads as a bug, and the
+     * keys would drive both.
+     */
+    cursorEnabled?: boolean;
 }
 
 /**
@@ -32,7 +38,7 @@ const LINKS = [
  * goes back to being only itself, and multiplayer gets a screen without the
  * location and player panels it never used.
  */
-const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
+const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = true }) => {
     const { isSoundEnabled } = useGameContext();
     /**
      * Where the cursor is, not where the pointer is. Moving off an option
@@ -49,7 +55,7 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
 
     const pointer = (id: string) => ({
         className: "relative",
-        "data-focused": selected === id,
+        "data-focused": cursorEnabled && selected === id,
         onMouseEnter: () => moveCursor(id),
     });
 
@@ -72,6 +78,7 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
         selected,
         onSelect: moveCursor,
         onConfirm: confirm,
+        enabled: cursorEnabled,
     });
 
     return (
@@ -96,7 +103,7 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer }) => {
                     href={link.href}
                     target="_blank"
                     rel="noreferrer noopener"
-                    data-focused={selected === link.id}
+                    data-focused={cursorEnabled && selected === link.id}
                     onMouseEnter={() => moveCursor(link.id)}
                     onClick={() => playSound("select", isSoundEnabled)}
                 >

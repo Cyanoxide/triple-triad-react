@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useMenuCursor } from "../../hooks/useMenuCursor";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
 import textToSprite from "../../utils/textToSprite";
 import playSound from "../../utils/sounds";
@@ -23,7 +24,13 @@ const DISMISSED_KEY = "installHintDismissed";
  * **Why it can only be instructions.** There is no API to call. The most any
  * page can do on iOS is say where the button is.
  */
-const InstallHint = () => {
+type Props = {
+    /** Told when the hint appears and when it goes, so the screen behind it
+     *  can stand its own cursor down while this one has it. */
+    onOpenChange?: (open: boolean) => void;
+};
+
+const InstallHint = ({ onOpenChange }: Props) => {
     const { isSoundEnabled } = useGameContext();
 
     /**
@@ -42,13 +49,29 @@ const InstallHint = () => {
         if (localStorage.getItem(DISMISSED_KEY) === "true") return;
 
         setVisible(true);
+        onOpenChange?.(true);
     }, []);
 
     const dismiss = () => {
         playSound("back", isSoundEnabled);
         localStorage.setItem(DISMISSED_KEY, "true");
         setVisible(false);
+        onOpenChange?.(false);
     };
+
+    /*
+     * One option, so the layout is a single cell. It exists for Enter and
+     * Escape: the cursor is already on Close and there is nowhere to move it,
+     * but both should dismiss rather than doing nothing.
+     */
+    useMenuCursor({
+        layout: [["close"]],
+        selected: "close",
+        onSelect: () => { },
+        onConfirm: dismiss,
+        onBack: dismiss,
+        enabled: visible,
+    });
 
     if (!visible) return null;
 
@@ -64,9 +87,17 @@ const InstallHint = () => {
                   * glyphs in a flex span, so `text-align` on an ancestor cannot
                   * reach them — the flag is what adds `justify-center`.
                   */}
-                <p>{textToSprite("For the best mobile experience,", "white", true)}</p>
-                <p>{textToSprite("tap Share, then Add to Home Screen", "white", true)}</p>
-                <button onClick={dismiss}>{textToSprite("Close")}</button>
+                <p>{textToSprite("For the best mobile experience,", "yellow", true)}</p>
+                {/*
+                  * Single quotes, not double: the sprite font has an apostrophe
+                  * and no `"` at all, so a double quote renders as a gap.
+                  */}
+                <p className={styles.body}>
+                    {textToSprite("tap 'Share', then 'Add to Home Screen'", "white", true)}
+                </p>
+                <button className="relative" data-focused onClick={dismiss}>
+                    {textToSprite("Close")}
+                </button>
             </SimpleDialog>
         </div>
     );

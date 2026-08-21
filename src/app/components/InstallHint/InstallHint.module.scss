@@ -39,3 +39,14 @@
         margin-top: 0.2rem;
     }
 }
+
+/**
+ * The instruction, quieter than the line above it.
+ *
+ * Opacity rather than a colour, because the sprite font only comes in white,
+ * blue and yellow — there is no grey to ask for. 0.75 reads as grey against
+ * the panel without dropping so far that it looks disabled.
+ */
+.body {
+    opacity: 0.75;
+}
