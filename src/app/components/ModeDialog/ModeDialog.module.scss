@@ -127,21 +127,29 @@
 }
 
 /**
- * **Every groove is permanent.** Nothing here is switched by `[data-expanded]`.
+ * **The grooves live inside the sliding group, and only there.**
  *
- * The one after "Links" was hung off that attribute at first, and it flips the
- * instant the toggle is pressed while the group is still moving — so the line
- * vanished and came back around the animation. Moving it onto the items did not
- * help either: "Links" then lost its own right-hand edge while shut and grew
- * one as the group arrived.
+ * Three attempts, so the reasoning is worth keeping:
  *
- * Declared once and left alone, the toggle keeps its edge in both states and
- * the group simply slides out from behind it. Shut, that groove sits just
- * inside the bar's right edge, which is what it should look like — the box is
- * closed on all four sides either way.
+ * 1. On the toggle, switched by `[data-expanded]`. The attribute flips the
+ *    instant the toggle is pressed, while the group is still moving, so the
+ *    line appeared and disappeared around the animation.
+ * 2. On the toggle, permanently. Shut, that put a 2px dark line immediately
+ *    inside the bar's own dark edge — a doubled border — and its light half is
+ *    an *outer* shadow at the very edge, which `overflow: hidden` clipped away.
+ *    So: too thick on one side, missing its highlight on the other.
+ * 3. On the left of each item, which is this. Shut, there is no groove at all
+ *    and the bar's own outline is the box's edge. Open, the first item's left
+ *    edge is the line after "Links", and it slides into place with the group
+ *    rather than being switched on.
+ *
+ * `inset` for the light half so the pair reads the same way round as the
+ * options bar's — dark edge first, light just inside it, going left to right.
+ * An outer shadow here would put the light on the wrong side of the dark, and
+ * would be clipped at the bar's edge like the toggle's was.
  */
-.toggle,
-.linkItems .link:not(:last-child) {
-    border-right: 2px solid #030303;
-    box-shadow: 1.5px 0 0 #7d7f7e;
+.linkItems .link {
+    border-left: 2px solid #030303;
+    box-shadow: inset 1.5px 0 0 #7d7f7e;
 }
+
