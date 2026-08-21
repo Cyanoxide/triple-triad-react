@@ -87,11 +87,16 @@ const InstallHint = ({ onOpenChange }: Props) => {
                   * glyphs in a flex span, so `text-align` on an ancestor cannot
                   * reach them — the flag is what adds `justify-center`.
                   */}
-                <p>{textToSprite("For the best mobile experience,", "yellow", true)}</p>
+                <p className={styles.heading}>
+                    {textToSprite("iOS Device Detected", "yellow", true)}
+                </p>
                 {/*
                   * Single quotes, not double: the sprite font has an apostrophe
                   * and no `"` at all, so a double quote renders as a gap.
                   */}
+                <p className={styles.body}>
+                    {textToSprite("For the best mobile experience,", "white", true)}
+                </p>
                 <p className={styles.body}>
                     {textToSprite("tap 'Share', then 'Add to Home Screen'", "white", true)}
                 </p>

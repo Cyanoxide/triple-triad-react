@@ -57,6 +57,22 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
         className: "relative",
         "data-focused": cursorEnabled && selected === id,
         onMouseEnter: () => moveCursor(id),
+        /**
+         * **A touch has to move the cursor too.**
+         *
+         * `mouseenter` is a pointer leaving one thing and arriving at another,
+         * which is not what a finger does — it arrives already pressing. So on
+         * a phone the cursor stayed wherever it was while a different option
+         * was being tapped, and sat there through the wait for the next screen.
+         *
+         * `pointerdown` covers both: a mouse has already moved the cursor by
+         * hovering, so this is a no-op there, and a touch gets it on contact.
+         *
+         * Set directly rather than through `moveCursor`, which sounds the
+         * cursor as it moves — on a touch that would land at the same moment as
+         * the confirmation sound the press itself makes.
+         */
+        onPointerDown: () => setSelected(id),
     });
 
     const confirm = (id: string) => {
