@@ -51,6 +51,22 @@
         justify-content: center;
     }
 
+    /**
+     * The install hint, placed by its wrapper like the two above — but with
+     * none of their sizing, because it is a few lines of text rather than a
+     * bar. Only the centring is turned off.
+     *
+     * Without this it keeps `.simpleDialog`'s own `top/left: 50%` and centres
+     * on the wrapper, which is a zero-height box pinned to the bottom edge — so
+     * half the panel hung off the screen and its button could not be tapped.
+     */
+    &[data-dialog="install"] {
+        position: static;
+        translate: none;
+        min-width: 0;
+        width: max-content;
+    }
+
     &[data-dialog="options"] {
         opacity: .35;
         /**

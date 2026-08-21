@@ -1,0 +1,50 @@
+/**
+ * Pinned to the middle of the bottom edge, scaled with the rest of the
+ * furniture.
+ *
+ * `fixed`, like the corner boxes, and for the same reason: the layout viewport
+ * is short of the window on a phone, so anything `absolute` inside `#app`
+ * measures against a box that stops before the screen does. See the note on
+ * `[data-app-scaled]` in globals.css.
+ *
+ * Centred rather than cornered because the corners are taken — the options bar
+ * is bottom-right and Quit is bottom-left — and because this is the one piece
+ * of furniture that wants reading rather than tapping.
+ *
+ * The gap to the bottom edge is `--furniture-gap`, the same value those boxes
+ * use, so the three sit on one line rather than at three different heights.
+ */
+.installHint {
+    position: fixed;
+    bottom: var(--furniture-gap);
+    left: 50%;
+    translate: -50% 0;
+    z-index: 11;
+    text-align: center;
+
+    /*
+     * `max-content` so the box is only as wide as its longest line. Sprite text
+     * does not wrap, so a percentage width would either cut a line off or leave
+     * a band of empty panel beside it.
+     */
+    width: max-content;
+    max-width: var(--dialog-max-width, none);
+
+    /*
+     * The lines keep the spacing `globals.css` gives every `p` — 4px either
+     * side and a 21px line box. Zeroing it, which was the first attempt, packs
+     * sprite glyphs tight enough that the lines read as one block.
+     */
+    button {
+        margin-top: 0.2rem;
+    }
+}
+
+/**
+ * The two lines that spell out where the button is, quieter than the two that
+ * say why. It is an instruction rather than an offer, and only wanted once the
+ * offer has landed.
+ */
+.instruction {
+    opacity: 0.7;
+}

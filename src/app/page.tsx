@@ -21,6 +21,7 @@ import { codeFromUrl, loadSession, type RoomEvent } from "./utils/rooms";
 import { generateCardsFromIds } from "./utils/general";
 import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
+import InstallHint from "./components/InstallHint/InstallHint";
 import textToSprite from "./utils/textToSprite";
 import { optionsNav } from "./hooks/optionsNav";
 import { installPreview } from "./utils/preview";
@@ -558,6 +559,12 @@ function GameContent() {
           <AutoplayTimer />
         </div>
       )}
+
+      {/* Only on the title screen. It is an aside about the app rather than
+          part of the game, so it has no business over a board — and the title
+          screen is where someone is most likely to be deciding whether to keep
+          this around. */}
+      {isMenuOpen && mode === null && <InstallHint />}
 
       {/* z-11 rather than z-10, so the bar stays reachable over the card
           gallery's dim — the gallery is z-11 too, and this comes after #app in
