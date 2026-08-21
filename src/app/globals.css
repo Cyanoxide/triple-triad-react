@@ -496,7 +496,13 @@ button {
    * curve, so both survive the change: the boxes get smaller, their distance
    * from the corner stays 34px.
    */
-  --furniture-boost: 1.3;
+  /*
+   * 1.15, down from 1.3. At 1.3 the open links bar reached 382px on a 430px
+   * phone and the shut options bar began at 372 — they met. Everything on this
+   * row scales together, so trimming the boost is the one change that separates
+   * them without touching a padding or a label.
+   */
+  --furniture-boost: 1.15;
   /*
    * **The same gap the mode box leaves, once that box is at its cap.**
    *

@@ -22,6 +22,7 @@ import { generateCardsFromIds } from "./utils/general";
 import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
 import InstallHint from "./components/InstallHint/InstallHint";
+import Furniture from "./components/Furniture/Furniture";
 import textToSprite from "./utils/textToSprite";
 import { optionsNav } from "./hooks/optionsNav";
 import { installPreview } from "./utils/preview";
@@ -547,7 +548,7 @@ function GameContent() {
           manage it — the cards move on each client rather than on the server —
           but there is no need to put a button on it. */}
       {isGameActive && !isRewardSelectionOpen && (
-        <div className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10" data-app-scaled>
+        <Furniture className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10">
           <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("select", isSoundEnabled); setConfirmingQuit(true); }}>
               {textToSprite("Quit")}
@@ -563,7 +564,7 @@ function GameContent() {
               handleDenial={() => { playSound("back", isSoundEnabled); setConfirmingQuit(false); }}
             />
           )}
-        </div>
+        </Furniture>
       )}
 
       {/* The top right corner, laid out exactly like Quit and the options bar
@@ -577,9 +578,9 @@ function GameContent() {
           pixels. A corner needs neither. This is the pattern already proven by
           the two boxes along the bottom. */}
       {session && isGameActive && !isRewardSelectionOpen && (
-        <div className="fixed right-[var(--furniture-gap)] top-[var(--furniture-gap)] text-3xl z-10 pointer-events-none" data-app-scaled>
+        <Furniture className="fixed right-[var(--furniture-gap)] top-[var(--furniture-gap)] text-3xl z-10 pointer-events-none">
           <AutoplayTimer />
-        </div>
+        </Furniture>
       )}
 
       {/* Only on the title screen. It is an aside about the app rather than
@@ -593,7 +594,7 @@ function GameContent() {
           the document, so an equal z-index leaves this one on top. The CRT
           scanlines are also 11 and are `body::after`, later still, so they keep
           their place over everything. */}
-      <div className="fixed right-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-[11] flex items-center" data-app-scaled>
+      <Furniture className="fixed right-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-[11] flex items-center">
         <SimpleDialog metaTitle={null} dialog="options" data-expanded={isOptionsOpen}>
           <div className="flex items-center h-full">
             <Image src="/assets/menu-expand.png?v=1" onClick={handleToggleOptions} onMouseEnter={() => optionsNav.actions.focusOption?.(0)} data-focused={optionsFocus === 0} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" />
@@ -608,7 +609,7 @@ function GameContent() {
             </div>
           </div>
         </SimpleDialog>
-      </div>
+      </Furniture>
       <div id="modal"></div>
     </>
   );

@@ -14,6 +14,7 @@ import DialogPagination from "../DialogPagination/DialogPagination";
 import textToSprite from "../../utils/textToSprite";
 import { generateCardFromId } from "../../utils/general";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
+import Furniture from "../Furniture/Furniture";
 import Ellipsis from "../Ellipsis/Ellipsis";
 import { useCursorNav, markKeyboardNavigation } from "../../hooks/useCursorNav";
 import { paginationNav } from "../../hooks/paginationNav";
@@ -372,13 +373,13 @@ const CardSelectionDialog: React.FC<CardSelectionDialogProps> = ({ showPreview =
               * way out.
               */}
             {!isGalleryInstance && isCardSelectionOpen && !waitingMessage && (
-                <div className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10" data-app-scaled>
+                <Furniture className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10">
                     <SimpleDialog metaTitle={null} dialog="quit">
                         <button onClick={cancel}>
                             {textToSprite(currentPlayerHand.length > 0 ? "Undo" : "Quit")}
                         </button>
                     </SimpleDialog>
-                </div>
+                </Furniture>
             )}
 
             <div className={`${styles.cardSelectionDialog} cardSelection ${((isCardSelectionOpen || isCardGalleryOpen) && !waitingMessage) ? "" : "hidden"}`} data-dialog={modifier || "cardSelection"}>

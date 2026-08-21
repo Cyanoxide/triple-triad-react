@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import textToSprite from "../../utils/textToSprite";
 import playSound from "../../utils/sounds";
 import { useGameContext } from "../../context/GameContext";
 import SimpleDialog from "../SimpleDialog/SimpleDialog";
+import Furniture from "../Furniture/Furniture";
 import { useMenuCursor } from "../../hooks/useMenuCursor";
 import styles from "./ModeDialog.module.scss";
 
@@ -51,14 +51,6 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
      * position you moved, the same as in the rest of the menus.
      */
     const [selected, setSelected] = useState("single");
-
-    /**
-     * The links render through a portal, and a portal needs a DOM node the
-     * server does not have. Mounted-only, like everything else here that
-     * depends on the browser.
-     */
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
 
     // Moving the cursor sounds the same however it was moved
     const moveCursor = (id: string) => setSelected((current) => {
@@ -137,9 +129,12 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
           * The cursor still belongs to this component: a portal moves where the
           * DOM node goes, not where the React tree lives.
           */}
-        {mounted && createPortal(
-            <div className={`fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10 ${styles.links}`} data-app-scaled>
-                <SimpleDialog metaTitle={null} dialog="quit" className={styles.linkBar} data-expanded={linksOpen}>
+        {/*
+          * The links bar. `Furniture` puts it outside `#app`, so it is zoomed
+          * once like the options bar rather than twice — see the note there.
+          */}
+        <Furniture className={`fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10 ${styles.links}`}>
+            <SimpleDialog metaTitle={null} dialog="quit" className={styles.linkBar} data-expanded={linksOpen}>
                     <button
                         className={`${styles.link} ${styles.toggle}`}
                         onClick={() => {
@@ -175,9 +170,7 @@ const ModeDialog: React.FC<Props> = ({ onSingle, onMultiplayer, cursorEnabled = 
                         ))}
                     </div>
                 </SimpleDialog>
-            </div>,
-            document.body,
-        )}
+        </Furniture>
         </>
     );
 };

@@ -38,33 +38,34 @@
 
     background: linear-gradient(125deg, #434546, #696c69);
     /*
-     * Three layers, and the third is a seam fix rather than a decoration.
+     * Three layers: a black edge, then the bevel.
      *
-     * The first two are the bevel: a light inner edge top-left, a dark one
-     * bottom-right. The dark one carries a 1px blur, so it does not reach the
-     * box's own edge as a hard line — and the `outline` is painted outside the
-     * border box, not touching it either. Between them sits a hairline of the
-     * element's own background, and the gradient is at its lightest exactly
-     * there, bottom-right.
+     * **The first one is a seam fix.** The dark half of the bevel carries a 1px
+     * blur, so it does not reach the box's edge as a hard line, and `outline`
+     * is painted outside the border box without touching it either. Between
+     * them sits a hairline of the element's own background — at its lightest
+     * exactly there, bottom-right. At an integer device pixel ratio nothing
+     * shows; at a fractional one it lands on a partly-covered pixel and reads
+     * as a pale line between the shadow and the outline. Safari zoomed on a
+     * desktop produces such a ratio, which is why it needed zoom to reproduce
+     * there and appears on some boxes and not others — each box's own
+     * sub-pixel position decides it.
      *
-     * At an integer device pixel ratio nothing shows. At a fractional one —
-     * Safari zoomed on a desktop, or any phone — that hairline lands on a
-     * partly-covered pixel and reads as a pale line between the shadow and the
-     * outline. Measured on the mode dialog's right edge, luminance running
-     * outward: `58, 58, 103, 77, 0` at 2.5x, where 103 is the gradient. At 1x
-     * and 2x it is `59, 58, 0`, with no such pixel.
+     * `inset -1px -1px 0 0 #000` fills exactly the bottom and right edges, in
+     * the outline's own colour, so what blends at the boundary is black
+     * against black. Offset rather than spread, so it touches only the two
+     * edges that seam: a ring on all four — which was the previous attempt —
+     * ate half the light bevel, 4 device pixels of highlight down to 2.
      *
-     * `inset 0 0 0 1px #363536` is a hard, unblurred ring that reaches the
-     * edge, so there is nothing light left to show through. It sits *last*, so
-     * the light bevel still paints over it at the top-left — verified
-     * byte-identical on that edge.
+     * Measured at fractional ratios on the options bar, luminance outward
+     * along the right edge: without it, `67,63,53,90` at 2.5x, where the 90 is
+     * the background. With it, clean at 1.5, 2.5 and 3 — and the left edge is
+     * byte-identical, so the bevel is untouched.
      *
-     * Two other fixes were measured and rejected. Moving the outline into this
-     * box-shadow made it worse, seaming at ratios that had been clean.
-     * `outline-offset: -1px` was clean but pulls the outline inward over the
-     * box, which is a visible change to every dialog.
+     * An earlier attempt added `inset 0 0 0 1px #363536` for this and did not
+     * fix it on the device. It is gone: this covers the same edges properly.
      */
-    box-shadow: inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536, inset 0 0 0 1px #363536;
+    box-shadow: inset -1px -1px 0 0 #000, inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
     outline: 2px solid #000;
     color: #fff;
     padding: 16px 18px 14px;
