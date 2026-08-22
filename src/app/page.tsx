@@ -23,6 +23,8 @@ import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
 import InstallHint from "./components/InstallHint/InstallHint";
 import Furniture from "./components/Furniture/Furniture";
+import PackButton from "./components/PackButton/PackButton";
+import PackDialog from "./components/PackDialog/PackDialog";
 import textToSprite from "./utils/textToSprite";
 import { optionsNav } from "./hooks/optionsNav";
 import { installPreview } from "./utils/preview";
@@ -480,6 +482,13 @@ function GameContent() {
   }, [isCRTEffectActive]);
 
   // Expose the options panel to the menu's keyboard cursor
+  /**
+   * The daily pack's reveal screen. Local rather than in the reducer: nothing
+   * outside this file needs to know it is up, and it does not survive a reload
+   * by design — the cooldown in `localStorage` is what persists.
+   */
+  const [isPackOpen, setIsPackOpen] = useState(false);
+
   const optionsFocus = useSyncExternalStore(optionsNav.subscribe, optionsNav.getFocus, () => null);
 
   useEffect(() => {
@@ -532,6 +541,7 @@ function GameContent() {
         </div>
         {winState && !isRewardSelectionOpen && victorySoundRef.current && <WinDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
+        {isPackOpen && <PackDialog onClose={() => setIsPackOpen(false)} />}
       </div>
 
       {/* Quitting a game in progress, in either mode, placed beside the options
@@ -615,6 +625,30 @@ function GameContent() {
               {textToSprite("Home")}
             </button>
           </SimpleDialog>
+        </Furniture>
+      )}
+
+      {/*
+        * The daily pack, in the one corner nothing else uses.
+        *
+        * Bottom-left is Quit and Home, bottom-right the options bar, top-right
+        * the move clock — so top-left, laid out the same way as all of them:
+        * same inset, same `Furniture` portal, same small box. A fifth kind of
+        * furniture in a corner already spoken for would have to fight one of
+        * the four for the space.
+        *
+        * Menu screens only. It is a thing you do between games rather than
+        * during one, and a board has no room for another box over it — the
+        * gallery, the card picker and the pack's own screen all take the corner
+        * back while they are up.
+        *
+        * **It unmounts while the pack is open, and that is what refreshes it.**
+        * The button reads the cooldown once on mount, so coming back after the
+        * reveal is what turns `Pack` into a countdown. Nothing has to tell it.
+        */}
+      {isMenuOpen && !isMultiplayerOpen && !isCardSelectionOpen && !isCardGalleryOpen && !isGameActive && !isPackOpen && (
+        <Furniture className="fixed left-[var(--furniture-gap)] top-[var(--furniture-gap)] text-3xl z-10">
+          <PackButton onOpen={() => setIsPackOpen(true)} />
         </Furniture>
       )}
 

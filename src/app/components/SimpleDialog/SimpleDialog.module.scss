@@ -52,6 +52,33 @@
     }
 
     /**
+     * The daily pack, top left.
+     *
+     * Its own value rather than sharing `quit`'s: that one is `width:
+     * max-content` with 1.4rem of side padding, which is right for a word and
+     * wrong for a 27px icon — the box came out an oblong twice as wide as it
+     * was tall. This is square at the same 2.5rem the other three corners
+     * stand at, so the four agree.
+     *
+     * `overflow: hidden` clips the charge bar inside. Safe here: the black edge
+     * every dialog carries is an `outline`, painted outside the border box, so
+     * overflow cannot eat it — unlike the `clip-path` the options bar's note
+     * warns about, which clips to the border box and did.
+     */
+    &[data-dialog="pack"] {
+        position: static;
+        translate: none;
+        min-width: 0;
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    /**
      * The install hint, placed by its wrapper like the two above — but with
      * none of their sizing, because it is a few lines of text rather than a
      * bar. Only the centring is turned off.

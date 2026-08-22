@@ -1,0 +1,198 @@
+@use "../../styles/dialog.module.scss";
+
+/**
+ * Everything on this screen runs at this fraction of its written time.
+ *
+ * **`PACK_SPEED` in `PackDialog.tsx` has to match.** The component credits the
+ * cards, plays the sounds and closes the screen on `setTimeout`s counted
+ * against these animations; if the two drift the sounds land on the wrong beat
+ * and the screen closes over a card still moving. Kept at the reward screen's
+ * 0.9 so the two feel like one thing.
+ */
+$speed: 0.9;
+
+/**
+ * **The keyframes below are the reward screen's, copied.**
+ *
+ * Sharing them was the first instinct and it does not work cleanly: these are
+ * CSS modules, so `@keyframes` declared in a partial are scoped to whichever
+ * module pulls the partial in. Two modules importing one set of frames emit two
+ * separately-mangled copies anyway — the sharing is a source-level illusion —
+ * and the price is that `RewardSelectionDialog` starts depending on a file this
+ * screen can change.
+ *
+ * That screen is tuned to the frame and is the single most delicate sequence in
+ * the app. Forty lines of duplication is the cheaper side of that trade, so if
+ * the reward timings are ever retuned, these do not follow automatically — and
+ * should be looked at deliberately.
+ *
+ * The one real difference: there is no red half here. Nothing is lost from a
+ * pack, so nothing travels downwards.
+ */
+.packContainer {
+    background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), url("/assets/bg-accent.png"), url("/assets/bg.png");
+    background-blend-mode: soft-light;
+    background-size: cover, contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    top: 0;
+    left: 0;
+    position: fixed;
+    bottom: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+
+    .cell {
+        width: 128px;
+        height: 163px;
+    }
+
+    /**
+     * The unopened cards sit *above* centre, not on it.
+     *
+     * A card in its centred hold lands 80px below the middle of the screen —
+     * the reward screen's number, kept so the two look alike — and there it has
+     * a whole row of its own to sit in, because that screen has a second row of
+     * cards underneath. This one has a single row, so with the row centred the
+     * card came to rest on top of it and covered the two backs behind it.
+     *
+     * The margin reserves the space the second row would have taken: a card's
+     * height plus the gap the reward screen leaves between its two rows. The
+     * result is the same picture — a row of backs up top, the card being dealt
+     * clear underneath.
+     */
+    .packRow {
+        /**
+         * Room under the row for the card being dealt to hold in.
+         *
+         * The card is `position: absolute` with no `top`, so it hangs from its
+         * own slot in this row rather than from the middle of the screen — the
+         * hold below is a distance from *here*. It comes to rest 433px below
+         * the row's top edge once the 1.5 scale is counted, of which 163px is
+         * the row itself, so 270px of that is overhang. 280 leaves a little
+         * under it and keeps the column looking centred.
+         */
+        margin-bottom: 280px;
+    }
+
+    /**
+     * **One sticky attribute, and both animations in one declaration.**
+     *
+     * `data-dealt` goes true when a card's turn comes and never goes false
+     * again. That matters more than it looks: `forwards` only holds a card off
+     * screen for as long as the animation is still *applied*, so an attribute
+     * that tracked only the card currently moving would drop the animation from
+     * the one before it — and that card snapped back into the row, face up,
+     * shunting the remaining backs sideways. Observed, not theorised.
+     *
+     * The two animations are one comma-separated declaration rather than two
+     * rules because two rules cannot both win: `animation` is one property, so
+     * the more specific rule replaces the other outright and the flip is never
+     * seen. Listed together they take turns instead — for the first half second
+     * only the flip is running, and once the preview starts it is later in the
+     * list and takes over `transform`. The flip ends on the identity transform,
+     * so there is nothing to hand back.
+     */
+    [data-dealt="true"] {
+        z-index: 4;
+        animation:
+            pack-card-flip (0.5s * $speed) ease-in-out forwards,
+            pack-card-preview (3s * $speed) ease-in-out (0.5s * $speed) forwards;
+    }
+}
+
+.packDialog {
+    @extend .dialog;
+    position: relative;
+
+    &[data-animation]:not([data-animation=""]) {
+        animation: pack-label (1.2s * $speed) forwards 0s ease-in-out;
+    }
+}
+
+/**
+ * The message and its glyphs are flex items on one line, so a narrow screen
+ * cannot break the name away from the rest of it.
+ */
+.headingLine {
+    display: flex;
+    justify-content: center;
+}
+
+/** The label's reserved space, kept even while it is empty. */
+.dialogContainer {
+    min-height: 53px;
+}
+
+@keyframes pack-card-preview {
+    0% {
+        transform: translateY(0);
+        z-index: 1;
+    }
+
+    30% {
+        transform: translateY(-3000px)scale(1.5);
+    }
+
+    31% {
+        transform: translateY(-3000px)translateX(-50%)scale(1.5);
+    }
+
+    /**
+     * **230px, where the reward screen holds at 80.**
+     *
+     * That screen has a second row of cards under the first, and its 80px drops
+     * the card neatly over it. This one has a single row, and the same 80 left
+     * the card covering the lower two thirds of the backs still waiting to be
+     * dealt — the card is anchored to its own slot in the row, not to the
+     * middle of the screen, so no amount of moving the row apart could open
+     * that gap. 230 clears the row's full height plus the 40px the 1.5 scale
+     * adds above the card's own top edge, and leaves about 25px of daylight.
+     */
+    40% {
+        transform: translateY(230px)translateX(-50%)scale(1.5);
+        left: 50%;
+        position: absolute;
+        z-index: 3;
+    }
+
+    80% {
+        transform: translateY(230px)translateX(-50%)scale(1.5);
+        left: 50%;
+        position: absolute;
+    }
+
+    100% {
+        transform: translateY(3000px)translateX(-50%)scale(1.5);
+        left: 50%;
+        position: absolute;
+    }
+}
+
+@keyframes pack-card-flip {
+    50% {
+        transform: rotate3d(0, 1, 0, 0.5turn) scale(1.2);
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+        z-index: 3;
+    }
+
+    100% {
+        transform: rotate3d(0, 1, 0, 1turn) scale(1);
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+    }
+}
+
+@keyframes pack-label {
+    0% {
+        transform: translateY(-3000px);
+    }
+
+    70% {
+        transform: translateY(-3000px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}

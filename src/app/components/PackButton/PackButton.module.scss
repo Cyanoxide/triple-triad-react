@@ -1,0 +1,89 @@
+/**
+ * The pack button: a square icon in the corner whose background fills over the
+ * twenty-four hours until the next pack.
+ *
+ * The box itself is `SimpleDialog`'s `pack` variant — the square sibling of the
+ * `quit` box the other corners use, defined over there with the rest of them.
+ * What is here is the fill and the icon.
+ */
+.packButton {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+
+    /*
+     * The same press-and-hover response the options bar's icons give, so a
+     * finger gets the acknowledgement a pointer does.
+     */
+    transition: background-color 0.2s ease-in;
+
+    &:hover,
+    &:active {
+        background-color: rgba(0, 0, 0, 0.25);
+    }
+
+    /**
+     * Dimmed until there is something to open, matching the shut options bar's
+     * own 0.35 — the two boxes are then equally quiet when neither wants
+     * attention.
+     */
+    &[data-ready="false"] {
+        cursor: default;
+
+        .icon {
+            opacity: 0.35;
+        }
+    }
+}
+
+/**
+ * The part of the wait still to go.
+ *
+ * Pinned to the right and shrinking to nothing, so what it uncovers is the
+ * dialog's own gradient — the button fills with its own background colour
+ * rather than with a bar in some second colour laid on top.
+ *
+ * **A CSS animation rather than a re-render per tick.** Twenty-four hours is
+ * long enough that a JavaScript clock redrawing this would cost more than the
+ * feature is worth, and the component only needs waking once, at the end. The
+ * component sets a negative `animation-delay` from the stored deadline, which
+ * is what starts the bar partway through after a reload.
+ */
+.charge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    animation: pack-charge 86400000ms linear forwards;
+    pointer-events: none;
+}
+
+.icon {
+    position: relative;
+    width: auto;
+    height: 1.6rem;
+
+    /**
+     * `contain`, not the default `fill`: the card back is 62x79 and the lane it
+     * sits in is square, so `fill` would stretch the artwork. The same reason
+     * the options bar's icons carry it.
+     */
+    object-fit: contain;
+    image-rendering: pixelated;
+    transition: opacity 0.3s ease-in;
+}
+
+@keyframes pack-charge {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0;
+    }
+}
