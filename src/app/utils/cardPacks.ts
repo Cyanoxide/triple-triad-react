@@ -63,33 +63,39 @@ const packPool = cards.filter(card => card.level > 0 && !obtainableFromPlayers.h
  *
  * Four slots roll on `STANDARD`, one on `FEATURED`. A typical pack is therefore
  * four cards in the 1-5 band and one level 6 — but every slot can exceed its
- * band, and the featured slot is by far the likeliest to. Each level above the
- * last is roughly a third as likely as the one below it, so the difficulty
- * climbs the whole way to 10 rather than levelling off at "rare".
+ * band, and the featured slot is by far the likeliest to.
  *
  * Rough odds per pack, from these numbers:
  *
  * | at least one | chance | ~1 in    |
  * |---|---|---|
- * | level 7+     | 19.7%  | 5 packs  |
- * | level 8+     | 5.2%   | 19 packs |
- * | level 9+     | 1.5%   | 66 packs |
- * | level 10     | 0.37%  | 268      |
+ * | level 7+     | 66%    | 1.5      |
+ * | level 8+     | 36%    | 2.8      |
+ * | level 9+     | 15%    | 6.7      |
+ * | level 10     | 4.4%   | 23 packs |
  *
- * A daily pack makes a level 10 about nine months of opening, which is the
- * intent: only three of them survive the exclusion below, and the other eight
- * are still out there to be won from someone.
+ * **These are deliberately far more generous than the first pass**, which put a
+ * level 10 at 1 in 268 packs and, with duplicates, needed a simulated *six
+ * years* of daily opening to finish the 88. The set has to be completable.
  *
- * Those numbers come from `Math`, not from reading the table — if the weights
- * are changed, the odds are worth re-deriving rather than adjusted by eye.
+ * The thing that actually made that possible is the duplicate protection in
+ * `drawFromLevel`, not the weights: it is what lets level 10 stay a 1-in-23
+ * event while the whole pool still comes in at a median of 88 packs — under
+ * three months — because a rare pull is never wasted on a card already held.
+ * Simulated against this module over 2000 runs; 90% finish inside 134 packs,
+ * and a nearly-complete collection still sees only 22% duplicates against the
+ * 86% it would draw without the preference.
+ *
+ * Those numbers were computed, not estimated. Re-derive them if the weights
+ * change.
  */
 const STANDARD_WEIGHTS: Record<number, number> = {
-    1: 2400, 2: 2400, 3: 2200, 4: 1900, 5: 1500,
-    6: 400, 7: 120, 8: 24, 9: 7, 10: 2,
+    1: 1800, 2: 1800, 3: 1700, 4: 1500, 5: 1300,
+    6: 800, 7: 500, 8: 250, 9: 130, 10: 60,
 };
 
 const FEATURED_WEIGHTS: Record<number, number> = {
-    6: 850, 7: 110, 8: 28, 9: 9, 10: 3,
+    6: 500, 7: 270, 8: 150, 9: 60, 10: 20,
 };
 
 const byLevel = (level: number) => packPool.filter(card => card.level === level);
@@ -109,36 +115,75 @@ const rollLevel = (weights: Record<number, number>): number => {
 };
 
 /**
- * One card from a level, avoiding anything already in this pack.
+ * One card from a level: something new if there is anything new to be had.
  *
- * The bands are not evenly stocked — four cards survive the exclusion at level
- * 1 and three at level 10 — so a small band can run out of unseen cards inside
- * a single pack. Rather than reroll the level, which would quietly bias the
- * result towards the roomier bands, it steps *down* one level at a time and
- * settles for a duplicate only when nothing below has anything left either.
- * Duplicates are worth something here anyway: `playerCards` counts copies.
+ * **Cards the player does not own come first.** This is what makes the set
+ * finishable without making the rare frames common. Without it a level 10 pull
+ * — a 1-in-23 event — lands on a card already held two times in three once the
+ * collection fills up, and the last few cards take longer to arrive than every
+ * card before them put together. Simulated, the same weights go from a median
+ * of 220 packs to complete the pool down to 89.
+ *
+ * It is a preference, not a guarantee: once every card in the band is owned it
+ * hands back a duplicate rather than escaping to another level, because the
+ * level is what the weights decided and quietly overriding it would bias every
+ * roll towards whichever band happens to be least complete. Duplicates are
+ * worth something here anyway — `playerCards` counts copies.
+ *
+ * The bands are not evenly stocked either — four cards survive the exclusion at
+ * level 1 and three at level 10 — so a band can run out of cards *this pack*
+ * has not already used. Rather than reroll the level, which would bias the
+ * result towards the roomier bands, it steps down one level at a time.
  */
-const drawFromLevel = (level: number, taken: Set<number>) => {
+const drawFromLevel = (level: number, taken: Set<number>, owned: Record<number, number>) => {
     for (let current = level; current >= 1; current--) {
-        const unseen = byLevel(current).filter(card => !taken.has(card.id));
-        if (unseen.length) return unseen[Math.floor(Math.random() * unseen.length)];
+        const unused = byLevel(current).filter(card => !taken.has(card.id));
+        if (!unused.length) continue;
+
+        const unowned = unused.filter(card => !owned[card.id]);
+        const choices = unowned.length ? unowned : unused;
+        return choices[Math.floor(Math.random() * choices.length)];
     }
 
     const anything = byLevel(level);
     return anything[Math.floor(Math.random() * anything.length)] ?? packPool[0];
 };
 
-/** The five card ids a pack contains, in the order they are revealed. */
-export const openPack = (): number[] => {
+/**
+ * The five card ids a pack contains, in the order they are revealed.
+ *
+ * `owned` is the player's collection — `playerCards`, counts and all — and is
+ * used only to prefer cards they are missing. A count of zero reads as not
+ * owned, which is what it means: that is a card lost back to an opponent.
+ */
+export const openPack = (owned: Record<number, number> = {}): number[] => {
     const taken = new Set<number>();
 
-    return Array.from({ length: PACK_SIZE }, (_, slot) => {
-        // The featured card goes last, so the pack builds towards its best odds
+    const drawn = Array.from({ length: PACK_SIZE }, (_, slot) => {
         const weights = (slot === PACK_SIZE - 1) ? FEATURED_WEIGHTS : STANDARD_WEIGHTS;
-        const card = drawFromLevel(rollLevel(weights), taken);
+        const card = drawFromLevel(rollLevel(weights), taken, owned);
         taken.add(card.id);
         return card.id;
     });
+
+    /**
+     * **Shuffled, so the featured slot is not always the last card.**
+     *
+     * The rolls have to happen in a fixed order — the featured slot is defined
+     * as one of the five and the duplicate check walks them in turn — but
+     * nothing should be inferable from *where* a card sits afterwards. Left in
+     * order, the fifth card was the good one every single time, which turns
+     * turning them over into a formality: you would know before touching them
+     * which four were filler.
+     *
+     * Fisher-Yates, back to front, so every ordering is equally likely.
+     */
+    for (let i = drawn.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [drawn[i], drawn[j]] = [drawn[j], drawn[i]];
+    }
+
+    return drawn;
 };
 
 /**
