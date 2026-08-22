@@ -35,7 +35,17 @@ const CENTRED_AT = 0.4;
 const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySound, bgm }) => {
     const { playerCards, playerHand, enemyId, enemyHand, lostCards, winState, score, tradeRule, isSoundEnabled, isCardGalleryOpen, board, dispatch } = useGameContext();
 
-    type RewardType = { id: number; uniqueId: string | null | undefined, level: number, player: PlayerType, position: number }
+    /**
+     * `side` is only set on a confirmed card, and says which of the two rows it
+     * was taken from.
+     *
+     * Without it a confirmed entry is just an id and a hand position, and the
+     * same entry is tested against both rows — so when the two hands hold the
+     * same card at the same index, one confirmed card matches in both and the
+     * won and lost animations run together. That is reachable under the direct
+     * rule, which is the only one that moves cards in both directions.
+     */
+    type RewardType = { id: number; uniqueId: string | null | undefined, level: number, player: PlayerType, position: number, side?: "won" | "lost" }
 
     const { session, incomingRewards } = useMultiplayer();
 
@@ -439,7 +449,9 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             playSound((playerWinState === "won") ? "success" : "place", isSoundEnabled);
         });
 
-        confirmedList.push(reward);
+        // playerWinState is set on every path that produces a reward; the ?? is
+        // for the type only.
+        confirmedList.push({ ...reward, side: playerWinState ?? undefined });
         setConfirmedCards(confirmedList);
 
         after(beat(2800), () => {
@@ -508,7 +520,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             <div className="flex justify-center mb-7">
                 {playerRewardSelection.map((card, index) => (
                     <div className={styles.cell} key={index} data-focused={isFocused("rewards", index) && !isSelectionConfirmed && selectedRewards.won.length < winAmount} onClick={() => handleSelectReward(card, card.position)}>
-                        <Card id={card.id} player={card.player} onMouseEnter={() => { if (winState === "blue" && !isSelectionConfirmed) focus({ group: "rewards", index }); }} data-selected={selectedRewards.won.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
+                        <Card id={card.id} player={card.player} onMouseEnter={() => { if (winState === "blue" && !isSelectionConfirmed) focus({ group: "rewards", index }); }} data-selected={selectedRewards.won.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.side !== "lost" && reward.id === card.id && reward.position === card.position)} data-index={index} />
                     </div>
                 ))}
             </div>
@@ -516,7 +528,7 @@ const RewardSelectionDialog: React.FC<RewardSelectionDialogProps> = ({ victorySo
             <div className="flex justify-center">
                 {enemyRewardSelection.map((card, index) => (
                     <div className={styles.cell} key={index}>
-                        <Card id={card.id} player={card.player} data-enemy-selected={selectedRewards.lost.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.id === card.id && reward.position === card.position)} data-index={index} />
+                        <Card id={card.id} player={card.player} data-enemy-selected={selectedRewards.lost.some((reward) => reward.id === card.id && reward.position === card.position)} data-confirmed={isSelectionConfirmed && confirmedCards.some((reward) => reward.side === "lost" && reward.id === card.id && reward.position === card.position)} data-index={index} />
                     </div>
                 ))}
             </div>

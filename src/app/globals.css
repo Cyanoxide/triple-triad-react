@@ -3,7 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
+  /*
+   * **How far the full-page layers reach past the body box.**
+   *
+   * `body::before` (the texture) and `body.crt-effect::after` (the scanlines)
+   * are meant to cover the window. They cover the *body box*, and in an
+   * installed app that box comes up short: measured on a phone, the scanlines
+   * stopped at 90% of the screen and the flat canvas colour showed below.
+   *
+   * The shortfall is the **sum of both vertical insets**, and the box is
+   * anchored at the top — so clearing the bottom one alone leaves exactly the
+   * top one uncovered. That was the second, smaller bar: texture to 95%, then
+   * tan. Hence `top + bottom` on the bottom edge.
+   *
+   * Overshooting is free — `html` is `overflow: hidden`, so anything past the
+   * window is clipped — while undershooting is the visible bug. When there are
+   * no safe areas every value is 0 and these are the original `inset: 0` rules
+   * exactly, so a desktop and a browser tab are untouched.
+   */
+  --page-bleed-top: calc(0px - env(safe-area-inset-top));
+  --page-bleed-left: calc(0px - env(safe-area-inset-left));
+  --page-bleed-right: calc(0px - env(safe-area-inset-right));
+  --page-bleed-bottom: calc(
+    0px - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+  );
+
   --foreground: #171717;
   /*
    * How soft the CRT filter is — on a desktop only; see below for why a phone
@@ -14,7 +38,6 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
@@ -22,19 +45,18 @@
 /* Clamp the document so layout overflow (a WebKit zoom artifact) can never
    grow the scrollable area and trigger mobile Safari's shrink-to-fit */
 /*
- * **The background here is a diagnostic as much as a fix**, for the strip along
- * the bottom edge on a phone. `height: 100%` on the body turned it from black
- * to grey, which says the black *was* the page — body's `var(--background)`
- * under a dark scheme — and that what is left is something else.
+ * **The ground, declared once.**
  *
- * A background on the root element is the next thing to rule out. The root's
- * background propagates to the canvas, which is what paints any region of the
- * viewport no box reaches; only body declared one before, so body's colour was
- * doing that job. If the strip turns this parchment colour, it was the canvas
- * and this is the fix. **If it stays grey it is the browser's own furniture and
- * no stylesheet can reach it** — which is worth knowing, because the only lever
- * left after that is `viewport-fit=cover` plus `env(safe-area-inset-*)` padding
- * on every edge, and that is a much bigger change than the problem.
+ * The root's background propagates to the canvas, which paints every region of
+ * the viewport no box reaches. `body` used to declare one too, and body's was
+ * doing that job — `var(--background)`, which follows the phone's appearance
+ * setting. That is what the bar along the screen edge always was: black on a
+ * phone in dark mode, white on one in light. Two reports, one rule. Body is
+ * transparent now and this is the only ground.
+ *
+ * It matters more since `viewport-fit=cover` and a translucent status bar,
+ * because the page now owns the safe areas rather than iOS insetting the
+ * layout out of them and filling the remainder itself.
  *
  * The colour is sampled from the rendered page's own bottom edge, which is
  * darker than the texture's average because of the vignette drawn over it.
@@ -47,7 +69,25 @@ html {
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  /*
+   * **No background here.** The ground is declared once, on `html`.
+   *
+   * This used to be `var(--background)`, which is `#fff` in a light colour
+   * scheme and `#0a0a0a` in a dark one — and it was the bar along the screen
+   * edge, in both its reported colours. The notes above recorded a *black*
+   * strip; the same rule paints it *white* on a phone set to light. It was
+   * never two bugs.
+   *
+   * Transparent lets the canvas show instead, and the canvas takes its colour
+   * from the root element — `#8b6230`, sampled off the rendered page's own
+   * edge. So any region the texture does not reach comes out parchment rather
+   * than a colour chosen by the phone's appearance setting.
+   *
+   * `body::before` still paints the texture over the body box as before; this
+   * only governs what shows where that box does not reach, which with
+   * `viewport-fit=cover` plus a translucent status bar is the safe areas.
+   */
+  background: transparent;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 13px;
   letter-spacing: 0;
@@ -142,10 +182,10 @@ body.crt-effect {
 body.crt-effect::after {
   content: '';
   position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  top: var(--page-bleed-top);
+  left: var(--page-bleed-left);
+  right: var(--page-bleed-right);
+  bottom: var(--page-bleed-bottom);
   background: repeating-linear-gradient(0deg, #111 0px, #111 1px, transparent 2px, transparent 5px);
   background-size: 100% 3px;
   animation: lines 3s ease-out infinite;
@@ -154,13 +194,37 @@ body.crt-effect::after {
   z-index: 11;
 }
 
+/*
+ * The page texture, painted past the edges of its own box.
+ *
+ * The insets are **negative safe areas**, not zero. `height: 100%` on html and
+ * body is meant to make the background box and the box the app is scaled to
+ * the same box, and on a desktop it does — but in an installed app with
+ * `viewport-fit=cover` and a translucent status bar the page owns the safe
+ * areas too, and the bottom one measured short: the strip over the home
+ * indicator came out flat `#8b6230` from the canvas rather than textured.
+ * Rather than depend on which of the three viewports `100%` resolves to on a
+ * given phone, the painting simply reaches past the box on every side.
+ *
+ * Where there is no safe area the value is 0 and this is the original rule
+ * exactly, so nothing changes on a desktop or in a browser tab.
+ *
+ * **Still `absolute`, and still in the same stacking context.** Making this
+ * `fixed` covers the strip too and costs two things that took a round trip to
+ * find: `background-size: cover` re-resolves against the visual viewport, so
+ * the texture goes off-centre and is cut along the bottom; and the layer is
+ * composited on its own, which is where the board's `balamb.png` loses the
+ * `mix-blend-mode: soft-light` it blends into this with. Negative offsets grow
+ * the box without moving it out of the flow it belongs to — `cover` still
+ * resolves against a rectangle of the same shape, only slightly larger.
+ */
 body::before {
   content: "";
   position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  top: var(--page-bleed-top);
+  left: var(--page-bleed-left);
+  right: var(--page-bleed-right);
+  bottom: var(--page-bleed-bottom);
   background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), radial-gradient(50% 50%, #fbf8e1ee 1%, #fbf8e100 60%), url("/assets/bg.png");
   background-blend-mode: soft-light, hard-light;
   background-size: cover;
@@ -227,6 +291,37 @@ button {
  * The dialog sits low for the same reason the grid goes: centred, it covered
  * the logo it is supposed to be standing under.
  */
+/**
+ * **Centres the app in the window, not in the layout viewport.**
+ *
+ * Measured on an iPhone: `innerHeight` 932, `clientHeight` 873. The layout
+ * viewport is short by the status bar inset and sits at the top, so `#app` —
+ * `h-full` of that box — centres its contents about 30px above the screen's
+ * middle. In portrait only; landscape has no top inset and `innerHeight`
+ * equals `clientHeight` there, measured 430 and 430.
+ *
+ * **A relative `top`, and nothing else.** `#app` already carries `relative`,
+ * so this is a paint offset: no box changes size, no percentage resolves
+ * differently, nothing reflows, and relative positioning does not become a
+ * containing block for the `fixed` corner furniture inside it.
+ *
+ * That is the whole point of doing it this way. The obvious version —
+ * `padding-top` on `body` — was tried and reverted: `scaleApp` puts `zoom` on
+ * `#app`, so padding on the unzoomed `body` moved the containing block that
+ * `#app`'s `height: 100%` resolves against, and that height is then multiplied
+ * by the zoom. iOS also applies `env()` after the first layout pass, so the
+ * board emblem and the meta links landed against a box that had since changed
+ * and only came right when a rotation re-ran `scaleApp`. **Do not reach for
+ * padding or margin on body or #app here.**
+ *
+ * Divided by `--app-scale` because `#app` is zoomed: the shortfall is a real
+ * measurement of the screen, so it must survive the zoom as the same number of
+ * real pixels. Half of it, because centring splits the difference.
+ */
+#app {
+  top: calc(env(safe-area-inset-top) / 2 / var(--app-scale, 1));
+}
+
 #app [data-position]::before {
   transition: opacity 450ms ease;
 }
@@ -240,9 +335,287 @@ button {
   opacity: 1;
 }
 
-/* Pinned to the window rather than to the board, but scaled with it */
+/**
+ * The four boxes pinned to the window's corners — Quit, the move clock, the
+ * options bar — scaled with the board but positioned against the window.
+ *
+ * **The inset has two parts, and only one of them may scale.**
+ *
+ * `1.5rem` is a design measurement: it should shrink with everything else so
+ * the margin stays in proportion. `env(safe-area-inset-*)` is a real
+ * measurement of the hardware — the home indicator, the notch, the rounded
+ * corners — and must come out as the same number of real pixels whatever the
+ * canvas is doing.
+ *
+ * `zoom` multiplies every length in the box by the scale, so a real-pixel
+ * result of R has to be written as R / scale. Hence the division. Verified in
+ * Chromium and WebKit: at scale 0.5 with a 44px inset, `calc(1.5rem + 44px /
+ * 0.5)` lands the box exactly 56px from the edge (24 * 0.5 + 44).
+ *
+ * This only started mattering with `viewport-fit=cover`. Before it, iOS inset
+ * the layout viewport out of the safe areas itself and the corners could never
+ * reach the rounded edge — at the cost of the bar it painted around the page.
+ *
+ * **The boost is a separate axis from the safe area.** A phone renders the
+ * whole canvas at roughly a third of desktop, which leaves the options bar a
+ * couple of millimetres tall in the hand. `--furniture-boost` enlarges only
+ * these four boxes, not the board, the hands or the dialogs — the panel
+ * scaling that was tried and rejected. The insets divide by the boosted scale,
+ * so the safe-area clearance stays correct as the furniture grows.
+ */
+:root {
+  --furniture-boost: 1;
+  --furniture-scale: calc(var(--app-scale, 1) * var(--furniture-boost));
+
+  /*
+   * **The margin is divided by the boost, because `zoom` scales it too.**
+   *
+   * `--furniture-boost` enlarges these boxes by multiplying their `zoom`, and
+   * `zoom` multiplies *every* length inside — including the offset holding the
+   * box off the screen edge. Making the icon 1.6x bigger silently made its
+   * margin 1.6x wider. Dividing cancels that: the box grows, the margin does
+   * not.
+   *
+   * **`--furniture-clearance` is a corner radius, not a safe area.**
+   *
+   * These four boxes sit in the corners, and the only hardware a corner has to
+   * clear is the curve of the screen. `env(safe-area-inset-*)` describes
+   * something else: the home indicator, centred along the bottom, and the
+   * Dynamic Island, centred along one edge. Neither is anywhere near a corner.
+   *
+   * Using the insets made that plain. Measured on an iPhone in landscape:
+   * bottom inset 20px, right inset 59px — so taking the larger of the pair, as
+   * evenness requires, gave the bottom-right box 59px of clearance to avoid an
+   * island at the middle of the edge. In portrait the same expression gave
+   * 34px, which looks right. The box was not asking for a safe area; it was
+   * asking for a corner radius, and a corner radius does not change when the
+   * phone is turned.
+   *
+   * So it is one number in real pixels, divided by the scale like any other
+   * hardware measurement. 34px matches what portrait already looked right at.
+   * Raise it to back the boxes off, lower it to tuck them in; below about 16px
+   * they start being clipped by the curve, which is where this began.
+   *
+   * `--furniture-margin` still floors it, for a desktop and for any phone
+   * whose corners are square.
+   */
+  /*
+   * **How much bigger the dialogs are on a phone.**
+   *
+   * The whole canvas is scaled to fit, so a menu row that is comfortable on a
+   * monitor comes out a couple of millimetres tall in the hand. This enlarges
+   * the panels and everything in them without touching the board or the hands,
+   * which cannot overflow.
+   *
+   * `zoom`, not `scale`. Every dialog opens with `boxOpen`, which fills its own
+   * `scale` and `opacity` — a `scale` declared on a `.dialog` silently never
+   * applies, which the notes record costing an afternoon twice. `zoom` is a
+   * different property and does not collide with it.
+   *
+   * **Percentages are not scaled by `zoom`; absolute lengths are.** Verified in
+   * Chromium and WebKit: at `zoom: 2` a box at `top: 50%` still centres
+   * correctly, and dividing that 50% by the zoom moves it to a quarter. So
+   * `top: 50%` needs no compensation, while a `calc(50% + 249px)` does — on
+   * its pixel term only. That is why only four dialogs have a division in them
+   * and the rest were left alone.
+   */
+  --dialog-boost: 1;
+  --dialog-max-width: none;
+  /*
+   * **Design pixels, not real ones.**
+   *
+   * Two rows sit under something else — the player picker below the location
+   * one, and the landing page's links below the mode box — and the boost made
+   * their neighbours taller without moving them, so they closed up.
+   *
+   * The first version of this was 20 *real* pixels, which was wrong twice
+   * over. Too big: 20 real px is `20 / --app-scale` in design terms, about 32
+   * where the pair needed 13. And unstable: `--app-scale` falls as the window
+   * narrows, so the gap grew the smaller the screen got, when the whole point
+   * of a design pixel is that it does not.
+   *
+   * Two variables rather than one, because the pairs need different amounts:
+   * the pickers want to nearly touch, the links want daylight under the box.
+   *
+   * **The picker figure has to clear two outlines before any of it shows.**
+   * `.dialog` carries `outline: 2px solid #000`, which paints *outside* the
+   * border box and takes no part in layout — so the gap between two boxes is
+   * eaten from both sides before a pixel of it is visible. At a boost of 1.3
+   * each outline renders about 2.6 real px, so a geometric gap under 5.2 shows
+   * as nothing at all. It measured 2.59 and looked like contact, which is
+   * exactly what it was: the outlines overlapped by 2.6.
+   *
+   * Divided by the boost because they are added inside dialogs, which zoom
+   * absolute lengths. Tuned against a boost of 1.3 — if that changes, so do
+   * these, since what they are correcting for is the growth the boost causes.
+   */  --picker-nudge: 0px;
+  --links-nudge: 0px;
+
+  /*
+   * **Where the mode box sits, measured from the middle rather than as a
+   * fraction of the window.**
+   *
+   * It was `top: 74%`, and 74% of what turns out to matter: `#app` is `h-full`
+   * of the window, so its height in design pixels is `clientHeight / scale`.
+   * Narrow the window, the scale drops, that box gets *taller* in design terms,
+   * and 74% of it walks away from the 50% the logo is centred on. Measured on a
+   * desktop at 900 tall: the box sits 113 design px below centre at 1440 wide
+   * and 225 at 700. The logo does not move, so the gap between them doubles.
+   *
+   * A centre anchor plus a fixed offset holds the two together at any size. The
+   * offset is per canvas because 74% was a different distance in each — 0.24 x
+   * 750 on a desktop, 0.24 x 640 in phone landscape, and 0.24 x the taller box
+   * a width-limited portrait produces. Each value reproduces where that canvas
+   * already had it at its designed size.
+   *
+   * Divided by the boost because these are consumed inside dialogs, which zoom
+   * absolute lengths (the 50% they are added to is untouched — percentages are
+   * not scaled by zoom).
+   */
+  --mode-anchor: calc(50% + 180px / var(--dialog-boost, 1));
+
+  --furniture-margin: calc(1.5rem / var(--furniture-boost));
+  --furniture-clearance: 0px;
+
+  --furniture-gap: max(
+    var(--furniture-margin),
+    calc(var(--furniture-clearance) / var(--furniture-scale))
+  );
+}
+
+:root[data-phone="true"] {
+  --mode-anchor: calc(50% + 154px / var(--dialog-boost, 1));
+
+  /*
+   * 1.3, matching --dialog-boost. It was 1.6, chosen before the dialogs had a
+   * boost of their own; keeping the two the same means the corner furniture
+   * and the panels read as one size of UI rather than two.
+   *
+   * The corner gaps do not move with it. --furniture-margin divides by the
+   * boost and --furniture-clearance is a real measurement of the screen's
+   * curve, so both survive the change: the boxes get smaller, their distance
+   * from the corner stays 34px.
+   */
+  /*
+   * 1.15, down from 1.3. At 1.3 the open links bar reached 382px on a 430px
+   * phone and the shut options bar began at 372 — they met. Everything on this
+   * row scales together, so trimming the boost is the one change that separates
+   * them without touching a padding or a label.
+   */
+  --furniture-boost: 1.15;
+  /*
+   * **The same gap the mode box leaves, once that box is at its cap.**
+   *
+   * It was a flat 34px, chosen as a stand-in for the screen's corner radius. On
+   * a phone wide enough for `--dialog-max-width` to bind, the box is 380 real
+   * px in a window of `100vw`, so it leaves `(100vw - 380px) / 2` either side —
+   * 25px on a 430 phone. The corner furniture sitting 34px in read as a
+   * different margin from everything else on the screen.
+   *
+   * **The same margin the capped dialogs leave**, so the corner furniture sits
+   * on the screen's margin rather than one of its own.
+   *
+   * Clamped at both ends anyway. An earlier version derived this from the
+   * window — `(100vw - 380px) / 2` — which came to 232px in landscape and
+   * pushed the furniture a third of the way across the screen, over the logo.
+   * Reading the margin directly cannot do that, and the clamp is belt and
+   * braces for a margin someone later makes large.
+   *
+   * Floored at 16px, roughly what a corner of this radius needs on the
+   * diagonal: below that the curve starts clipping the box, which is where this
+   * began. That floor is what a phone too narrow for the cap gets.
+   */
+  --furniture-clearance: clamp(16px, var(--dialog-margin), 34px);
+  --dialog-boost: 1.3;
+  --picker-nudge: calc(24.2px / var(--dialog-boost, 1));
+  --picker-lift: 0px;
+  --links-nudge: calc(30px / var(--dialog-boost, 1));
+
+  /*
+   * **A ceiling in real pixels, not design ones.**
+   *
+   * What matters is whether a box runs off the screen, and that is a question
+   * about the phone rather than about the canvas. A dialog sits inside two
+   * zooms — `#app`'s `--app-scale` and its own `--dialog-boost` — so dividing
+   * by both turns a real-pixel figure into the design-pixel one that renders
+   * as it.
+   *
+   * **A margin, not a width.** It was a flat 380px, which happens to be right
+   * on a 430-wide phone and is badly wrong in landscape: the window is 844
+   * there, and squeezing the rules panel into 380 forced it into one tall
+   * column that ran off the bottom of a 390-high screen. Expressed as
+   * "the window less a margin" it is 380 on that phone by arithmetic, and
+   * leaves landscape the room it actually has.
+   *
+   * Phone only. On a desktop this is `none`, so nothing is capped and the
+   * dialogs keep the widths they were designed at.
+   */
+  --dialog-margin: 25px;
+  --dialog-max-width: calc(
+    (100vw - 2 * var(--dialog-margin)) / var(--app-scale, 1) / var(--dialog-boost, 1)
+  );
+}
+
+/*
+ * Portrait phones stack, and their canvas is the tall one — so 74% was a
+ * longer drop there than in landscape.
+ *
+ * **After the `[data-phone]` block, not before.** The two selectors have the
+ * same specificity, so source order decides, and a portrait phone matches
+ * both. Written the other way round it silently took the landscape value.
+ */
+/*
+ * **Landscape phones lift the two pickers.**
+ *
+ * The canvas is 900x640 there and fills the height exactly, so the pair sits
+ * as low as the design allows — and once the dialogs grew, the player box
+ * reached the bottom of the screen: measured 389 in a 390px window, with the
+ * Back button's own bottom edge at 365.
+ *
+ * 40 design pixels puts it level with that edge, so the lowest thing on the
+ * screen is the row of furniture rather than a dialog hanging past it.
+ *
+ * Design pixels, not real ones: in landscape the canvas height *is* the screen
+ * height, so a design pixel is a fixed fraction of it and this holds on a
+ * larger phone. Portrait is untouched — it has 190px of slack and the pickers
+ * are nowhere near the edge.
+ */
+:root[data-phone="true"]:not([data-stacked="true"]) {
+  --picker-lift: calc(40px / var(--dialog-boost, 1));
+}
+
+:root[data-stacked="true"] {
+  --mode-anchor: calc(50% + 331px / var(--dialog-boost, 1));
+}
+
+/*
+ * Pinned to the window rather than to the board, but scaled with it.
+ *
+ * **`position: fixed` in the markup, not `absolute`** — and that is what the
+ * line above has always claimed. `absolute` worked only while `#app` happened
+ * to fill the window.
+ *
+ * It does not in an installed app. Measured on an iPhone: `innerHeight` 932,
+ * `documentElement.clientHeight` 873. The layout viewport is short by 59 — the
+ * status bar inset — and sits at the top, so 59px of screen hangs below the
+ * box everything absolute is measured against. The options bar came out 117px
+ * above the screen's bottom edge instead of 58: its correct 58px offset, plus
+ * that orphan strip.
+ *
+ * Two of these boxes sit inside `#app` and one after it, so `absolute` gave
+ * them two different containing blocks and neither was the window. `fixed`
+ * gives all three the visual viewport, which is the full 932, and the offsets
+ * below then mean what they say.
+ */
 [data-app-scaled] {
-  zoom: var(--app-scale, 1);
+  zoom: var(--furniture-scale);
+
+  /*
+   * The options bar, Quit and the clock are dialogs inside a wrapper that is
+   * already zoomed by `--furniture-scale`. Inheriting the dialog boost as well
+   * would multiply the two and render them at 2.56x.
+   */
+  --dialog-boost: 1;
 }
 
 /**

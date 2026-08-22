@@ -4,7 +4,7 @@
     @extend .dialog;
     position: absolute;
     top: 50%;
-    left: calc(50% - 175px);
+    left: calc(50% - 175px / var(--dialog-boost, 1));
     translate: -50% -50%;
     width: 288px;
     min-height: 300px;

@@ -16,7 +16,7 @@
         // Beside the menu rather than below it: the vertical space under the
         // info dialog already belongs to the location and player rows
         top: 50%;
-        left: calc(50% + 175px);
+        left: calc(50% + 175px / var(--dialog-boost, 1));
         translate: -50% -50%;
         min-width: 0;
         width: max-content;
@@ -49,6 +49,26 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    /**
+     * The install hint, placed by its wrapper like the two above — but with
+     * none of their sizing, because it is a few lines of text rather than a
+     * bar. Only the centring is turned off.
+     *
+     * Without this it keeps `.simpleDialog`'s own `top/left: 50%` and centres
+     * on the wrapper, which is a zero-height box pinned to the bottom edge — so
+     * half the panel hung off the screen and its button could not be tapped.
+     */
+    &[data-dialog="install"] {
+        position: static;
+        translate: none;
+        min-width: 0;
+
+        // The mode dialog's width, so the two boxes on the title screen line up
+        // rather than being two different sizes of the same thing.
+        width: 470px;
+        max-width: var(--dialog-max-width, none);
     }
 
     &[data-dialog="options"] {
@@ -117,6 +137,23 @@
 
         [data-focused="true"] {
             background-color: rgba(0, 0, 0, 0.25);
+        }
+
+        /*
+         * The same highlight on hover and on press, so a pointer and a finger
+         * get the response the cursor gives. It used to come only from
+         * `data-focused`, which the nav sets — so a mouse got it and a touch,
+         * which never moves the cursor, got nothing at all.
+         */
+        > div > img,
+        > div > div {
+            cursor: pointer;
+            transition: background-color 0.2s ease-in;
+
+            &:hover,
+            &:active {
+                background-color: rgba(0, 0, 0, 0.25);
+            }
         }
 
         img {

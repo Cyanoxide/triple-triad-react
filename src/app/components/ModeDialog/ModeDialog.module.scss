@@ -5,7 +5,10 @@
 
     // Low enough to clear the logo it is standing under. Centred, the box sat
     // squarely over it and the screen was a grey panel on a texture.
-    top: 74%;
+    //
+    // Anchored to the middle rather than to a fraction of the window, so the
+    // gap to the logo does not grow as the window narrows. See --mode-anchor.
+    top: var(--mode-anchor, 74%);
 }
 
 .question {
@@ -25,38 +28,128 @@
  * Under the box rather than inside it. They are not a third way to play, and a
  * row of them among the modes would read as one.
  */
+/**
+ * **Trial layout**: the links as one bar in the corner, built like the options
+ * bar opposite it — a single box with the items divided inside it.
+ *
+ * Almost nothing here, and that is the point. They render through a portal as
+ * a sibling of `#app`, so the wrapper in the markup is the options bar's own —
+ * same `fixed`, same `--furniture-gap`, same `text-3xl`, same
+ * `data-app-scaled` — and it comes out the same size without a single length
+ * being corrected for a second zoom.
+ */
 .links {
-    position: absolute;
-    top: calc(74% + 100px);
-    left: 50%;
-    translate: -50% 0;
     display: flex;
-    // room for a cursor to sit beside the second one rather than on the first
-    gap: 4.4rem;
-    z-index: 3;
 }
 
+/**
+ * The bar itself. No padding of its own: the items reach its edges so their
+ * highlight fills the full height, the way the options bar's icons do.
+ */
+.linkBar {
+    padding: 0 !important;
+    overflow: hidden;
+
+    /*
+     * **`stretch`, against the Quit style's `center`.** Centred, the items are
+     * as tall as their own text and `height: 100%` on them resolves against
+     * that rather than against the bar — so they stopped short of its edges and
+     * their highlight was a band floating in the middle.
+     */
+    align-items: stretch !important;
+}
+
+/**
+ * The part that collapses.
+ *
+ * The options bar animates its *whole* width down to a square, which works
+ * because the one thing it keeps is an icon of known size. "Links" is text, and
+ * a collapsed width guessed in rem leaves a sliver of the next item showing
+ * whenever the guess is wide. Closing the group to zero needs no measurement.
+ *
+ * A large `max-width` rather than `none`, because a transition needs two
+ * lengths to move between — `none` is not one, and the bar would snap.
+ */
+.linkItems {
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    max-width: 40rem;
+    // The options bar's own timing, so the two bars open at one speed
+    transition: max-width 0.5s ease-in-out;
+}
+
+.linkBar[data-expanded="false"] .linkItems {
+    max-width: 0;
+}
+
+/**
+ * One item. Pointer cursor and a highlight rather than the game's cursor —
+ * these are links out of the app, not options within it, and pointing the hand
+ * at them made them look like a third way to start a game.
+ *
+ * The divider is the options bar's own pair: a dark border with a light line
+ * beside it, which reads as a groove rather than a drawn edge.
+ */
 .link {
+    display: flex;
+    align-items: center;
 
-
-    position: relative;
+    /*
+     * `globals.css` gives every `button` a 4px margin top and bottom and a 21px
+     * height. The toggle is a button among anchors, so without this it sat off
+     * centre against them and against the options bar's own text — measured 9.3
+     * above the glyph and 8.8 below, where the options bar is 9 and 9.
+     */
+    margin: 0;
+    height: 100%;
+    padding: 0 0.7rem;
+    cursor: pointer;
+    white-space: nowrap;
     text-shadow: 2px 2px 0 #212121;
+    transition: background-color 0.2s ease-in;
 
-    &[data-focused="true"] {
-        // The dialog's own cursor rule cannot reach out here, so it is redrawn.
-        // Sat higher than the text it points at until the offset was nudged
-        // down — the shared one is positioned for a line inside a padded box.
-        &::after {
-            content: "";
-            position: absolute;
-            left: -52px;
-            top: 50%;
-            margin-top: -7px;
-            width: 45px;
-            height: 28px;
-            background-image: url("/assets/cursor.png");
-            background-size: cover;
-            image-rendering: pixelated;
-        }
+    &:hover,
+    &:active {
+        background-color: rgba(0, 0, 0, 0.25);
     }
 }
+
+/**
+ * The toggle is a `<button>` among `<a>`s, and needs none of a button's own
+ * chrome — the bar provides the box, the shared `.link` provides the rest.
+ */
+.toggle {
+    background: none;
+    border: 0;
+    font: inherit;
+    color: inherit;
+}
+
+/**
+ * **The grooves live inside the sliding group, and only there.**
+ *
+ * Three attempts, so the reasoning is worth keeping:
+ *
+ * 1. On the toggle, switched by `[data-expanded]`. The attribute flips the
+ *    instant the toggle is pressed, while the group is still moving, so the
+ *    line appeared and disappeared around the animation.
+ * 2. On the toggle, permanently. Shut, that put a 2px dark line immediately
+ *    inside the bar's own dark edge — a doubled border — and its light half is
+ *    an *outer* shadow at the very edge, which `overflow: hidden` clipped away.
+ *    So: too thick on one side, missing its highlight on the other.
+ * 3. On the left of each item, which is this. Shut, there is no groove at all
+ *    and the bar's own outline is the box's edge. Open, the first item's left
+ *    edge is the line after "Links", and it slides into place with the group
+ *    rather than being switched on.
+ *
+ * `inset` for the light half so the pair reads the same way round as the
+ * options bar's — dark edge first, light just inside it, going left to right.
+ * An outer shadow here would put the light on the wrong side of the dark, and
+ * would be clipped at the bar's edge like the toggle's was.
+ */
+.linkItems .link {
+    border-left: 2px solid #030303;
+    box-shadow: inset 1.5px 0 0 #7d7f7e;
+}
+

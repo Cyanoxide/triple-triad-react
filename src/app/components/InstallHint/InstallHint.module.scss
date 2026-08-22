@@ -1,0 +1,59 @@
+/**
+ * Pinned to the middle of the *top* edge, scaled with the rest of the
+ * furniture.
+ *
+ * `fixed`, like the corner boxes, and for the same reason: the layout viewport
+ * is short of the window on a phone, so anything `absolute` inside `#app`
+ * measures against a box that stops before the screen does. See the note on
+ * `[data-app-scaled]` in globals.css.
+ *
+ * Centred, and at the top because that is where the room is: the logo sits in
+ * the middle, the mode box below it, and the links and the options bar along
+ * the bottom. The top edge is empty on every screen this appears on.
+ *
+ * The gap to the bottom edge is `--furniture-gap`, the same value those boxes
+ * use, so the three sit on one line rather than at three different heights.
+ */
+.installHint {
+    position: fixed;
+    top: var(--furniture-gap);
+    left: 50%;
+    translate: -50% 0;
+    z-index: 11;
+    text-align: center;
+
+    /*
+     * `max-content` so the box is only as wide as its longest line. Sprite text
+     * does not wrap, so a percentage width would either cut a line off or leave
+     * a band of empty panel beside it.
+     */
+    width: max-content;
+    max-width: var(--dialog-max-width, none);
+
+    /*
+     * The lines keep the spacing `globals.css` gives every `p` — 4px either
+     * side and a 21px line box. Zeroing it, which was the first attempt, packs
+     * sprite glyphs tight enough that the lines read as one block.
+     */
+    button {
+        margin-top: 0.2rem;
+    }
+}
+
+/**
+ * The heading, set apart from the body rather than being its first line.
+ */
+.heading {
+    margin-bottom: 0.35rem;
+}
+
+/**
+ * The instruction, quieter than the heading above it.
+ *
+ * Opacity rather than a colour, because the sprite font only comes in white,
+ * blue and yellow — there is no grey to ask for. 0.75 reads as grey against
+ * the panel without dropping so far that it looks disabled.
+ */
+.body {
+    opacity: 0.75;
+}

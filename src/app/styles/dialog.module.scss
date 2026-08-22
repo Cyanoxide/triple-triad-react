@@ -30,9 +30,42 @@
 .dialog {
     animation: boxOpen 200ms cubic-bezier(0.2, 0.9, 0.3, 1) 120ms both;
 
+    // Bigger on a phone; 1 everywhere else, and 1 again inside
+    // [data-app-scaled], whose furniture is already scaled. See globals.css.
+    zoom: var(--dialog-boost, 1);
+    max-width: var(--dialog-max-width, none);
+
 
     background: linear-gradient(125deg, #434546, #696c69);
-    box-shadow: inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
+    /*
+     * Three layers: a black edge, then the bevel.
+     *
+     * **The first one is a seam fix.** The dark half of the bevel carries a 1px
+     * blur, so it does not reach the box's edge as a hard line, and `outline`
+     * is painted outside the border box without touching it either. Between
+     * them sits a hairline of the element's own background — at its lightest
+     * exactly there, bottom-right. At an integer device pixel ratio nothing
+     * shows; at a fractional one it lands on a partly-covered pixel and reads
+     * as a pale line between the shadow and the outline. Safari zoomed on a
+     * desktop produces such a ratio, which is why it needed zoom to reproduce
+     * there and appears on some boxes and not others — each box's own
+     * sub-pixel position decides it.
+     *
+     * `inset -1px -1px 0 0 #000` fills exactly the bottom and right edges, in
+     * the outline's own colour, so what blends at the boundary is black
+     * against black. Offset rather than spread, so it touches only the two
+     * edges that seam: a ring on all four — which was the previous attempt —
+     * ate half the light bevel, 4 device pixels of highlight down to 2.
+     *
+     * Measured at fractional ratios on the options bar, luminance outward
+     * along the right edge: without it, `67,63,53,90` at 2.5x, where the 90 is
+     * the background. With it, clean at 1.5, 2.5 and 3 — and the left edge is
+     * byte-identical, so the bevel is untouched.
+     *
+     * An earlier attempt added `inset 0 0 0 1px #363536` for this and did not
+     * fix it on the device. It is gone: this covers the same edges properly.
+     */
+    box-shadow: inset -1px -1px 0 0 #000, inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
     outline: 2px solid #000;
     color: #fff;
     padding: 16px 18px 14px;

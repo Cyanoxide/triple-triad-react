@@ -21,6 +21,8 @@ import { codeFromUrl, loadSession, type RoomEvent } from "./utils/rooms";
 import { generateCardsFromIds } from "./utils/general";
 import Image from "next/image";
 import SimpleDialog from "./components/SimpleDialog/SimpleDialog";
+import InstallHint from "./components/InstallHint/InstallHint";
+import Furniture from "./components/Furniture/Furniture";
 import textToSprite from "./utils/textToSprite";
 import { optionsNav } from "./hooks/optionsNav";
 import { installPreview } from "./utils/preview";
@@ -40,6 +42,20 @@ function GameContent() {
 
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [confirmingQuit, setConfirmingQuit] = useState(false);
+
+  /**
+   * Whether the install hint is on screen. It owns the cursor while it is, so
+   * the mode dialog behind it stands its own down — two cursors at once reads
+   * as a bug, and the keys would drive both.
+   */
+  const [installHintOpen, setInstallHintOpen] = useState(false);
+
+  /**
+   * The links bar's state lives here rather than in ModeDialog, because it and
+   * the options bar have to know about each other: they sit on the same row and
+   * on a narrow phone both open at once would overlap.
+   */
+  const [linksOpen, setLinksOpen] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
 
   /**
@@ -163,6 +179,31 @@ function GameContent() {
    * The board would otherwise sit there frozen, waiting for a turn that can
    * never arrive, so the game is put away and the menu comes back.
    */
+  /**
+   * Leaving a game in progress.
+   *
+   * Multiplayer hands the room back and lets the teardown below do the rest —
+   * dropping the session is what returns both players to the menu, so doing any
+   * of it here as well would only race that effect.
+   *
+   * Single player has no session to drop, so it performs the same teardown
+   * directly. The steps match deliberately: a game abandoned from either mode
+   * should leave the app in the same state, which is all the way back at the
+   * question rather than in the menu of whichever mode was being played.
+   */
+  const quitGame = useCallback(() => {
+    if (session) {
+      void finishMultiplayer(null);
+      return;
+    }
+
+    dispatch({ type: "RESET_GAME" });
+    dispatch({ type: "SET_IS_GAME_ACTIVE", payload: false });
+    dispatch({ type: "SET_IS_CARD_SELECTION_OPEN", payload: false });
+    dispatch({ type: "SET_IS_MENU_OPEN", payload: true });
+    setMode(null);
+  }, [session, dispatch]);
+
   const hadSession = useRef(false);
   useEffect(() => {
     if (session) { hadSession.current = true; return; }
@@ -422,6 +463,8 @@ function GameContent() {
   const handleToggleOptions = () => {
     playSound("select", isSoundEnabled);
     setIsOptionsOpen(!isOptionsOpen);
+    // Only one of the two bars along the bottom is ever open
+    setLinksOpen(false);
   }
 
   const handleToggleScanlines = () => {
@@ -464,7 +507,13 @@ function GameContent() {
         {isCardGalleryOpen && <CardGallery />}
         <div>
           {isMenuOpen && mode === null && (
-            <ModeDialog onSingle={() => setMode("single")} onMultiplayer={openMultiplayer} />
+            <ModeDialog onSingle={() => setMode("single")} onMultiplayer={openMultiplayer} cursorEnabled={!installHintOpen}
+              linksOpen={linksOpen}
+              onLinksToggle={() => {
+                setLinksOpen((open) => !open);
+                setIsOptionsOpen(false);
+              }}
+            />
           )}
           {isMenuOpen && mode === "single" && <MenuDialog onQuit={() => setMode(null)} />}
           {isCardSelectionOpen && <CardSelectionDialog />}
@@ -485,29 +534,37 @@ function GameContent() {
         {isRewardSelectionOpen && victorySoundRef.current && <RewardSelectionDialog victorySound={victorySoundRef.current} bgm={bgmRef.current} />}
       </div>
 
-      {/* Quitting a game in progress. Only shown during a multiplayer game —
-          the single-player one already has its own menu — and placed beside the
-          options bar so it needs no new furniture on the board. */}
+      {/* Quitting a game in progress, in either mode, placed beside the options
+          bar so it needs no new furniture on the board.
+
+          It used to be multiplayer only, on the grounds that a single-player
+          game has its own menu — but that menu is the one *before* a game, and
+          once the board is up there is no way back to it. On a desktop that is
+          survivable: Escape cancels, and there is always a refresh. On a phone
+          there is no Escape, and an installed app has no address bar to reload
+          from, so a single-player game could not be left at all. */}
       {/* Not once the rewards are being handed over: leaving at that point
           would be a way to keep cards you had just lost. A refresh may still
           manage it — the cards move on each client rather than on the server —
           but there is no need to put a button on it. */}
-      {session && isGameActive && !isRewardSelectionOpen && (
-        <div className="absolute left-[1.5rem] bottom-[1.5rem] text-3xl z-10" data-app-scaled>
+      {isGameActive && !isRewardSelectionOpen && (
+        <Furniture className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10">
           <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("select", isSoundEnabled); setConfirmingQuit(true); }}>
               {textToSprite("Quit")}
             </button>
           </SimpleDialog>
 
-          {/* Quitting ends the other player's game too, so it asks first */}
+          {/* It asks first either way: in multiplayer because leaving ends the
+              other player's game too, in single player because a board part
+              way through is not a thing to discard on one stray tap. */}
           {confirmingQuit && (
             <ConfirmationDialog
-              handleConfirmation={() => { setConfirmingQuit(false); void finishMultiplayer(null); }}
+              handleConfirmation={() => { setConfirmingQuit(false); quitGame(); }}
               handleDenial={() => { playSound("back", isSoundEnabled); setConfirmingQuit(false); }}
             />
           )}
-        </div>
+        </Furniture>
       )}
 
       {/* The top right corner, laid out exactly like Quit and the options bar
@@ -521,17 +578,58 @@ function GameContent() {
           pixels. A corner needs neither. This is the pattern already proven by
           the two boxes along the bottom. */}
       {session && isGameActive && !isRewardSelectionOpen && (
-        <div className="absolute right-[1.5rem] top-[1.5rem] text-3xl z-10 pointer-events-none" data-app-scaled>
+        <Furniture className="fixed right-[var(--furniture-gap)] top-[var(--furniture-gap)] text-3xl z-10 pointer-events-none">
           <AutoplayTimer />
-        </div>
+        </Furniture>
       )}
+
+      {/*
+        * Back, on the two screens that stand between the title and a game: the
+        * single player menu and the multiplayer lobby.
+        *
+        * Both already have their own way out inside the dialog, so this is not
+        * about being stranded — it is that every other screen puts leaving in
+        * the bottom-left corner, and these two did not. On a phone especially,
+        * a corner that means "back" everywhere but here is worse than no
+        * corner at all.
+        *
+        * It does exactly what the dialog's own control does, rather than a
+        * second route with its own behaviour: the lobby hands the room back
+        * through `onExit`'s path, which is what returns both players to the
+        * menu.
+        */}
+      {isMenuOpen && mode === "single" && !isCardSelectionOpen && !isGameActive && (
+        <Furniture className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10">
+          <SimpleDialog metaTitle={null} dialog="quit">
+            <button onClick={() => { playSound("back", isSoundEnabled); setMode(null); }}>
+              {textToSprite("Home")}
+            </button>
+          </SimpleDialog>
+        </Furniture>
+      )}
+
+      {isMultiplayerOpen && !isCardSelectionOpen && !isGameActive && (
+        <Furniture className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10">
+          <SimpleDialog metaTitle={null} dialog="quit">
+            <button onClick={() => { playSound("back", isSoundEnabled); setIsMultiplayerOpen(false); setMode(null); }}>
+              {textToSprite("Home")}
+            </button>
+          </SimpleDialog>
+        </Furniture>
+      )}
+
+      {/* Only on the title screen. It is an aside about the app rather than
+          part of the game, so it has no business over a board — and the title
+          screen is where someone is most likely to be deciding whether to keep
+          this around. */}
+      {isMenuOpen && mode === null && <InstallHint onOpenChange={setInstallHintOpen} />}
 
       {/* z-11 rather than z-10, so the bar stays reachable over the card
           gallery's dim — the gallery is z-11 too, and this comes after #app in
           the document, so an equal z-index leaves this one on top. The CRT
           scanlines are also 11 and are `body::after`, later still, so they keep
           their place over everything. */}
-      <div className="absolute right-[1.5rem] bottom-[1.5rem] text-3xl z-[11] flex items-center" data-app-scaled>
+      <Furniture className="fixed right-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-[11] flex items-center">
         <SimpleDialog metaTitle={null} dialog="options" data-expanded={isOptionsOpen}>
           <div className="flex items-center h-full">
             <Image src="/assets/menu-expand.png?v=1" onClick={handleToggleOptions} onMouseEnter={() => optionsNav.actions.focusOption?.(0)} data-focused={optionsFocus === 0} className="my-0 mx-1 h-full" alt="Card Icon" width="27" height="27" />
@@ -546,7 +644,7 @@ function GameContent() {
             </div>
           </div>
         </SimpleDialog>
-      </div>
+      </Furniture>
       <div id="modal"></div>
     </>
   );

@@ -477,8 +477,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         if (board[rowIndex][colIndex] || !selectedCard || selectedCard.currentOwner !== turn) return;
 
         grabCardFromHand(selectedCard, turn);
-        placeCard(rowIndex, colIndex, selectedCard);
         playSound("place", isSoundEnabled);
+        placeCard(rowIndex, colIndex, selectedCard);
         swapTurn();
 
         // Tell the other player. Sent after it has been played locally, so the
@@ -681,8 +681,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
                 setTimeout(() => {
                     setAiBoardCell(null);
                     grabCardFromHand(enemyCard, "red");
-                    placeCard(enemyPosition.row, enemyPosition.col, enemyCard);
                     playSound("place", isSoundEnabled);
+                    placeCard(enemyPosition.row, enemyPosition.col, enemyCard);
                     swapTurn();
                     // Hand the cursor back to the player's hand
                     if (posRef.current?.group === "hand") {
@@ -754,8 +754,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
             if (!card) return;
 
             grabCardFromHand(card, "blue");
-            placeCard(row, col, card);
             playSound("place", isSoundEnabled);
+            placeCard(row, col, card);
             swapTurn();
 
             void sendMove(session.code, session.token, { cardId: card.cardId, row, col })
@@ -809,8 +809,8 @@ const Board: React.FC<BoardProps> = ({ className }) => {
         remoteMoveTimer.current = window.setTimeout(() => {
             remoteMoveTimer.current = null;
             grabCardFromHand(card, "red");
-            placeCard(move.row, move.col, card);
             playSound("place", isSoundEnabled);
+            placeCard(move.row, move.col, card);
             swapTurn();
             if (posRef.current?.group === "hand") {
                 gameNav.setFocus({ player: "blue", index: posRef.current.index });

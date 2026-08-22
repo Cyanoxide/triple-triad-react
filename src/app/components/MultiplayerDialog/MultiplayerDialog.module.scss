@@ -143,6 +143,31 @@
     display: inline-block;
 }
 
+/**
+ * **The rule list spills into a second column rather than off the screen.**
+ *
+ * One column is the intent — the rules read as a list, and a list wants to be
+ * a list. But every rule turned on is seven or eight lines, and in landscape
+ * the panel has 390px of window to live in: measured with everything on, the
+ * waiting box came out 403px tall and hung off both ends.
+ *
+ * A row cap with `grid-auto-flow: column` is the whole mechanism. Up to four
+ * rules stay in one column, which is every ordinary game; beyond that the list
+ * wraps into a second, and the panel grows sideways where there is room
+ * instead of downwards where there is not.
+ *
+ * Landscape phones only. Portrait has the height for the full list, and a
+ * desktop has it several times over — neither should be given two columns for
+ * a list short enough to read at a glance.
+ */
+:global(:root[data-phone="true"]:not([data-stacked="true"])) .rules ul {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(4, auto);
+    column-gap: 1.4rem;
+    justify-content: start;
+}
+
 .rules li span {
     display: flex;
 }
@@ -173,12 +198,44 @@
 .rulesScreen {
     width: max-content;
     min-width: 0;
-    max-width: 100%;
+
+    /*
+     * **`min()` with the dialog cap, not a bare `100%`.**
+     *
+     * This is a SimpleDialog, so it inherits `max-width: var(--dialog-max-width)`
+     * from `.dialog` — and a bare `max-width: 100%` here has the same
+     * specificity and comes later, so it replaced it. 100% of `#app` is most of
+     * the window, which is no cap at all, and the panel ran edge to edge on a
+     * phone. Both limits apply now.
+     */
+    max-width: min(100%, var(--dialog-max-width, 100%));
 }
 
 .ruleList {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+    /*
+     * **One column on a phone.**
+     *
+     * Two columns plus a 3.6rem gutter is what made this the widest panel in
+     * the app, and no cap can rescue it: `1fr` bottoms out at its content, and
+     * sprite text does not wrap. Capping the box only clipped the overflow.
+     * Stacking the rules halves the width and spends the room a portrait phone
+     * actually has, which is vertical.
+     *
+     * **`[data-stacked]`, so portrait only.** Landscape is 844 wide and 390
+     * tall: it has the width for two columns and no height to spare, and one
+     * column there ran off the bottom of the screen.
+     *
+     * `minmax(0, 1fr)` rather than `1fr` above, so the tracks may shrink below
+     * their content instead of forcing the panel wider than its own max-width.
+     */
+    :global(:root[data-stacked="true"]) & {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.15rem;
+    }
+
     // The column gap has to hold a cursor: the right-hand column's hangs into
     // it, and at the shared -55px it sat on top of the left column's On/Off
     gap: 0.15rem 3.6rem;
@@ -263,6 +320,22 @@
     // room for each option's cursor to sit beside it
     // wide enough that a full-size cursor clears the option beside it
     gap: 3.8rem;
+
+    /*
+     * **Tighter on a phone, because 3.8rem does not fit there.**
+     *
+     * Five options means four gutters — 243 design px of gap before a single
+     * glyph — against a row of about 407 inside the capped panel. The flex line
+     * overflows, and `justify-content: center` spills it evenly out of both
+     * ends, which is the row running past the panel edges.
+     *
+     * The gap is sized to clear a keyboard cursor beside each option. A phone
+     * has no keyboard, so the space is being reserved for something that cannot
+     * happen there.
+     */
+    :global(:root[data-phone="true"]) & {
+        gap: 2rem;
+    }
 }
 
 .tradeOption {

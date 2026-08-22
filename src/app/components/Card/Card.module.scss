@@ -111,6 +111,34 @@
 
 &--hidden {
     transform: rotateY(180deg);
+
+    /*
+     * **A face-down card paints no player colour.**
+     *
+     * `.card` carries the player gradient — pink for red, blue for blue — and
+     * it is the box *behind* both faces. The card back covers the content box,
+     * so on a desktop none of it shows. At a fractional scale the 1px border
+     * and the back's own edge land on sub-pixels, and what bleeds through is
+     * that gradient: the pale strip down the left of a face-down card, phone
+     * only, confirmed by Jamie as the pink.
+     *
+     * The gradient means "whose card is this", which is exactly what a
+     * face-down card is not saying — so there is nothing to lose by not
+     * painting it. `#101018` is the left column of `cardback.png`, so anything
+     * that does bleed is indistinguishable from the art.
+     *
+     * A colour, not geometry: nothing moves, and none of the 3D structure or
+     * backface culling is touched.
+     *
+     * **The `[data-player]` is load-bearing.** The gradient lives on
+     * `.card[data-player=red]` — a class plus an attribute — so a bare
+     * `.card--hidden` is one class, loses, and the pink stays. This matches it
+     * at a class plus an attribute and sits below it in the file, so it wins.
+     */
+}
+
+&--hidden[data-player] {
+    background: #101018;
 }
 
 p {

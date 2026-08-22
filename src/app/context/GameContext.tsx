@@ -2,6 +2,7 @@ import { createContext, use, useReducer, useEffect, ReactNode } from "react";
 import { gameReducer, initialState } from "./GameReducer";
 import { GameContextType } from "./GameTypes";
 import { multiplayer } from "../hooks/multiplayerSession";
+import { isStandalone } from "../utils/platform";
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -29,6 +30,29 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
             } catch (error) {
                 console.error("Failed to parse playerCards from localStorage", error);
             }
+        }
+
+        /**
+         * **Sound starts on in the installed app, off in a browser.**
+         *
+         * A tab is somewhere you might land without meaning to, often beside
+         * other tabs and often in company, so it stays quiet until asked. An
+         * app was installed on purpose and opened on purpose, and starting it
+         * silent means every player has to find the options bar before the
+         * game sounds like anything.
+         *
+         * Here rather than in `initialState`, because the server cannot know
+         * the display mode: deciding it during render would make the first
+         * client render disagree with the server's. It is also not persisted —
+         * neither is the flag itself — so this is the default each launch,
+         * which is what "by default" should mean.
+         *
+         * The autoplay policy is unaffected either way. Nothing is audible
+         * until a gesture unlocks the context; the music simply queues itself
+         * and starts on the first tap rather than needing the toggle first.
+         */
+        if (isStandalone()) {
+            dispatch({ type: "SET_IS_SOUND_ENABLED", payload: true });
         }
     }, []);
 
