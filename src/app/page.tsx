@@ -602,7 +602,7 @@ function GameContent() {
         <Furniture className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10">
           <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("back", isSoundEnabled); setMode(null); }}>
-              {textToSprite("Back")}
+              {textToSprite("Home")}
             </button>
           </SimpleDialog>
         </Furniture>
@@ -612,7 +612,7 @@ function GameContent() {
         <Furniture className="fixed left-[var(--furniture-gap)] bottom-[var(--furniture-gap)] text-3xl z-10">
           <SimpleDialog metaTitle={null} dialog="quit">
             <button onClick={() => { playSound("back", isSoundEnabled); setIsMultiplayerOpen(false); setMode(null); }}>
-              {textToSprite("Back")}
+              {textToSprite("Home")}
             </button>
           </SimpleDialog>
         </Furniture>
