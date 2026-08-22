@@ -79,6 +79,39 @@ const blocked = new Map<HTMLAudioElement, boolean>();
 const sounding = new Set<HTMLAudioElement>();
 const pausedForBackground = new Map<HTMLAudioElement, boolean>();
 
+/** The source of each element released on the way out, to put back on return */
+const releasedSrc = new WeakMap<HTMLAudioElement, string>();
+
+/**
+ * Lets go of the audio hardware, rather than merely stopping.
+ *
+ * A paused element is still the system's *current* media on iOS: the lock
+ * screen keeps showing the game with a play button, and pressing it resumes an
+ * element in a backgrounded page that produces no sound. The game looks like it
+ * is playing music it cannot play.
+ *
+ * Emptying the source and reloading is what actually hands it back. The address
+ * is kept so returning can restore it — an element with no source cannot be
+ * started, and building a new one would lose the reference every caller holds.
+ */
+const release = (audio: HTMLAudioElement) => {
+    const src = audio.currentSrc || audio.src;
+    if (src) releasedSrc.set(audio, src);
+
+    audio.pause();
+    audio.removeAttribute("src");
+    // Without this the element keeps the old source queued and the removal has
+    // no effect until something else disturbs it
+    audio.load();
+};
+
+const restore = (audio: HTMLAudioElement) => {
+    const src = releasedSrc.get(audio);
+    if (!src || audio.getAttribute("src")) return;
+    audio.src = src;
+    audio.load();
+};
+
 /**
  * Elements the game stopped on purpose. pause() rejects whatever play() promise
  * was in flight, and that rejection arrives after the stop has been recorded, so
@@ -310,9 +343,17 @@ if (typeof window !== "undefined") {
             sounding.forEach((audio) => {
                 if (!audio.paused) {
                     pausedForBackground.set(audio, audio.loop);
-                    audio.pause();
+                    release(audio);
                 }
             });
+
+            /*
+             * And say so, where the browser offers a way to. iOS infers "now
+             * playing" from the element rather than from this, so releasing
+             * above is what does the work — but on a browser that reads it,
+             * this is the difference between stale controls and none.
+             */
+            if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "none";
             return;
         }
 
@@ -322,7 +363,9 @@ if (typeof window !== "undefined") {
         const resuming = [...pausedForBackground.entries()];
         pausedForBackground.clear();
         resuming.forEach(([audio, isLoop]) => {
-            if (!stopped.has(audio)) startElement(audio, isLoop);
+            if (stopped.has(audio)) return;
+            restore(audio);
+            startElement(audio, isLoop);
         });
 
         if (context && context.state !== "running") {
