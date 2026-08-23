@@ -22,6 +22,7 @@ const NO_DUPLICATES_FROM_LEVEL = 8;
 /** How long after opening one before the next is due. */
 export const PACK_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
+
 /** When the next pack unlocks, as epoch ms. Absent means one is ready now. */
 const STORAGE_KEY = "nextPackAt";
 

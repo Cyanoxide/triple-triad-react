@@ -68,8 +68,17 @@
     &[data-dialog="pack"] {
         position: static;
         translate: none;
-        min-width: 0;
         height: 2.5rem;
+
+        /**
+         * Square when shut, and only ever wider.
+         *
+         * `min-width` matters as much as the max: the width is `max-content` so
+         * the countdown can decide how wide open is, and with only a max the
+         * shut box shrank to whatever the icon happened to measure — 37px
+         * against a 43px height, an oblong among three square corners.
+         */
+        min-width: 2.5rem;
         padding: 0;
         display: flex;
         align-items: center;
