@@ -1,0 +1,222 @@
+@use "sass:math";
+@use "../../styles/dialog.module.scss";
+
+/**
+ * Everything on this screen runs at this fraction of its written time.
+ *
+ * **`PACK_SPEED` in `PackDialog.tsx` has to match.** The component plays the
+ * sounds and closes the screen on `setTimeout`s counted against these
+ * animations; if the two drift the sounds land on the wrong beat and the screen
+ * closes over a card still moving. Kept at the reward screen's 0.9 so the two
+ * feel like one thing.
+ */
+$speed: 0.9;
+
+/**
+ * How long one card takes to leave, and the gap between each card and the next.
+ * **`COLLECT_MS` and `COLLECT_STAGGER_MS` in `PackDialog.tsx` have to match**;
+ * they are what decides when the screen closes.
+ */
+$collect: 800ms;
+$stagger: 80ms;
+
+/** Five cards to a pack. Only used to lay out the stagger below. */
+$pack-size: 5;
+
+/**
+ * **The flip is the reward screen's, copied.**
+ *
+ * Sharing it was the first instinct and it does not work cleanly: these are CSS
+ * modules, so `@keyframes` declared in a partial are scoped to whichever module
+ * pulls the partial in. Two modules importing one set of frames emit two
+ * separately-mangled copies anyway — the sharing is a source-level illusion —
+ * and the price is that `RewardSelectionDialog` starts depending on a file this
+ * screen can change. That screen is tuned to the frame and is the most delicate
+ * sequence in the app, so the duplication is the cheaper side of the trade. If
+ * its timings are ever retuned, this does not follow automatically.
+ *
+ * The travel is *not* copied. A won card flies up out of a hand and hovers over
+ * the middle of the screen; these are already in the middle, so there is
+ * nowhere to bring them to. They sweep out the top instead — the same direction
+ * a won card leaves in, which is what makes it read as "into the collection"
+ * rather than as five cards being discarded.
+ */
+.packContainer {
+    background: radial-gradient(50% 50%, #fbf8e1 1%, #f4ebdfab 40%, #32313154 100%), url("/assets/bg-accent.png"), url("/assets/bg.png");
+    background-blend-mode: soft-light;
+    background-size: cover, contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    top: 0;
+    left: 0;
+    position: fixed;
+    bottom: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+
+    .cell {
+        width: 128px;
+        height: 163px;
+
+        /**
+         * The cursor, anchored to the pseudo-element's static flow position
+         * exactly as the reward screen's is, so the cell needs no positioning
+         * of its own — which matters, because a positioned cell would become
+         * the containing block for anything absolute inside it.
+         */
+        &[data-focused=true]::after {
+            content: "";
+            position: absolute;
+            margin-left: -22px;
+            margin-top: -95px;
+            background-image: url("/assets/cursor.png");
+            background-size: cover;
+            width: 45px;
+            height: 28px;
+            z-index: 5;
+            image-rendering: pixelated;
+            pointer-events: none;
+        }
+    }
+
+    /**
+     * A face-down card is the thing to click, so it says so; a card already
+     * turned over is not, and keeps the default arrow. Keyed off the owner
+     * rather than off `data-focused`, which React renders even when it is
+     * false and so is always present.
+     */
+    [data-player="red"] {
+        cursor: pointer;
+    }
+
+    /**
+     * Turning over. Sticky — the attribute stays true once set — because
+     * `forwards` only holds a card's final state for as long as the animation
+     * is still applied to it.
+     */
+    [data-revealed="true"] {
+        animation: pack-card-flip (500ms * $speed) ease-in-out forwards;
+    }
+
+    /**
+     * Down into the collection. This wins over the flip above by sitting later
+     * in the file at equal specificity, which is what is wanted: by the time it
+     * runs every card is already face up and the flip has nothing left to say.
+     */
+    [data-collecting="true"] {
+        animation: pack-card-collect ($collect * $speed) ease-in forwards;
+    }
+
+    /**
+     * Staggered left to right, so they leave as a ripple rather than as one
+     * block. Written against the cell rather than nested under the rule above:
+     * a nested `&` would have put the container *inside* `.cell`, which is
+     * backwards and matches nothing.
+     *
+     * The delay survives the `animation` shorthand above resetting it, because
+     * this selector is the more specific of the two.
+     */
+    @for $i from 1 through $pack-size {
+        .cell:nth-child(#{$i}) [data-collecting="true"] {
+            animation-delay: $stagger * ($i - 1) * $speed;
+
+            /**
+             * How far this card has to travel sideways to end up on the pile.
+             *
+             * The cells are 128px and the middle one is the centre, so the
+             * cards sit at -256, -128, 0, 128 and 256 from it. Sending each the
+             * opposite way gathers all five onto one spot rather than dropping
+             * them in five parallel lines.
+             */
+            --collect-x: #{-128px * ($i - 1 - math.div($pack-size - 1, 2))};
+        }
+    }
+}
+
+/**
+ * The label, hung above the row rather than laid out with it.
+ *
+ * The row is what the screen centres on, so the label cannot be a sibling in a
+ * column — it would push the cards down by its own height. Absolute against the
+ * fixed container instead, sitting clear above the row's top edge: the row is
+ * 163px tall and centred, so its top is 81.5px above the middle.
+ */
+.dialogAnchor {
+    position: absolute;
+    left: 50%;
+    bottom: calc(50% + 106px);
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 100%;
+}
+
+/**
+ * **No slide-in here, unlike the reward screen's label.**
+ *
+ * That one is empty until a card is handed over, so it has somewhere to arrive
+ * from. This one is on screen from the moment the pack opens, carrying the
+ * prompt to turn a card over — an animation keyed to the first reveal would
+ * take a label the player is already reading, throw it off the top of the
+ * screen and bring it back. The text simply changes; the dialog's own
+ * `boxOpen` is entrance enough.
+ */
+.packDialog {
+    @extend .dialog;
+    position: relative;
+}
+
+/**
+ * The message and its glyphs are flex items on one line, so a narrow screen
+ * cannot break the name away from the rest of it.
+ */
+.headingLine {
+    display: flex;
+    justify-content: center;
+}
+
+@keyframes pack-card-flip {
+    50% {
+        transform: rotate3d(0, 1, 0, 0.5turn) scale(1.2);
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+        z-index: 3;
+    }
+
+    100% {
+        transform: rotate3d(0, 1, 0, 1turn) scale(1);
+        background: linear-gradient(to top, rgba(51, 66, 135, 1) 0%, rgba(185, 209, 235, 1) 100%);
+    }
+}
+
+/**
+ * A lift to gather itself, then down and off the bottom of the screen, the five
+ * converging on one spot and shrinking as they go — cards being stacked into a
+ * deck rather than five cards falling in parallel.
+ *
+ * **Downwards.** The reward screen settles the direction: a card you have *won*
+ * leaves on `translateY(3000px)` — down, towards the player — and it is the
+ * card you have *lost* that goes up and away. These are all cards being gained,
+ * so up read as five cards being taken off the player at the very moment they
+ * were given to them.
+ *
+ * **Do not add an `opacity` keyframe to fade them out.** It was tried, and it
+ * is what left the cards blank — a moving blue gradient with no art on it.
+ * Animating opacity groups the element, which flattens the `preserve-3d`
+ * context `.card` relies on; once flat, the `backface-visibility: hidden` on
+ * `.card__front` culls the face, and what shows through is the player colour on
+ * `.card` underneath. There is nothing to fade anyway: the travel takes them
+ * past the bottom edge on its own.
+ */
+@keyframes pack-card-collect {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    20% {
+        transform: translate(0, -24px) scale(1.04);
+    }
+
+    100% {
+        transform: translate(var(--collect-x, 0), 900px) scale(0.5);
+    }
+}

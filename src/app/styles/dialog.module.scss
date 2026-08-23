@@ -38,7 +38,7 @@
 
     background: linear-gradient(125deg, #434546, #696c69);
     /*
-     * Three layers: a black edge, then the bevel.
+     * Three layers: a hard edge to close a seam, then the bevel.
      *
      * **The first one is a seam fix.** The dark half of the bevel carries a 1px
      * blur, so it does not reach the box's edge as a hard line, and `outline`
@@ -51,21 +51,32 @@
      * there and appears on some boxes and not others — each box's own
      * sub-pixel position decides it.
      *
-     * `inset -1px -1px 0 0 #000` fills exactly the bottom and right edges, in
-     * the outline's own colour, so what blends at the boundary is black
-     * against black. Offset rather than spread, so it touches only the two
-     * edges that seam: a ring on all four — which was the previous attempt —
-     * ate half the light bevel, 4 device pixels of highlight down to 2.
+     * `inset -1px -1px 0 0` fills exactly the bottom and right edges. Offset
+     * rather than spread, so it touches only the two edges that seam: a ring on
+     * all four — an earlier attempt — ate half the light bevel, 4 device pixels
+     * of highlight down to 2.
      *
-     * Measured at fractional ratios on the options bar, luminance outward
-     * along the right edge: without it, `67,63,53,90` at 2.5x, where the 90 is
-     * the background. With it, clean at 1.5, 2.5 and 3 — and the left edge is
-     * byte-identical, so the bevel is untouched.
+     * **It is `#363536`, the bevel's own colour, and it must not go back to
+     * `#000`.** It was black for a while, on the reasoning that matching the
+     * outline made the boundary black-against-black. It does — but this layer
+     * is painted *first*, which puts it on top, and the two edges it covers are
+     * the two the dark bevel lives on. The result was that every dialog in the
+     * game lost its bottom-right bevel and ran straight from panel to black,
+     * which is what "the shadow has gone" means when it is reported.
      *
-     * An earlier attempt added `inset 0 0 0 1px #363536` for this and did not
-     * fix it on the device. It is gone: this covers the same edges properly.
+     * Grey closes the seam just as well: the hairline was a *pale* pixel, and
+     * anything at the bevel's own luminance hides it. Measured on the mode
+     * dialog's right edge, luminance running outward, at 1x / 2x / 2.5x:
+     *
+     *   black: `95,66,16,53,2` · `87,73,57,30,9,12,4,1` · `88,77,65,47,19,5,5,2,0`
+     *   grey:  `92,64,52,52,2` · `87,74,61,54,51,36,7,1` · `88,77,66,58,54,51,37,11,1`
+     *
+     * The grey run has the bevel back — two pixels at ~52 against the 54 it is
+     * asking for — and still falls monotonically into the outline with no pale
+     * pixel anywhere. The left edge is unchanged at every ratio, so the light
+     * half of the bevel is untouched.
      */
-    box-shadow: inset -1px -1px 0 0 #000, inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
+    box-shadow: inset -1px -1px 0 0 #363536, inset 1px 1px 0px 1px #7c7f7e, inset -1px -1px 1px 1px #363536;
     outline: 2px solid #000;
     color: #fff;
     padding: 16px 18px 14px;
