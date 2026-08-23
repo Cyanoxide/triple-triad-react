@@ -105,7 +105,17 @@ const PackButton: React.FC<PackButtonProps> = ({ onOpen }) => {
     };
 
     return (
-        <SimpleDialog metaTitle={null} dialog="pack" data-expanded={!isReady && isOpen}>
+        /**
+         * **The fade lives on this wrapper, not on the box.**
+         *
+         * The box is a dialog, and every dialog opens with `boxOpen`, which
+         * fills its own opacity — an animation's filled value beats a plain
+         * declaration, so an `opacity` rule on the box itself is liable to
+         * never apply at all. `AutoplayTimer` hit exactly this and solved it
+         * the same way.
+         */
+        <div className={styles.wrap} data-ready={isReady} data-open={isOpen}>
+            <SimpleDialog metaTitle={null} dialog="pack" data-expanded={!isReady && isOpen}>
             <button
                 type="button"
                 onClick={handleClick}
@@ -136,7 +146,8 @@ const PackButton: React.FC<PackButtonProps> = ({ onOpen }) => {
                     </span>
                 )}
             </button>
-        </SimpleDialog>
+            </SimpleDialog>
+        </div>
     );
 };
 

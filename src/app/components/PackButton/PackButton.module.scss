@@ -6,6 +6,27 @@
  * `quit` box the other corners use, defined over there with the rest of them.
  * What is here is the fill and the icon.
  */
+/**
+ * Quiet while there is nothing to open.
+ *
+ * A pack that is still charging is not asking for anything, so it steps back
+ * the way the shut options bar opposite does — and comes back to full strength
+ * the moment it is hovered or tapped, which is also when it opens to show the
+ * time. Once a pack *is* ready this never applies: that is the one state where
+ * the button does want to be noticed.
+ */
+.wrap {
+    transition: opacity 0.3s ease-in-out;
+
+    &[data-ready="false"] {
+        opacity: 0.55;
+    }
+
+    &[data-ready="false"][data-open="true"] {
+        opacity: 1;
+    }
+}
+
 .packButton {
     position: relative;
     display: flex;
@@ -37,17 +58,13 @@
         background-color: rgba(0, 0, 0, 0.25);
     }
 
-    /**
-     * Dimmed until there is something to open, matching the shut options bar's
-     * own 0.35 — the two boxes are then equally quiet when neither wants
-     * attention.
+    /*
+     * No dimming of the icon here. `.wrap` fades the whole box while the pack
+     * is charging, and doing it twice stacked the two — 0.55 of 0.35 — into
+     * something barely there.
      */
     &[data-ready="false"] {
         cursor: default;
-
-        .icon {
-            opacity: 0.35;
-        }
     }
 }
 
