@@ -69,13 +69,30 @@
         position: static;
         translate: none;
         min-width: 0;
-        width: 2.5rem;
         height: 2.5rem;
         padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
+
+        /**
+         * **`max-width` opens and closes it, not `width`** — the same
+         * arrangement as the options bar opposite, and for the same reason: the
+         * box is content-sized so the countdown decides how wide open is, and a
+         * width cannot transition to `max-content` while a max-width can be a
+         * plain number.
+         *
+         * Shut, the clamp is the height, so the button is square.
+         */
+        width: max-content;
+        max-width: 2.5rem;
+        transition: max-width 0.2s ease-in;
+
+        &[data-expanded="true"] {
+            max-width: 12rem;
+            transition: max-width 0.5s ease-in-out;
+        }
     }
 
     /**

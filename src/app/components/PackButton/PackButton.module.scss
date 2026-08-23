@@ -63,10 +63,28 @@
     pointer-events: none;
 }
 
+/**
+ * The exact time, revealed when the box opens.
+ *
+ * `flex-shrink: 0` and `white-space: nowrap` so it keeps its full width while
+ * the box is still narrow — otherwise the clock reflows and wraps as the
+ * max-width animates, and what should be a clean slide becomes the text
+ * rearranging itself twice on the way out and twice on the way back.
+ */
+.countdown {
+    position: relative;
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding-right: 0.7rem;
+}
+
 .icon {
     position: relative;
+    flex-shrink: 0;
     width: auto;
     height: 1.6rem;
+    // Even margins in the square button, so the icon stays centred while shut
+    margin: 0 0.45rem;
 
     /**
      * `contain`, not the default `fill`: the card back is 62x79 and the lane it

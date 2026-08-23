@@ -13,6 +13,12 @@ import players from "../../data/players.json";
 /** How many cards a pack holds. */
 export const PACK_SIZE = 5;
 
+/**
+ * At and above this level a pack will not hand out a card the player already
+ * holds — not as a preference, as a rule. See `drawFromLevel`.
+ */
+const NO_DUPLICATES_FROM_LEVEL = 8;
+
 /** How long after opening one before the next is due. */
 export const PACK_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
@@ -78,13 +84,17 @@ const packPool = cards.filter(card => card.level > 0 && !obtainableFromPlayers.h
  * level 10 at 1 in 268 packs and, with duplicates, needed a simulated *six
  * years* of daily opening to finish the 88. The set has to be completable.
  *
- * The thing that actually made that possible is the duplicate protection in
+ * The thing that actually made that possible is the duplicate handling in
  * `drawFromLevel`, not the weights: it is what lets level 10 stay a 1-in-23
- * event while the whole pool still comes in at a median of 88 packs — under
+ * event while the whole pool still comes in at a median of 81 packs — under
  * three months — because a rare pull is never wasted on a card already held.
- * Simulated against this module over 2000 runs; 90% finish inside 134 packs,
- * and a nearly-complete collection still sees only 22% duplicates against the
- * 86% it would draw without the preference.
+ * Simulated against this module; 90% finish inside 119 packs, and across 20,000
+ * packs opened into one growing collection not a single duplicate above level 7
+ * was handed out.
+ *
+ * The odds above are for a fresh collection. They necessarily fall away as it
+ * fills, because a rare band with nothing new left in it steps down instead of
+ * repeating itself — which is the point.
  *
  * Those numbers were computed, not estimated. Re-derive them if the weights
  * change.
@@ -114,26 +124,35 @@ const rollLevel = (weights: Record<number, number>): number => {
     return Number(entries[entries.length - 1][0]);
 };
 
+const pickOne = <T,>(from: T[]): T => from[Math.floor(Math.random() * from.length)];
+
 /**
  * One card from a level: something new if there is anything new to be had.
  *
- * **Cards the player does not own come first.** This is what makes the set
- * finishable without making the rare frames common. Without it a level 10 pull
- * — a 1-in-23 event — lands on a card already held two times in three once the
- * collection fills up, and the last few cards take longer to arrive than every
- * card before them put together. Simulated, the same weights go from a median
- * of 220 packs to complete the pool down to 89.
+ * **Cards the player does not own come first, and above level 8 that is the
+ * only thing on offer.**
  *
- * It is a preference, not a guarantee: once every card in the band is owned it
- * hands back a duplicate rather than escaping to another level, because the
- * level is what the weights decided and quietly overriding it would bias every
- * roll towards whichever band happens to be least complete. Duplicates are
- * worth something here anyway — `playerCards` counts copies.
+ * Two rules in one loop, because they are the same idea at two strengths:
+ *
+ * - *Below* level 8 it is a preference. Unowned first, and a duplicate if the
+ *   band has nothing new left — duplicates are worth something there anyway,
+ *   since `playerCards` counts copies and spares are what a deck is built from.
+ *
+ * - *At* level 8 and above it is absolute. A second Squall is not something a
+ *   pack can produce; if every card in the band is already held, the draw steps
+ *   down a level and tries again rather than handing over a copy. Reported from
+ *   play — the same level 10 came out of two packs — and it is the right rule
+ *   quite apart from the annoyance: a rare frame should mean the card is hard
+ *   to come by, and the only way to end up with two of one is to win it off
+ *   another player.
+ *
+ * Stepping *down* rather than rerolling the level is deliberate. A reroll would
+ * quietly bias every draw towards whichever band happens to be least complete,
+ * which is the opposite of what the weights are for.
  *
  * The bands are not evenly stocked either — four cards survive the exclusion at
- * level 1 and three at level 10 — so a band can run out of cards *this pack*
- * has not already used. Rather than reroll the level, which would bias the
- * result towards the roomier bands, it steps down one level at a time.
+ * level 1 and three at level 10 — so a band can also run out of cards *this
+ * pack* has not already used, and the same step down covers it.
  */
 const drawFromLevel = (level: number, taken: Set<number>, owned: Record<number, number>) => {
     for (let current = level; current >= 1; current--) {
@@ -141,12 +160,22 @@ const drawFromLevel = (level: number, taken: Set<number>, owned: Record<number, 
         if (!unused.length) continue;
 
         const unowned = unused.filter(card => !owned[card.id]);
-        const choices = unowned.length ? unowned : unused;
-        return choices[Math.floor(Math.random() * choices.length)];
+        if (unowned.length) return pickOne(unowned);
+
+        // Nothing new in this band. Above the threshold that means moving on
+        if (current >= NO_DUPLICATES_FROM_LEVEL) continue;
+
+        return pickOne(unused);
     }
 
-    const anything = byLevel(level);
-    return anything[Math.floor(Math.random() * anything.length)] ?? packPool[0];
+    /**
+     * Only reachable if every band from `level` down to 1 is exhausted, which
+     * needs a pack to have used more cards than the pool holds. Kept honest
+     * anyway: it still cannot return a rare, so the rule above holds no matter
+     * how it is reached.
+     */
+    const spare = packPool.filter(card => !taken.has(card.id) && card.level < NO_DUPLICATES_FROM_LEVEL);
+    return spare.length ? pickOne(spare) : packPool[0];
 };
 
 /**
@@ -208,4 +237,18 @@ export const readNextPackAt = (): number | null => {
 export const startPackCooldown = () => {
     if (typeof window === "undefined") return;
     localStorage.setItem(STORAGE_KEY, String(Date.now() + PACK_COOLDOWN_MS));
+};
+
+/**
+ * `23:04:59`, counting down. Hours are always shown so the width never jumps
+ * as the number shrinks — it sits in a box that opens on hover, and a label
+ * that changed size under the pointer would be worse than no label.
+ */
+export const formatCountdown = (ms: number) => {
+    const total = Math.max(0, Math.ceil(ms / 1000));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 };

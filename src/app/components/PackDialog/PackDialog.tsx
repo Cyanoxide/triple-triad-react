@@ -173,7 +173,19 @@ const PackDialog: React.FC<PackDialogProps> = ({ onClose }) => {
 
         after(beat(BEFORE_COLLECT_MS), () => {
             setIsCollecting(true);
-            playSound("place", isSoundEnabled);
+
+            /*
+             * One per card, on the same stagger the cards leave on, so the
+             * sweep sounds like five cards being put down rather than one.
+             *
+             * Comfortably clear of `DEDUPE_MS` in `sounds.ts`, which collapses
+             * the same clip fired twice inside 20ms — these are 72ms apart, so
+             * all five are heard.
+             */
+            pack.forEach((_, index) => {
+                after(beat(index * COLLECT_STAGGER_MS), () => playSound("place", isSoundEnabled));
+            });
+
             after(beat(COLLECT_MS + COLLECT_STAGGER_MS * (pack.length - 1) + 300), onClose);
         });
         /*
