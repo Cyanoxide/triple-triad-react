@@ -2,8 +2,8 @@ import cards from "../../data/cards.json";
 import players from "../../data/players.json";
 
 /**
- * The daily card pack: what is in it, how likely each card is, and when the
- * next one is due.
+ * The card pack: what is in it, how likely each card is, and when the next one
+ * is due.
  *
  * Kept apart from the screen that opens it so the odds can be reasoned about —
  * and adjusted — without reading an animation sequence, and so the weights can
@@ -14,14 +14,27 @@ import players from "../../data/players.json";
 export const PACK_SIZE = 5;
 
 /**
- * At and above this level a pack will not hand out a card the player already
+ * At and above this level a pack will not hand out a card the player already6 
  * holds — not as a preference, as a rule. See `drawFromLevel`.
  */
 const NO_DUPLICATES_FROM_LEVEL = 8;
 
-/** How long after opening one before the next is due. */
-export const PACK_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+/**
+ * Hours between packs — the one number that sets the pace of the whole feature.
+ *
+ * Four a day at six hours, which puts the 81 packs it takes to finish the pool
+ * (see the weights below) at about three weeks rather than the three months a
+ * once-a-day pack would have meant.
+ *
+ * **Do not shorten it to seconds for testing.** `readNextPackAt` refuses any
+ * stored deadline further out than the cooldown itself, as a guard against a
+ * tampered clock — so with a tiny cooldown every `nextPackAt` written by hand
+ * reads as "ready", and the charging button cannot be exercised at all.
+ */
+const CARD_PACK_TIMEOUT_HOURS = 6;
 
+/** How long after opening one before the next is due. */
+export const PACK_COOLDOWN_MS = CARD_PACK_TIMEOUT_HOURS * 60 * 60 * 1000;
 
 /** When the next pack unlocks, as epoch ms. Absent means one is ready now. */
 const STORAGE_KEY = "nextPackAt";
@@ -82,13 +95,15 @@ const packPool = cards.filter(card => card.level > 0 && !obtainableFromPlayers.h
  * | level 10     | 4.4%   | 23 packs |
  *
  * **These are deliberately far more generous than the first pass**, which put a
- * level 10 at 1 in 268 packs and, with duplicates, needed a simulated *six
- * years* of daily opening to finish the 88. The set has to be completable.
+ * level 10 at 1 in 268 packs and, with duplicates, needed a simulated 2,249
+ * packs to finish the 88. The set has to be completable.
  *
  * The thing that actually made that possible is the duplicate handling in
  * `drawFromLevel`, not the weights: it is what lets level 10 stay a 1-in-23
- * event while the whole pool still comes in at a median of 81 packs — under
- * three months — because a rare pull is never wasted on a card already held.
+ * event while the whole pool still comes in at a median of 81 packs, because a
+ * rare pull is never wasted on a card already held. Counted in packs rather
+ * than in weeks on purpose — `CARD_PACK_TIMEOUT_HOURS` decides how long that
+ * actually takes, and it is 81 packs whatever it is set to.
  * Simulated against this module; 90% finish inside 119 packs, and across 20,000
  * packs opened into one growing collection not a single duplicate above level 7
  * was handed out.

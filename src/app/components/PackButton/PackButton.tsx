@@ -10,7 +10,7 @@ import { useGameContext } from "../../context/GameContext";
 import { PACK_COOLDOWN_MS, formatCountdown, readNextPackAt } from "../../utils/cardPacks";
 
 /**
- * The daily pack, in the corner.
+ * The card pack, in the corner.
  *
  * A card back and nothing else — the same art the unopened cards in the reveal
  * are drawn with, at the size of the option bar's icons opposite, so the
@@ -70,9 +70,9 @@ const PackButton: React.FC<PackButtonProps> = ({ onOpen }) => {
      *
      * The bar is a CSS animation running on the compositor (see the
      * stylesheet), so nothing has to re-render for it to move, and waking this
-     * component every second for twenty-three hours to redraw a bar that grows
-     * by a pixel an hour would be pure waste on a phone. The only moment React
-     * needs is the one where it finishes.
+     * component every second for the length of a cooldown to redraw a bar that
+     * grows by a pixel an hour would be pure waste on a phone. The only moment
+     * React needs is the one where it finishes.
      */
     useEffect(() => {
         if (!nextPackAt) return;
@@ -148,7 +148,7 @@ const PackButton: React.FC<PackButtonProps> = ({ onOpen }) => {
                 onBlur={() => setIsFocused(false)}
                 className={styles.packButton}
                 data-ready={isReady}
-                aria-label={isReady ? "Open the daily card pack" : `The next card pack is ready in ${formatCountdown(nextPackAt - now)}`}
+                aria-label={isReady ? "Open the card pack" : `The next card pack is ready in ${formatCountdown(nextPackAt - now)}`}
             >
                 <Image src="/assets/cardback.png" alt="" width="27" height="27" className={styles.icon} />
 

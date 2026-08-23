@@ -483,7 +483,7 @@ function GameContent() {
 
   // Expose the options panel to the menu's keyboard cursor
   /**
-   * The daily pack's reveal screen. Local rather than in the reducer: nothing
+   * The card pack's reveal screen. Local rather than in the reducer: nothing
    * outside this file needs to know it is up, and it does not survive a reload
    * by design — the cooldown in `localStorage` is what persists.
    */
@@ -629,7 +629,7 @@ function GameContent() {
       )}
 
       {/*
-        * The daily pack, in the one corner nothing else uses.
+        * The card pack, in the one corner nothing else uses.
         *
         * Bottom-left is Quit and Home, bottom-right the options bar, top-right
         * the move clock — so top-left, laid out the same way as all of them:

@@ -11,7 +11,7 @@ import { useCursorNav } from "../../hooks/useCursorNav";
 import { openPack, startPackCooldown } from "../../utils/cardPacks";
 
 /**
- * Opening the daily pack.
+ * Opening a card pack.
  *
  * Five cards face down across the middle of the screen. Turning each one over
  * is the player's own click — the pack does not deal itself — and once all five

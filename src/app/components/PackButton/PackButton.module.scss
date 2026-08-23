@@ -1,6 +1,6 @@
 /**
  * The pack button: a square icon in the corner whose background fills over the
- * twenty-four hours until the next pack.
+ * the cooldown until the next pack.
  *
  * The box itself is `SimpleDialog`'s `pack` variant — the square sibling of the
  * `quit` box the other corners use, defined over there with the rest of them.
