@@ -10,7 +10,18 @@
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
+
+    /**
+     * **Left aligned, not centred.**
+     *
+     * Shut, the content is wider than the box — that is the whole mechanism,
+     * the countdown being clipped away by `overflow: hidden`. Centred, the
+     * overflow is split evenly across both sides, so the icon was pushed off to
+     * the left and the middle of the clock sat there on show. Packed to the
+     * left, the icon keeps its place and the clock is the only thing that falls
+     * off the end.
+     */
+    justify-content: flex-start;
     width: 100%;
     height: 100%;
     cursor: pointer;
@@ -81,15 +92,22 @@
 .icon {
     position: relative;
     flex-shrink: 0;
-    width: auto;
-    height: 1.6rem;
-    // Even margins in the square button, so the icon stays centred while shut
-    margin: 0 0.45rem;
 
     /**
-     * `contain`, not the default `fill`: the card back is 62x79 and the lane it
-     * sits in is square, so `fill` would stretch the artwork. The same reason
-     * the options bar's icons carry it.
+     * A lane exactly as wide as the shut box, with the artwork centred inside
+     * it. That is what keeps the icon centred while the box is square *and*
+     * anchored in the same spot once it opens — margins sized by eye could only
+     * manage one or the other, and depended on the card back's aspect ratio to
+     * boot.
+     */
+    width: 2.5rem;
+    height: 1.6rem;
+    margin: 0;
+
+    /**
+     * `contain`, not the default `fill`: the card back is 62x79 in a lane that
+     * is wider than it is tall, so `fill` would stretch the artwork. The same
+     * reason the options bar's icons carry it.
      */
     object-fit: contain;
     image-rendering: pixelated;
