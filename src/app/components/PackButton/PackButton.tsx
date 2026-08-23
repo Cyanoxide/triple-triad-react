@@ -43,7 +43,22 @@ const PackButton: React.FC<PackButtonProps> = ({ onOpen }) => {
      * decoration until it is clicked.
      */
     const [nextPackAt, setNextPackAt] = useState<number | null | undefined>(undefined);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+
+    /**
+     * **Open is derived, not toggled.**
+     *
+     * Hover covers a pointer; focus covers everything else. A tap focuses the
+     * button — the click handler asks for it explicitly, because Safari on iOS
+     * has not always given a `<button>` focus on its own — and moving focus
+     * away is what closes it again. Keyboard users get it for free.
+     *
+     * The click used to flip this, which meant a second tap on an open box shut
+     * it: you reached for the card, hit the only thing there, and the time you
+     * were reading vanished.
+     */
+    const isOpen = isHovered || isFocused;
     const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
@@ -91,7 +106,7 @@ const PackButton: React.FC<PackButtonProps> = ({ onOpen }) => {
      */
     const elapsed = isReady ? 0 : PACK_COOLDOWN_MS - (nextPackAt - Date.now());
 
-    const handleClick = () => {
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         if (isReady) {
             playSound("select", isSoundEnabled);
             onOpen();
@@ -99,12 +114,17 @@ const PackButton: React.FC<PackButtonProps> = ({ onOpen }) => {
         }
 
         /*
-         * A tap is the only way to read the time on a touchscreen, where there
-         * is no hover to open the box with. It used to just refuse with an
-         * error noise, which told the player nothing they did not know.
+         * There is nothing to open yet, so it refuses — and *only* refuses. It
+         * deliberately does not close the box: on a touchscreen the button is
+         * the only thing to press, so a tap that shut the clock would take away
+         * the one thing the press was for.
+         *
+         * Asking for focus is what opens it on a phone, and what lets it close
+         * again when focus moves on. On an already-open box it is a no-op, so
+         * repeated taps just keep refusing.
          */
-        playSound(isOpen ? "back" : "select", isSoundEnabled);
-        setIsOpen(open => !open);
+        playSound("error", isSoundEnabled);
+        event.currentTarget.focus();
     };
 
     return (
@@ -122,8 +142,10 @@ const PackButton: React.FC<PackButtonProps> = ({ onOpen }) => {
             <button
                 type="button"
                 onClick={handleClick}
-                onMouseEnter={() => setIsOpen(true)}
-                onMouseLeave={() => setIsOpen(false)}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
                 className={styles.packButton}
                 data-ready={isReady}
                 aria-label={isReady ? "Open the daily card pack" : `The next card pack is ready in ${formatCountdown(nextPackAt - now)}`}
