@@ -16,12 +16,15 @@ import { PACK_COOLDOWN_MS, formatCountdown, readNextPackAt } from "../../utils/c
  * are drawn with, at the size of the option bar's icons opposite, so the
  * corners match.
  *
- * **The wait is the button's own background filling, not a clock.** A countdown
- * reading `18:42:07` is a number nobody can do anything with at a glance; a bar
- * a third full says "not yet, come back later", which is the whole message. But
- * the exact time is worth having when it is actually wanted, so the box opens
- * on hover to show it — the same trick the options bar opposite plays, and the
- * same reason: quiet by default, complete on demand.
+ * **Shut, it is only that icon, faded.** No clock and no bar: a pack still
+ * charging is not asking for anything, and the fade is the whole message. The
+ * exact time is worth having when it is actually wanted, so hovering or tapping
+ * slides a second section out beside the icon — the same trick the options bar
+ * opposite plays, and the same reason: quiet by default, complete on demand.
+ *
+ * That section carries the clock *and* the progress behind it, so the two
+ * arrive and leave together. The bar measures the section rather than the whole
+ * button, which is what keeps it off the card art.
  */
 
 interface PackButtonProps {
@@ -125,24 +128,37 @@ const PackButton: React.FC<PackButtonProps> = ({ onOpen }) => {
                 data-ready={isReady}
                 aria-label={isReady ? "Open the daily card pack" : `The next card pack is ready in ${formatCountdown(nextPackAt - now)}`}
             >
+                <Image src="/assets/cardback.png" alt="" width="27" height="27" className={styles.icon} />
+
                 {/*
-                  * The unfilled part of the wait, shrinking away to the right
-                  * and uncovering the panel underneath. Drawn as what is *left*
-                  * rather than as a bar that grows, so the colour filling the
-                  * button is the button's own background rather than a second
-                  * colour laid over it.
+                  * The clock and its progress, in a section of their own.
+                  *
+                  * Shut, the box clips to the icon's lane and this is simply
+                  * not on screen — bar included. The bar belongs to the timer
+                  * rather than sitting behind the card art, so the two arrive
+                  * and leave together.
+                  *
+                  * `aria-hidden` because the button's own label already says
+                  * how long is left; without it a screen reader reads the time
+                  * twice, once as prose and once as loose digits.
                   */}
                 {!isReady && (
-                    <span
-                        className={styles.charge}
-                        style={{ animationDelay: `${-elapsed}ms` }}
-                        aria-hidden="true"
-                    />
-                )}
-                <Image src="/assets/cardback.png" alt="" width="27" height="27" className={styles.icon} />
-                {!isReady && (
-                    <span className={styles.countdown} aria-hidden="true">
-                        {textToSprite(formatCountdown(nextPackAt - now))}
+                    <span className={styles.timer} aria-hidden="true">
+                        {/*
+                          * The unfilled part of the wait, shrinking away to the
+                          * right and uncovering the panel underneath. Drawn as
+                          * what is *left* rather than as a bar that grows, so
+                          * the colour filling the section is the button's own
+                          * background rather than a second colour laid over it.
+                          *
+                          * Both timings come from here: the stylesheet has no
+                          * business knowing how long a cooldown is.
+                          */}
+                        <span
+                            className={styles.charge}
+                            style={{ animationDuration: `${PACK_COOLDOWN_MS}ms`, animationDelay: `${-elapsed}ms` }}
+                        />
+                        <span className={styles.clock}>{textToSprite(formatCountdown(nextPackAt - now))}</span>
                     </span>
                 )}
             </button>

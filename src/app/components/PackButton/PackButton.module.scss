@@ -53,9 +53,18 @@
      */
     transition: background-color 0.2s ease-in;
 
-    &:hover,
-    &:active {
-        background-color: rgba(0, 0, 0, 0.25);
+    /**
+     * Only when a pack is waiting. The progress fill is this same wash, so
+     * darkening the whole button underneath it while charging would leave the
+     * bar and the track a matched pair — invisible on the one state where the
+     * bar is actually on screen. While charging the response is `.wrap`'s
+     * opacity coming up to full instead, which is plenty.
+     */
+    &[data-ready="true"] {
+        &:hover,
+        &:active {
+            background-color: rgba(0, 0, 0, 0.25);
+        }
     }
 
     /*
@@ -69,41 +78,101 @@
 }
 
 /**
- * The part of the wait still to go.
+ * The clock's own section, to the right of the icon's lane.
  *
- * Pinned to the right and shrinking to nothing, so what it uncovers is the
- * dialog's own gradient — the button fills with its own background colour
- * rather than with a bar in some second colour laid on top.
+ * Its own box rather than text floating in the button, because the progress
+ * belongs to the timer: `.charge` is positioned against *this*, so the bar
+ * measures this section and never runs behind the card art. Shut, the button
+ * clips to the icon's lane and the whole section — bar included — is simply
+ * not on screen.
  *
- * **A CSS animation rather than a re-render per tick.** Twenty-four hours is
- * long enough that a JavaScript clock redrawing this would cost more than the
- * feature is worth, and the component only needs waking once, at the end. The
- * component sets a negative `animation-delay` from the stored deadline, which
- * is what starts the bar partway through after a reload.
+ * The groove down its left edge is the options bar's, mirrored: a dark rule
+ * with a lighter line just inside it. `overflow: hidden` keeps the bar off the
+ * rounded ends of the box.
+ */
+.timer {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    /**
+     * **A fixed width, not the clock's own.**
+     *
+     * `formatCountdown` pads every field to two digits so the string is always
+     * eight characters, which gets most of the way there — before that,
+     * `10:00:00` ticking over to `09:59:59` shed a character and the box jumped
+     * a glyph narrower. This pins it regardless: the sprite font is not
+     * guaranteed to give every digit the same advance, and a box that resizes
+     * under the pointer is exactly what someone reading a clock does not want.
+     *
+     * 7.5rem against the ~7.2rem the widest string measures, so the digits are
+     * centred with a little air rather than filling it to the edges.
+     */
+    width: 7.5rem;
+    justify-content: center;
+
+    flex-shrink: 0;
+    height: 100%;
+    overflow: hidden;
+    border-left: 2px solid #030303;
+    white-space: nowrap;
+
+    /**
+     * The light half of the groove, drawn as a pseudo-element rather than an
+     * inset shadow: `.charge` is a child, so it paints over any inset shadow on
+     * this box and would swallow the line as it slid past.
+     */
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 1.5px;
+        background: #7d7f7e;
+        z-index: 2;
+    }
+}
+
+/**
+ * The part of the wait already done.
+ *
+ * Anchored left and growing rightwards, painted in the same wash the button
+ * uses for a press. It was the other way round to begin with — the *remainder*
+ * painted, in a heavier black — which meant a fresh cooldown was a solid dark
+ * block that emptied out, reading as the bar draining rather than filling.
+ * This way the panel's own grey is what is left to wait for.
+ *
+ * **A CSS animation rather than a re-render per tick.** A cooldown measured in
+ * hours is long enough that a JavaScript clock redrawing this would cost more
+ * than the feature is worth, and the component only needs waking once, at the
+ * end.
+ *
+ * **The duration comes from the component, not from here.** It was hardcoded to
+ * 86400000ms while `PACK_COOLDOWN_MS` is a constant anyone can change — so the
+ * moment the cooldown was set to six hours the bar measured six hours of
+ * progress against a twenty-four hour track, reading one sixth full four hours
+ * in instead of two thirds. Longhand, so there is no duration stated here and
+ * nothing to drift. The negative delay it is given alongside is what starts the
+ * bar partway through after a reload.
  */
 .charge {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.55);
-    animation: pack-charge 86400000ms linear forwards;
+    background: rgba(0, 0, 0, 0.25);
+    animation-name: pack-charge;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
     pointer-events: none;
 }
 
-/**
- * The exact time, revealed when the box opens.
- *
- * `flex-shrink: 0` and `white-space: nowrap` so it keeps its full width while
- * the box is still narrow — otherwise the clock reflows and wraps as the
- * max-width animates, and what should be a clean slide becomes the text
- * rearranging itself twice on the way out and twice on the way back.
- */
-.countdown {
+/** The digits, above the bar sliding past behind them. */
+.clock {
     position: relative;
-    flex-shrink: 0;
-    white-space: nowrap;
-    padding-right: 0.7rem;
+    z-index: 1;
+    padding: 0 0.7rem;
 }
 
 .icon {
@@ -133,10 +202,10 @@
 
 @keyframes pack-charge {
     from {
-        width: 100%;
+        width: 0;
     }
 
     to {
-        width: 0;
+        width: 100%;
     }
 }

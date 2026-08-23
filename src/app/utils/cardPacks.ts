@@ -241,9 +241,12 @@ export const startPackCooldown = () => {
 };
 
 /**
- * `23:04:59`, counting down. Hours are always shown so the width never jumps
- * as the number shrinks — it sits in a box that opens on hover, and a label
- * that changed size under the pointer would be worse than no label.
+ * `03:04:59`, counting down.
+ *
+ * Every field is two digits, hours included, so the string is always the same
+ * eight characters. It sits in a box of a fixed width that opens on hover, and
+ * a clock that changed length as it counted down — `10:00:00` to `9:59:59` —
+ * shifted the digits sideways under the pointer.
  */
 export const formatCountdown = (ms: number) => {
     const total = Math.max(0, Math.ceil(ms / 1000));
@@ -251,5 +254,5 @@ export const formatCountdown = (ms: number) => {
     const minutes = Math.floor((total % 3600) / 60);
     const seconds = total % 60;
 
-    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    return [hours, minutes, seconds].map(part => String(part).padStart(2, "0")).join(":");
 };
